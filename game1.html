@@ -190,10 +190,12 @@
         });
 
         function startGame() {
-            // [버그 수정 핵심] 기존 루프 취소 및 캔버스 초기화
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             
-            // 캔버스 잔상 제거
+            // [해결책] 캔버스 변형(Transform)을 강제 초기화
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
+
+            // 캔버스 깨끗하게 지우기
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -418,9 +420,7 @@
         }
         function gameOver(killer) {
             gameRunning = false;
-            // [중요] 게임 오버 시 루프 확실히 정지
             cancelAnimationFrame(animationFrameId);
-            
             ingameAd.style.display = 'none';
             ui.style.display = 'block';
             const btn = document.getElementById('start-btn');
