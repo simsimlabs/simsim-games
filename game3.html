@@ -102,6 +102,7 @@
         const joystickStick = document.getElementById('joystick-stick');
 
         const MAP_SIZE = 4000;
+        const PADDING = 200; // 벽 회피 시작 거리
         
         let snakes = [];
         let foods = [];
@@ -140,13 +141,8 @@
             snakes = [];
             foods = [];
 
-            // 먹이 생성
             for(let i=0; i<1000; i++) addFood();
-
-            // 플레이어
             playerIndex = addSnake(true);
-            
-            // 봇
             for(let i=0; i<30; i++) addSnake(false);
 
             ui.style.display = 'none';
@@ -155,30 +151,23 @@
         }
 
         function addSnake(isHuman) {
-            let x = Math.random() * MAP_SIZE;
-            let y = Math.random() * MAP_SIZE;
+            let x = Math.random() * (MAP_SIZE - 400) + 200;
+            let y = Math.random() * (MAP_SIZE - 400) + 200;
             let color = isHuman ? '#e74c3c' : `hsl(${Math.random()*360}, 70%, 60%)`;
             
             snakes.push({
                 isHuman: isHuman,
                 x: x, y: y,
                 angle: Math.random() * Math.PI * 2,
-                speed: 3,
-                radius: 10,
-                length: 10, // 목표 길이
-                body: [], // 실제 몸통 좌표 배열
-                color: color,
+                speed: 3, radius: 10, length: 10,
+                body: [], color: color,
                 name: isHuman ? '나 (Player)' : getName(),
-                score: 0,
-                dead: false,
-                aiTimer: 0
+                score: 0, dead: false, aiTimer: 0,
+                targetX: 0, targetY: 0
             });
             
-            // 초기 몸통 생성
             let s = snakes[snakes.length-1];
-            for(let i=0; i<20; i++) {
-                s.body.push({x: x, y: y});
-            }
+            for(let i=0; i<20; i++) s.body.push({x: x, y: y});
             return snakes.length - 1;
         }
 
@@ -186,7 +175,7 @@
             foods.push({
                 x: x || Math.random() * MAP_SIZE,
                 y: y || Math.random() * MAP_SIZE,
-                r: value > 1 ? 6 : 3, // 큰 먹이는 조금 더 크게
+                r: value > 1 ? 6 : 3,
                 color: `hsl(${Math.random()*360}, 100%, 70%)`,
                 value: value
             });
@@ -196,8 +185,7 @@
             let stick = joystickStick;
             let zone = joystickZone;
             let maxDist = 35; let active = false;
-            let startX, startY;
-
+            
             zone.addEventListener('touchstart', e => {
                 e.preventDefault(); active=true; inputType='joystick';
                 let t = e.touches[0];
@@ -225,52 +213,44 @@
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 if(dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
                 stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                joystickVector = {x: dx, y: dy}; // 벡터 저장
+                joystickVector = {x: dx, y: dy};
             }
         }
 
         function loop() {
             if(!gameRunning) return;
 
-            // 배경 지우기
             ctx.fillStyle = '#2d3436';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 카메라
             let player = snakes[playerIndex];
             let zoom = 1;
-            if(player && !player.dead) zoom = Math.max(0.5, 20 / (player.radius + 10)); // 줌아웃
+            if(player && !player.dead) zoom = Math.max(0.5, 20 / (player.radius + 10));
 
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
             if(player && !player.dead) ctx.translate(-player.x, -player.y);
-            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2); // 죽으면 맵 중앙? 혹은 죽은자리
+            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
 
-            // 격자 및 경계
             ctx.strokeStyle = '#3d4a4d'; ctx.lineWidth = 2; ctx.beginPath();
             for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
 
-            // 먹이 그리기 & 처리
             for(let i=foods.length-1; i>=0; i--) {
                 let f = foods[i];
-                // 화면 밖 최적화
                 if(player && !player.dead && (Math.abs(f.x - player.x) > canvas.width/zoom && Math.abs(f.y - player.y) > canvas.height/zoom)) continue;
-                
                 ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
                 ctx.fillStyle = f.color; 
-                ctx.shadowBlur = 10; ctx.shadowColor = f.color; // 빛나는 효과
+                ctx.shadowBlur = 10; ctx.shadowColor = f.color;
                 ctx.fill(); ctx.shadowBlur = 0;
             }
 
-            // 지렁이 로직
             snakes.forEach((s, index) => {
                 if(s.dead) return;
 
-                // 1. 방향 전환
                 let targetAngle = s.angle;
                 if(s.isHuman) {
                     if(inputType === 'joystick' && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
@@ -281,120 +261,119 @@
                         targetAngle = Math.atan2(dy, dx);
                     }
                 } else {
-                    // AI
+                    // --- 스마트 AI 로직 ---
                     s.aiTimer--;
                     if(s.aiTimer <= 0) {
-                        s.aiTimer = Math.random() * 20 + 10;
-                        // 기본: 먹이 찾기 or 랜덤
-                        let closestFood = null;
-                        let minDist = 300;
-                        foods.forEach(f => {
-                            let d = Math.hypot(s.x-f.x, s.y-f.y);
-                            if(d < minDist) { minDist = d; closestFood = f; }
-                        });
-                        
-                        if(closestFood) targetAngle = Math.atan2(closestFood.y-s.y, closestFood.x-s.x);
-                        else targetAngle = s.angle + (Math.random()-0.5);
+                        s.aiTimer = Math.random() * 10 + 5; // 판단 주기 단축
 
-                        // 회피 (벽이나 다른 뱀)
-                        if(s.x < 100 || s.x > MAP_SIZE-100 || s.y < 100 || s.y > MAP_SIZE-100) targetAngle += Math.PI;
+                        // 1. 벽 회피 (최우선)
+                        let wallAvoid = false;
+                        if(s.x < PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
+                        else if(s.x > MAP_SIZE-PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
+                        else if(s.y < PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
+                        else if(s.y > MAP_SIZE-PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
+
+                        if(!wallAvoid) {
+                            // 2. 다른 지렁이 회피 (전방 감지)
+                            let danger = false;
+                            snakes.forEach(other => {
+                                if(s === other || other.dead) return;
+                                // 거리 체크
+                                let d = Math.hypot(s.x - other.x, s.y - other.y);
+                                if(d < 200) {
+                                    // 내 진행 방향에 상대 몸통이 있는지?
+                                    // 단순히 가장 가까운 몸통 파트에서 멀어지는 방향으로
+                                    // (복잡한 충돌 예측 대신 회피 기동)
+                                    s.targetX = s.x - (other.x - s.x);
+                                    s.targetY = s.y - (other.y - s.y);
+                                    danger = true;
+                                }
+                            });
+
+                            if(!danger) {
+                                // 3. 먹이 탐색
+                                let closestFood = null;
+                                let minDist = 400; // 시야
+                                foods.forEach(f => {
+                                    let d = Math.hypot(s.x-f.x, s.y-f.y);
+                                    if(d < minDist) { minDist = d; closestFood = f; }
+                                });
+                                
+                                if(closestFood) {
+                                    s.targetX = closestFood.x;
+                                    s.targetY = closestFood.y;
+                                } else {
+                                    // 먹이 없으면 그냥 직진하다가 가끔 방향 전환
+                                    if(Math.random() < 0.05) {
+                                        s.targetX = s.x + (Math.random()-0.5) * 1000;
+                                        s.targetY = s.y + (Math.random()-0.5) * 1000;
+                                    }
+                                }
+                            }
+                        }
                     }
-                    // 부드러운 회전은 아래 로직에서 처리
+                    targetAngle = Math.atan2(s.targetY - s.y, s.targetX - s.x);
                 }
 
-                // 부드러운 회전
                 let diff = targetAngle - s.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
                 while (diff > Math.PI) diff -= Math.PI*2;
-                s.angle += diff * 0.1; // 회전 속도
+                s.angle += diff * 0.1;
 
-                // 2. 이동
-                let speed = 4; // 기본 속도
+                let speed = 4;
                 s.x += Math.cos(s.angle) * speed;
                 s.y += Math.sin(s.angle) * speed;
 
-                // 벽 제한
+                // 벽 강제 보정 (혹시 뚫고 나갔을 경우)
                 s.x = Math.max(0, Math.min(MAP_SIZE, s.x));
                 s.y = Math.max(0, Math.min(MAP_SIZE, s.y));
 
-                // 3. 몸통 업데이트
-                // 머리 위치 추가
                 s.body.unshift({x: s.x, y: s.y});
-                
-                // 길이 제한 (꼬리 자르기)
-                // body 배열에는 매 프레임 좌표가 들어가므로, 실제 길이 * 간격 만큼 유지
                 let neededLength = s.length * 4; 
                 while(s.body.length > neededLength) s.body.pop();
 
-                // 4. 먹이 먹기
                 for(let i=foods.length-1; i>=0; i--) {
                     let f = foods[i];
                     if(Math.hypot(s.x-f.x, s.y-f.y) < s.radius + f.r) {
-                        s.length += f.value * 0.5; // 성장
-                        s.radius = Math.min(25, 10 + s.length * 0.05); // 굵기 증가 제한
+                        s.length += f.value * 0.5;
+                        s.radius = Math.min(25, 10 + s.length * 0.05);
                         s.score += Math.floor(f.value * 10);
                         foods.splice(i, 1);
-                        // 먹이 리필
                         if(Math.random() < 0.3) addFood();
                     }
                 }
 
-                // 5. 그리기 (꼬리부터)
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                
-                // 몸통 (간격을 두고 그림)
-                // 간단하게 구현하기 위해 원을 여러개 그림
-                for(let i=s.body.length-1; i>=0; i-=4) { // 4프레임마다 하나씩 그림 (최적화)
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                for(let i=s.body.length-1; i>=0; i-=4) {
                     let p = s.body[i];
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, s.radius, 0, Math.PI*2);
-                    ctx.fillStyle = s.color;
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, s.radius, 0, Math.PI*2);
+                    ctx.fillStyle = s.color; ctx.fill();
                 }
                 
-                // 머리
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius + 2, 0, Math.PI*2);
-                ctx.fillStyle = '#fff'; // 눈 흰자 느낌
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
-                ctx.fillStyle = s.color;
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.radius + 2, 0, Math.PI*2);
+                ctx.fillStyle = '#fff'; ctx.fill();
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+                ctx.fillStyle = s.color; ctx.fill();
 
-                // 이름
-                ctx.fillStyle = 'white';
-                ctx.font = 'bold 12px Noto Sans KR';
-                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white'; ctx.font = 'bold 12px Noto Sans KR'; ctx.textAlign = 'center';
                 ctx.fillText(s.name, s.x, s.y - s.radius - 10);
 
-                // 6. 충돌 검사 (머리 vs 다른 뱀 몸통)
                 snakes.forEach(other => {
                     if(s.dead || other.dead) return;
-                    if(s === other) return; // 자기는 통과
-
-                    // 최적화: 거리 체크 먼저
+                    if(s === other) return;
                     if(Math.abs(s.x - other.x) > 500 || Math.abs(s.y - other.y) > 500) return;
 
-                    // other의 몸통 점들과 비교
-                    // 너무 촘촘하게 검사하면 느리므로 적당히 건너뛰며 검사
                     for(let i=0; i<other.body.length; i+=5) {
                         let bp = other.body[i];
                         if(Math.hypot(s.x - bp.x, s.y - bp.y) < s.radius + other.radius - 2) {
-                            // 충돌! s 사망
-                            killSnake(index);
-                            return; // 루프 종료
+                            killSnake(index); return;
                         }
                     }
                 });
             });
 
             ctx.restore();
-            
-            // 먹이 부족하면 보충
             if(foods.length < 500) addFood();
-
             updateLeaderboard();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -402,23 +381,12 @@
         function killSnake(idx) {
             let s = snakes[idx];
             s.dead = true;
-            
-            // 죽은 자리에 먹이 뿌리기 (길이만큼)
-            for(let i=0; i<s.body.length; i+=3) { // 듬성듬성
-                addFood(s.body[i].x, s.body[i].y, 2); // 가치 2짜리 큰 먹이
-            }
+            for(let i=0; i<s.body.length; i+=3) addFood(s.body[i].x, s.body[i].y, 2);
 
-            if(s.isHuman) {
-                gameOver(s.name); // 자신이라면 게임오버
-            } else {
-                // 봇은 부활
+            if(s.isHuman) gameOver(s.name);
+            else {
                 showKillLog(`${s.name} 사망!`);
-                setTimeout(() => {
-                    if(gameRunning) {
-                        snakes.splice(idx, 1); // 제거 후
-                        addSnake(false); // 새 봇 추가
-                    }
-                }, 2000);
+                setTimeout(() => { if(gameRunning) { snakes.splice(idx, 1); addSnake(false); } }, 2000);
             }
         }
 
