@@ -46,7 +46,6 @@
         #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
         .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
 
-        /* Joystick */
         #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
         #joystick-bg { width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
         #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
@@ -63,7 +62,7 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="leaderboard" class="game-overlay">
-        <h3>🏆 Leaderboard</h3>
+        <h3>🏆 Territory</h3>
         <ul id="rank-list"><li>Loading...</li></ul>
     </div>
 
@@ -81,7 +80,10 @@
 
     <div id="game-ui">
         <h1>🚩 Land Conquer</h1>
-        <p>Draw lines to expand territory.<br>Don't get hit on the tail!</p>
+        <p>
+            Draw lines to expand land.<br>
+            Don't get hit on the tail!<br>
+        </p>
         <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
              <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
@@ -102,8 +104,10 @@
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
-        const GRID_SIZE = 20; 
-        let COLS, ROWS;
+        const GRID_SIZE = 25; 
+        const MAP_WIDTH = 100;
+        const MAP_HEIGHT = 100;
+        
         let map = []; 
         let players = [];
         let gameRunning = false;
@@ -115,34 +119,33 @@
         function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
         document.addEventListener('DOMContentLoaded', () => {
-            resize();
-            window.addEventListener('resize', resize);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
             if(startBtn) startBtn.addEventListener('click', startGame);
             initJoystick();
             window.addEventListener('keydown', handleKey);
         });
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            COLS = Math.ceil(canvas.width / GRID_SIZE);
-            ROWS = Math.ceil(canvas.height / GRID_SIZE);
-        }
-
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            resize(); 
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             map = [];
-            for(let y=0; y<ROWS; y++) {
+            for(let y=0; y<MAP_HEIGHT; y++) {
                 let row = [];
-                for(let x=0; x<COLS; x++) row.push(0);
+                for(let x=0; x<MAP_WIDTH; x++) row.push(0);
                 map.push(row);
             }
 
             players = [];
             spawnPlayer(1, true);
-            for(let i=2; i<=12; i++) spawnPlayer(i, false);
+            for(let i=2; i<=15; i++) spawnPlayer(i, false);
 
             gameRunning = true;
             ui.style.display = 'none';
@@ -152,14 +155,12 @@
         }
 
         function spawnPlayer(id, isHuman) {
-            let x = Math.floor(Math.random() * (COLS - 10)) + 5;
-            let y = Math.floor(Math.random() * (ROWS - 10)) + 5;
+            let x = Math.floor(Math.random() * (MAP_WIDTH - 10)) + 5;
+            let y = Math.floor(Math.random() * (MAP_HEIGHT - 10)) + 5;
             
             for(let dy=-1; dy<=1; dy++) {
                 for(let dx=-1; dx<=1; dx++) {
-                    if(y+dy >=0 && y+dy < ROWS && x+dx >=0 && x+dx < COLS) {
-                        map[y+dy][x+dx] = id;
-                    }
+                    map[y+dy][x+dx] = id;
                 }
             }
 
@@ -184,14 +185,12 @@
         }
 
         function initJoystick() {
-            let active = false;
-            let startX, startY;
+            let active = false; let startX, startY;
             const zone = joystickZone;
             
             zone.addEventListener('touchstart', e => {
                 e.preventDefault(); active = true;
-                let t = e.touches[0];
-                startX = t.clientX; startY = t.clientY;
+                let t = e.touches[0]; startX = t.clientX; startY = t.clientY;
                 joystickStick.style.transition = 'none';
             }, {passive:false});
 
@@ -199,9 +198,7 @@
                 if(!active) return;
                 e.preventDefault();
                 let t = e.touches[0];
-                let dx = t.clientX - startX;
-                let dy = t.clientY - startY;
-                
+                let dx = t.clientX - startX; let dy = t.clientY - startY;
                 let dist = Math.min(30, Math.sqrt(dx*dx + dy*dy));
                 let angle = Math.atan2(dy, dx);
                 joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
@@ -229,7 +226,9 @@
         function loop() {
             if(!gameRunning) return;
             frameCount++;
-            if(frameCount % 3 === 0) update();
+            if(frameCount % 6 === 0) {
+                update();
+            }
             draw();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -246,7 +245,7 @@
                     }
                     let futureX = p.x + p.nextDx;
                     let futureY = p.y + p.nextDy;
-                    if(futureX < 0 || futureX >= COLS || futureY < 0 || futureY >= ROWS) {
+                    if(futureX < 0 || futureX >= MAP_WIDTH || futureY < 0 || futureY >= MAP_HEIGHT) {
                         if(p.dx !== 0) { p.nextDx = 0; p.nextDy = 1; }
                         else { p.nextDx = 1; p.nextDy = 0; }
                     }
@@ -255,14 +254,14 @@
                 p.dx = p.nextDx; p.dy = p.nextDy;
                 let nx = p.x + p.dx; let ny = p.y + p.dy;
 
-                if(nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) { killPlayer(p, "Wall"); return; }
+                if(nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT) { killPlayer(p, "Wall Hit"); return; }
                 if(p.trail.some(t => t.x === nx && t.y === ny)) { killPlayer(p, "Own Tail"); return; }
 
                 players.forEach(other => {
                     if(p === other || other.dead) return;
                     if(other.trail.some(t => t.x === nx && t.y === ny)) {
                         killPlayer(other, p.name);
-                        showKillLog(`${p.name} cut ${other.name}!`);
+                        if(p.isHuman) showKillLog(`You cut ${other.name}!`);
                     }
                     if(other.x === nx && other.y === ny) { killPlayer(p, "Crash"); killPlayer(other, "Crash"); }
                 });
@@ -274,6 +273,18 @@
                 if(map[ny][nx] === p.id) {
                     if(p.trail.length > 0) {
                         p.trail.forEach(t => map[t.y][t.x] = p.id);
+                        
+                        let minX=p.x, maxX=p.x, minY=p.y, maxY=p.y;
+                        p.trail.forEach(t => {
+                            minX = Math.min(minX, t.x); maxX = Math.max(maxX, t.x);
+                            minY = Math.min(minY, t.y); maxY = Math.max(maxY, t.y);
+                        });
+                        for(let cy=minY; cy<=maxY; cy++) {
+                            for(let cx=minX; cx<=maxX; cx++) {
+                                if(map[cy][cx] !== p.id) map[cy][cx] = p.id; 
+                            }
+                        }
+
                         p.trail = [];
                         p.score = countScore(p.id);
                     }
@@ -292,20 +303,53 @@
 
         function countScore(id) {
             let s = 0;
-            for(let y=0; y<ROWS; y++) for(let x=0; x<COLS; x++) if(map[y][x] === id) s++;
+            for(let y=0; y<MAP_HEIGHT; y++) for(let x=0; x<MAP_WIDTH; x++) if(map[y][x] === id) s++;
             return s;
         }
 
         function draw() {
-            ctx.fillStyle = '#2c3e50'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            for(let y=0; y<ROWS; y++) {
-                for(let x=0; x<COLS; x++) {
+            const p = players.find(pl => pl.isHuman);
+            if(!p) return;
+
+            let camX = p.x * GRID_SIZE - canvas.width / 2;
+            let camY = p.y * GRID_SIZE - canvas.height / 2;
+            
+            ctx.translate(-camX, -camY);
+
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            let startCol = Math.floor(camX / GRID_SIZE);
+            let endCol = startCol + (canvas.width / GRID_SIZE) + 1;
+            let startRow = Math.floor(camY / GRID_SIZE);
+            let endRow = startRow + (canvas.height / GRID_SIZE) + 1;
+
+            for (let x = startCol; x <= endCol; x++) {
+                ctx.moveTo(x * GRID_SIZE, camY);
+                ctx.lineTo(x * GRID_SIZE, camY + canvas.height + GRID_SIZE);
+            }
+            for (let y = startRow; y <= endRow; y++) {
+                ctx.moveTo(camX, y * GRID_SIZE);
+                ctx.lineTo(camX + canvas.width + GRID_SIZE, y * GRID_SIZE);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = '#c0392b';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(0, 0, MAP_WIDTH * GRID_SIZE, MAP_HEIGHT * GRID_SIZE);
+
+            for(let y=Math.max(0, startRow); y<Math.min(MAP_HEIGHT, endRow); y++) {
+                for(let x=Math.max(0, startCol); x<Math.min(MAP_WIDTH, endCol); x++) {
                     let id = map[y][x];
                     if(id !== 0) {
-                        let owner = players.find(p => p.id === id);
+                        let owner = players.find(pl => pl.id === id);
                         if(owner) {
-                            ctx.fillStyle = owner.color; ctx.globalAlpha = 0.6;
+                            ctx.fillStyle = owner.color;
+                            ctx.globalAlpha = 0.4;
                             ctx.fillRect(x*GRID_SIZE, y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                             ctx.globalAlpha = 1.0;
                         }
@@ -313,17 +357,28 @@
                 }
             }
 
-            players.forEach(p => {
-                if(p.dead) return;
-                ctx.fillStyle = p.color; ctx.globalAlpha = 0.4;
-                p.trail.forEach(t => ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE));
+            players.forEach(pl => {
+                if(pl.dead) return;
+
+                ctx.fillStyle = pl.color;
+                ctx.globalAlpha = 0.6;
+                pl.trail.forEach(t => ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE));
                 ctx.globalAlpha = 1.0;
 
-                ctx.fillStyle = p.color; ctx.fillRect(p.x*GRID_SIZE, p.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
-                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(p.x*GRID_SIZE, p.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'black';
+                ctx.fillStyle = pl.color;
+                ctx.fillRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                ctx.shadowBlur = 0;
 
-                ctx.fillStyle = '#fff'; ctx.font = '12px Roboto'; ctx.textAlign = 'center';
-                ctx.fillText(p.name, p.x*GRID_SIZE + GRID_SIZE/2, p.y*GRID_SIZE - 5);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 12px Roboto';
+                ctx.textAlign = 'center';
+                ctx.fillText(pl.name, pl.x*GRID_SIZE + GRID_SIZE/2, pl.y*GRID_SIZE - 5);
             });
         }
 
