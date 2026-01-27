@@ -102,7 +102,7 @@
         const joystickStick = document.getElementById('joystick-stick');
 
         const MAP_SIZE = 4000;
-        const PADDING = 200;
+        const PADDING = 150; // Wall avoidance distance
         
         let snakes = [];
         let foods = [];
@@ -162,7 +162,8 @@
                 speed: 3, radius: 10, length: 10,
                 body: [], color: color,
                 name: isHuman ? 'Me (You)' : getName(),
-                score: 0, dead: false, aiTargetAngle: 0, aiTimer: 0
+                score: 0, dead: false, 
+                aiTargetAngle: 0, aiTimer: 0, turnSpeed: 0.1
             });
             
             let s = snakes[snakes.length-1];
@@ -251,6 +252,8 @@
                 if(s.dead) return;
 
                 let targetAngle = s.angle;
+                s.turnSpeed = 0.1;
+
                 if(s.isHuman) {
                     if(inputType === 'joystick' && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
                         targetAngle = Math.atan2(joystickVector.y, joystickVector.x);
@@ -260,31 +263,35 @@
                         targetAngle = Math.atan2(dy, dx);
                     }
                 } else {
-                    // --- Smarter AI ---
+                    // --- Improved AI ---
                     s.aiTimer--;
                     if(s.aiTimer <= 0) {
                         s.aiTimer = 5;
 
-                        // 1. Avoid Danger (Priority)
+                        // 1. Avoid Danger
                         let danger = false;
-                        let lookAheadDist = 150;
+                        let lookAheadDist = 200;
                         let checkX = s.x + Math.cos(s.angle) * lookAheadDist;
                         let checkY = s.y + Math.sin(s.angle) * lookAheadDist;
 
                         // Wall
                         if(checkX < PADDING || checkX > MAP_SIZE - PADDING || checkY < PADDING || checkY > MAP_SIZE - PADDING) {
                             s.aiTargetAngle = Math.atan2(MAP_SIZE/2 - s.y, MAP_SIZE/2 - s.x);
+                            s.turnSpeed = 0.3;
                             danger = true;
                         }
 
-                        // Other Snakes
+                        // Other snakes
                         if(!danger) {
                             for(let other of snakes) {
                                 if(s === other || other.dead) continue;
+                                if (Math.abs(s.x - other.x) > 300 || Math.abs(s.y - other.y) > 300) continue;
+
                                 for(let i=0; i<other.body.length; i+=3) {
                                     let bp = other.body[i];
-                                    if(Math.hypot(checkX - bp.x, checkY - bp.y) < s.radius + other.radius + 30) {
-                                        s.aiTargetAngle = s.angle + Math.PI / 2;
+                                    if(Math.hypot(checkX - bp.x, checkY - bp.y) < s.radius + other.radius + 40) {
+                                        s.aiTargetAngle = s.angle + Math.PI / 1.5;
+                                        s.turnSpeed = 0.4;
                                         danger = true;
                                         break;
                                     }
@@ -296,7 +303,7 @@
                         // 2. Hunt Food
                         if(!danger) {
                             let closest = null;
-                            let minDist = 400;
+                            let minDist = 500;
                             
                             for(let f of foods) {
                                 let dist = Math.hypot(s.x - f.x, s.y - f.y);
@@ -305,8 +312,7 @@
                                     let angleDiff = Math.abs(angleToFood - s.angle);
                                     if(angleDiff > Math.PI) angleDiff = Math.PI*2 - angleDiff;
                                     
-                                    // Only target food in front (90 degree FOV)
-                                    if(angleDiff < Math.PI / 2) {
+                                    if(angleDiff < Math.PI / 1.5) {
                                         minDist = dist;
                                         closest = f;
                                     }
@@ -326,9 +332,10 @@
                 let diff = targetAngle - s.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
                 while (diff > Math.PI) diff -= Math.PI*2;
-                s.angle += diff * 0.15;
+                s.angle += diff * (s.turnSpeed || 0.1);
 
-                let speed = 4;
+                // Speed Reduction (4 -> 2.5)
+                let speed = 2.5 + (10 / (s.length + 10));
                 s.x += Math.cos(s.angle) * speed;
                 s.y += Math.sin(s.angle) * speed;
 
@@ -365,12 +372,13 @@
                 ctx.fillStyle = 'white'; ctx.font = 'bold 12px Roboto'; ctx.textAlign = 'center';
                 ctx.fillText(s.name, s.x, s.y - s.radius - 10);
 
+                // Collision Detection (Fixed precision)
                 snakes.forEach(other => {
                     if(s.dead || other.dead) return;
                     if(s === other) return;
                     if(Math.abs(s.x - other.x) > 500 || Math.abs(s.y - other.y) > 500) return;
 
-                    for(let i=0; i<other.body.length; i+=5) {
+                    for(let i=0; i<other.body.length; i+=2) { // More precise check (every 2nd node)
                         let bp = other.body[i];
                         if(Math.hypot(s.x - bp.x, s.y - bp.y) < s.radius + other.radius - 2) {
                             killSnake(index); return;
