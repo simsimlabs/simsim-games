@@ -12,22 +12,19 @@
             margin: 0; padding: 0; overflow: hidden; background-color: #f0f0f0; 
             font-family: 'Roboto', sans-serif; user-select: none;
         }
-
         canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: 0; background-color: #f0f0f0;
         }
-
         #game-ui { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 9999; 
             background: rgba(255, 255, 255, 0.98);
             padding: 40px; border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            text-align: center; width: 90%; max-width: 450px;
+            text-align: center; width: 90%; max-width: 400px;
             border: 4px solid #6c5ce7;
         }
-
         #game-ui h1 {
             font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0;
             text-shadow: 2px 2px 0px #a29bfe;
@@ -47,44 +44,33 @@
             display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; font-size: 0.9rem; 
             cursor: pointer;
         }
+        .back-link:hover { color: #636e72; text-decoration: underline; }
 
         #leaderboard {
             position: fixed; top: 15px; right: 15px; z-index: 100;
             background: rgba(0,0,0,0.6); color: white; padding: 15px;
             border-radius: 10px; font-family: 'Fredoka One', cursive; pointer-events: none;
+            min-width: 150px;
         }
         #rank-list { list-style: none; padding: 0; margin: 0; }
         
         #kill-log {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             z-index: 100; background: rgba(231, 76, 60, 0.9); color: white;
             padding: 8px 20px; border-radius: 20px; font-weight: bold;
             opacity: 0; transition: opacity 0.3s; pointer-events: none;
         }
 
         #ingame-ad {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            z-index: 50;
-            background: rgba(255,255,255,0.8);
-            padding: 5px;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            text-align: center;
+            position: fixed; bottom: 10px; right: 10px; z-index: 90;
+            background: rgba(255,255,255,0.8); padding: 5px; border-radius: 5px;
+            display: none;
         }
     </style>
 </head>
 <body>
 
     <canvas id="gameCanvas"></canvas>
-
-    <div id="ingame-ad">
-        <span style="font-size: 10px; color: #999;">SPONSORED</span>
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:320px;height:50px"
-             data-ad-client="ca-pub-2261846676525942"
-             data-ad-slot="4380369066"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
 
     <div id="leaderboard">
         <h3>🏆 Leaderboard</h3>
@@ -93,11 +79,18 @@
 
     <div id="kill-log"></div>
 
+    <div id="ingame-ad">
+        <span style="font-size:10px; color:#999; display:block; text-align:right;">AD</span>
+         <ins class="adsbygoogle"
+             style="display:inline-block;width:320px;height:50px"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
     <div id="game-ui">
         <h1>🦠 Cell Eaters</h1>
-        <p>
-            Eat smaller cells, run from bigger ones!
-        </p>
+        <p>Eat smaller cells, avoid big ones!<br>(View expands as you grow)</p>
         
         <div style="margin: 15px 0; min-height: 100px;">
              <ins class="adsbygoogle"
@@ -117,22 +110,20 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const startBtn = document.getElementById('start-btn');
-            if(startBtn) {
-                startBtn.addEventListener('click', startGame);
-            }
+            if(startBtn) startBtn.addEventListener('click', startGame);
         });
 
         const adjectives = [
             "Hungry", "Sleepy", "Happy", "Angry", "Crazy", "Super", "Lazy", "Fast", "Slow", "Brave", 
             "Scared", "Smart", "Dumb", "Rich", "Poor", "Epic", "Mystery", "Strange", "Tiny", "Giant", 
-            "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark", "Funny", "Serious",
-            "Magic", "Golden", "Toxic", "Invisible", "Red", "Blue", "Green", "Flying", "Running"
+            "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark", "Silly", "Serious",
+            "Flying", "Swimming", "Running", "Dancing", "Shiny", "Dirty", "Clean", "Ancient", "Modern", "Future"
         ];
         const nouns = [
             "Cat", "Dog", "Bear", "Lion", "Tiger", "Human", "Gamer", "Noob", "Pro", "Hacker", 
             "Boss", "Ninja", "Robot", "Alien", "Ghost", "Zombie", "Virus", "Cell", "Pizza", "Burger",
-            "Taco", "Sushi", "Cookie", "Donut", "Potato", "Tomato", "King", "Queen", "Prince", "Hero",
-            "Dragon", "Wolf", "Fox", "Bunny", "Mouse", "Star", "Moon", "Sun", "Cloud"
+            "Taco", "Sushi", "Dragon", "Wolf", "Fox", "Rabbit", "Mouse", "Eagle", "Shark", "Whale",
+            "King", "Queen", "Prince", "Princess", "Knight", "Wizard", "Cop", "Doctor", "Teacher", "Student"
         ];
 
         function generateBotName() {
@@ -144,6 +135,7 @@
         const ui = document.getElementById('game-ui');
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -152,10 +144,8 @@
         let foods = [];
         let bots = [];
         let gameRunning = false;
-        
-        // ★ HARDER DIFFICULTY
-        let mapSize = 6000;
-        
+        let mapSize = 6000; 
+
         function startGame() {
             player = { x: mapSize/2, y: mapSize/2, r: 25, color: '#6c5ce7', name: 'Me (You)' };
             foods = [];
@@ -165,6 +155,7 @@
             for(let i=0; i<80; i++) addBot();
 
             ui.style.display = 'none';
+            ingameAd.style.display = 'block';
             gameRunning = true;
             loop();
         }
@@ -172,19 +163,16 @@
         function addFood() {
             foods.push({
                 x: Math.random() * mapSize, y: Math.random() * mapSize,
-                r: Math.random() * 5 + 3, color: `hsl(${Math.random()*360}, 80%, 70%)`
+                r: Math.random() * 6 + 4, color: `hsl(${Math.random()*360}, 80%, 70%)`
             });
         }
 
         function addBot() {
             bots.push({
                 x: Math.random() * mapSize, y: Math.random() * mapSize,
-                r: Math.random() * 50 + 20, 
-                color: `hsl(${Math.random()*360}, 60%, 50%)`,
+                r: Math.random() * 50 + 20, color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 dx: Math.random() - 0.5, dy: Math.random() - 0.5,
-                name: generateBotName(), 
-                changeDirTimer: 0, 
-                speedMult: Math.random() * 0.6 + 0.9
+                name: generateBotName(), changeDirTimer: 0, speedMult: Math.random() * 0.4 + 0.8
             });
         }
 
@@ -197,14 +185,19 @@
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            let cameraX = player.x - canvas.width / 2;
-            let cameraY = player.y - canvas.height / 2;
+            // Zoom Out Logic
+            let zoom = Math.max(0.1, 25 / (player.r + 5));
+            
             ctx.save();
-            ctx.translate(-cameraX, -cameraY);
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(zoom, zoom);
+            ctx.translate(-player.x, -player.y);
 
-            ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 1;
+            ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 2;
             for(let x=0; x<=mapSize; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize); ctx.stroke(); }
             for(let y=0; y<=mapSize; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize,y); ctx.stroke(); }
+            ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10;
+            ctx.strokeRect(0, 0, mapSize, mapSize);
 
             foods.forEach((f, i) => {
                 drawCircle(f.x, f.y, f.r, f.color);
@@ -216,39 +209,66 @@
             bots.forEach((b, i) => {
                 b.changeDirTimer--;
                 if(b.changeDirTimer <= 0) {
-                    b.dx = (Math.random()-0.5)*5; b.dy = (Math.random()-0.5)*5;
-                    if(Math.random() < 0.4) {
-                        b.dx = (player.x - b.x)/500; b.dy = (player.y - b.y)/500;
+                    let nearest = null; let minDist = 500;
+                    let distToPlayer = getDist(b, player);
+                    if(distToPlayer < minDist) {
+                        if(b.r > player.r * 1.1) nearest = {target: player, type: 'prey'};
+                        else if(player.r > b.r * 1.1) nearest = {target: player, type: 'predator'};
                     }
-                    b.changeDirTimer = Math.random()*80 + 20;
+                    
+                    if(nearest) {
+                        let angle = Math.atan2(nearest.target.y - b.y, nearest.target.x - b.x);
+                        if(nearest.type === 'prey') { b.dx = Math.cos(angle); b.dy = Math.sin(angle); }
+                        else { b.dx = -Math.cos(angle); b.dy = -Math.sin(angle); }
+                    } else {
+                        b.dx = Math.random() - 0.5; b.dy = Math.random() - 0.5;
+                    }
+                    b.changeDirTimer = Math.random() * 50 + 20;
                 }
-                b.x += b.dx * b.speedMult; b.y += b.dy * b.speedMult;
+                
+                let bSpeed = (40 / Math.sqrt(b.r)) + 1;
+                b.x += b.dx * bSpeed; b.y += b.dy * bSpeed;
                 b.x = Math.max(0, Math.min(mapSize, b.x)); b.y = Math.max(0, Math.min(mapSize, b.y));
 
                 drawCircle(b.x, b.y, b.r, b.color);
-                ctx.fillStyle = '#2d3436'; ctx.font = 'bold 12px Roboto';
-                ctx.textAlign = 'center'; ctx.fillText(b.name, b.x, b.y + 5);
+                ctx.fillStyle = '#2d3436'; ctx.font = `bold ${Math.max(12, b.r/2)}px Roboto`;
+                ctx.textAlign = 'center'; ctx.fillText(b.name, b.x, b.y + b.r*0.3);
 
                 let dist = getDist(player, b);
                 if(dist < player.r + b.r) {
-                    if(player.r > b.r * 1.1) {
+                    if(player.r > b.r * 1.05) {
                         player.r += b.r * 0.4; bots.splice(i, 1); addBot(); showKillLog(`Ate ${b.name}!`);
-                    } else if (b.r > player.r * 1.1) {
+                    } else if (b.r > player.r * 1.05) {
                         gameOver(b.name);
                     }
                 }
             });
 
+             // Bot vs Bot
+             for(let i=0; i<bots.length; i++) {
+                for(let j=i+1; j<bots.length; j++) {
+                    let b1 = bots[i]; let b2 = bots[j];
+                    if(!b1 || !b2) continue;
+                    let d = getDist(b1, b2);
+                    if(d < b1.r + b2.r) {
+                        if(b1.r > b2.r * 1.05) {
+                            b1.r += b2.r * 0.4; bots.splice(j, 1); addBot(); j--;
+                        } else if (b2.r > b1.r * 1.05) {
+                            b2.r += b1.r * 0.4; bots.splice(i, 1); addBot(); i--; break;
+                        }
+                    }
+                }
+            }
+
             let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-            let speed = (150 / player.r) + 2; 
-            if(speed > 6) speed = 6;
+            let pSpeed = (40 / Math.sqrt(player.r)) + 1;
             
-            player.x += Math.cos(angle) * speed; player.y += Math.sin(angle) * speed;
+            player.x += Math.cos(angle) * pSpeed; player.y += Math.sin(angle) * pSpeed;
             player.x = Math.max(0, Math.min(mapSize, player.x)); player.y = Math.max(0, Math.min(mapSize, player.y));
 
             drawCircle(player.x, player.y, player.r, player.color);
-            ctx.fillStyle = 'white'; ctx.font = 'bold 14px Roboto';
-            ctx.textAlign = 'center'; ctx.fillText("Me", player.x, player.y + 5);
+            ctx.fillStyle = 'white'; ctx.font = `bold ${Math.max(14, player.r/2)}px Roboto`;
+            ctx.textAlign = 'center'; ctx.fillText("Me", player.x, player.y + player.r*0.3);
 
             ctx.restore();
             updateLeaderboard();
@@ -278,6 +298,7 @@
         function gameOver(killer) {
             gameRunning = false;
             ui.style.display = 'block';
+            ingameAd.style.display = 'none';
             const btn = document.getElementById('start-btn');
             btn.innerText = "Play Again ↺";
             ui.querySelector('h1').innerText = "GAME OVER";
