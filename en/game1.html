@@ -9,23 +9,34 @@
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
 
         body { 
-            margin: 0; padding: 0; overflow: hidden; background-color: #f0f0f0;  
+            margin: 0; padding: 0; overflow: hidden; background-color: #f0f0f0; 
             font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
         }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background-color: #f0f0f0; }
+        canvas { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 0; background-color: #f0f0f0;
+        }
+
         .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
 
+        /* UI Window */
         #game-ui { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; background: rgba(255, 255, 255, 0.98);
-            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            z-index: 9999; 
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px;
+            border: 5px solid #6c5ce7;
             pointer-events: auto;
         }
 
-        #game-ui h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0; text-shadow: 3px 3px 0px #a29bfe; }
-        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+        #game-ui h1 {
+            font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0;
+            text-shadow: 3px 3px 0px #a29bfe;
+        }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; line-height: 1.6; }
 
         #start-btn {
             background: #ff7675; color: white; border: none; padding: 15px 0;
@@ -36,24 +47,59 @@
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
         #start-btn:hover { background: #ff6b6b; }
 
-        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; cursor: pointer; }
+        .back-link { 
+            display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; font-size: 1rem; 
+            cursor: pointer;
+        }
         .back-link:hover { color: #636e72; text-decoration: underline; }
 
-        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px; }
-        #rank-list { list-style: none; padding: 0; margin: 0; }
-        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        /* Leaderboard */
+        #leaderboard {
+            top: 15px; right: 15px; 
+            background: rgba(0,0,0,0.6); color: white; padding: 15px;
+            border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px;
+        }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px; }
 
-        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(214, 48, 49, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; opacity: 0; transition: opacity 0.3s; }
+        /* Kill Log */
+        #kill-log {
+            bottom: 120px; left: 50%; transform: translateX(-50%);
+            background: rgba(214, 48, 49, 0.9); color: white;
+            padding: 10px 25px; border-radius: 30px; font-weight: bold; font-size: 1.1rem;
+            opacity: 0; transition: opacity 0.3s; text-shadow: 1px 1px 2px black;
+        }
 
-        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
+        /* In-game Ad */
+        #ingame-ad {
+            position: fixed; bottom: 10px; right: 10px; z-index: 50;
+            background: white; padding: 5px; border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            pointer-events: auto; display: none;
+        }
         .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
 
-        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
-        #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3); }
-        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        /* Joystick */
+        #joystick-zone {
+            position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px;
+            z-index: 200; display: none; pointer-events: auto;
+        }
+        #joystick-bg {
+            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
+        }
+        #joystick-stick {
+            width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
 
         @media (max-width: 600px) {
-            #game-ui { width: 85%; }
+            #game-ui { width: 85%; padding: 25px; }
+            #game-ui h1 { font-size: 2.2rem; }
+            #start-btn { font-size: 1.4rem; }
+            #leaderboard { transform: scale(0.8); transform-origin: top right; }
             #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
             #joystick-zone { display: block; }
         }
@@ -88,8 +134,9 @@
     <div id="game-ui">
         <h1>🦠 Cell Eaters</h1>
         <p>
-            PC: Use Mouse<br>
+            PC: Move with Mouse<br>
             Mobile: Use Joystick (Bottom Left)<br>
+            <span style="color:#ff7675; font-size:0.9rem;">(Optimized Speed & No Lag!)</span>
         </p>
         
         <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
@@ -130,11 +177,12 @@
         let mouseX = 0, mouseY = 0;
         let joystickVector = { x: 0, y: 0 };
 
+        // English Name Generator
         const adjectives = ["Hungry", "Sleepy", "Happy", "Angry", "Crazy", "Super", "Lazy", "Fast", "Slow", "Brave", "Scared", "Smart", "Dumb", "Rich", "Poor", "Epic", "Mystery", "Strange", "Tiny", "Giant", "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark", "Neon", "Cyber"];
         const nouns = ["Cat", "Dog", "Bear", "Lion", "Tiger", "Human", "Gamer", "Noob", "Pro", "Hacker", "Boss", "Ninja", "Robot", "Alien", "Ghost", "Zombie", "Virus", "Cell", "Pizza", "Burger", "King", "Queen", "Joker", "Knight", "Wizard", "Dragon", "Slime"];
 
         function generateBotName() {
-            return adjectives[Math.floor(Math.random() * adjectives.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
+            return adjectives[Math.floor(Math.random() * adjectives.length)] + "" + nouns[Math.floor(Math.random() * nouns.length)];
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -144,15 +192,15 @@
             
             mouseX = window.innerWidth / 2;
             mouseY = window.innerHeight / 2;
-
             initJoystick();
         });
 
         function startGame() {
+            // [Bug Fix] Stop previous loop & Reset Transform
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             
-            // Clear previous canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset Coordinate System
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear Screen
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -161,6 +209,7 @@
             player = { x: MAP_SIZE/2, y: MAP_SIZE/2, r: 30, color: '#6c5ce7', name: 'Me (You)' };
             foods = [];
             bots = [];
+            
             for(let i=0; i<3000; i++) addFood();
             for(let i=0; i<70; i++) addBot();
 
@@ -175,16 +224,23 @@
 
         function addFood() {
             foods.push({
-                x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE,
-                r: Math.random() * 8 + 4, color: `hsl(${Math.random()*360}, 80%, 70%)`
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                r: Math.random() * 8 + 4,
+                color: `hsl(${Math.random()*360}, 80%, 70%)`
             });
         }
 
         function addBot() {
             bots.push({
-                x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE,
-                r: Math.random() * 50 + 20, color: `hsl(${Math.random()*360}, 60%, 50%)`,
-                dx: 0, dy: 0, name: generateBotName(), decisionTimer: 0, target: null
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                r: Math.random() * 50 + 20,
+                color: `hsl(${Math.random()*360}, 60%, 50%)`,
+                dx: 0, dy: 0,
+                name: generateBotName(),
+                decisionTimer: 0,
+                target: null
             });
         }
 
@@ -251,7 +307,7 @@
             for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
-
+            
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
             for(let i = foods.length - 1; i >= 0; i--) {
@@ -297,7 +353,7 @@
                 drawCircle(b.x, b.y, b.r, b.color);
                 
                 ctx.fillStyle = 'white'; 
-                let fontSize = Math.max(10, b.r * 0.35);
+                let fontSize = Math.max(10, b.r * 0.35); 
                 ctx.font = `bold ${fontSize}px sans-serif`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
                 ctx.fillText(b.name, b.x, b.y);
@@ -314,7 +370,7 @@
                 let distSq = (player.x-b.x)**2 + (player.y-b.y)**2;
                 if(distSq < (player.r + b.r)**2) {
                     if(player.r > b.r * 1.1) {
-                        player.r += b.r * 0.4; bots.splice(i, 1); addBot(); showKillLog(`Ate ${b.name}!`);
+                        player.r += b.r * 0.4; bots.splice(i, 1); addBot(); showKillLog(`Yum! Ate ${b.name}!`);
                     } else if (b.r > player.r * 1.1) {
                         gameOver(b.name); return;
                     }
@@ -369,12 +425,16 @@
         function gameOver(killer) {
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
+            
             ingameAd.style.display = 'none';
             ui.style.display = 'block';
             const btn = document.getElementById('start-btn');
             btn.innerText = "Revenge! (Restart)";
             ui.querySelector('h1').innerText = "💀 Game Over";
-            ui.querySelector('p').innerHTML = `Eaten by <b>${killer}</b>...<br>Final Size: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(player.r)}</span>`;
+            ui.querySelector('p').innerHTML = `
+                Eaten by <b>${killer}</b>...<br>
+                Final Size: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(player.r)}</span>
+            `;
         }
     </script>
 </body>
