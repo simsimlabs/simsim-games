@@ -11,7 +11,7 @@
         body { 
             margin: 0; padding: 0; overflow: hidden; background-color: #f0f0f0; 
             font-family: 'Noto Sans KR', sans-serif; user-select: none;
-            touch-action: none; /* 모바일 터치 스크롤 방지 */
+            touch-action: none;
         }
 
         canvas { 
@@ -21,7 +21,6 @@
 
         .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
 
-        /* UI 창 */
         #game-ui { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 9999; 
@@ -77,11 +76,9 @@
         }
         .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
 
-        /* --- 조이스틱 스타일 (모바일용) --- */
         #joystick-zone {
             position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px;
-            z-index: 200; display: none; /* JS로 모바일일 때만 보이게 하거나 항상 표시 */
-            pointer-events: auto;
+            z-index: 200; display: none; pointer-events: auto;
         }
         #joystick-bg {
             width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2);
@@ -100,7 +97,6 @@
             #start-btn { font-size: 1.4rem; }
             #leaderboard { transform: scale(0.8); transform-origin: top right; }
             #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
-            /* 모바일에서는 조이스틱 보이기 */
             #joystick-zone { display: block; }
         }
     </style>
@@ -135,7 +131,7 @@
         <h1>🦠 세포 키우기</h1>
         <p>
             PC: 마우스 이동<br>
-            모바일: 좌측 하단 조이스틱<br>
+            모바일: 좌측 하단 조이스틱<br> 
         </p>
         
         <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
@@ -170,16 +166,14 @@
         let foods = [];
         let bots = [];
         let gameRunning = false;
-        let animationFrameId;
+        let animationFrameId; // 루프 ID 관리 (버그 수정 핵심)
 
-        // 입력 상태
-        let inputType = 'mouse'; // 'mouse' or 'joystick'
+        let inputType = 'mouse';
         let mouseX = 0, mouseY = 0;
-        let joystickVector = { x: 0, y: 0 }; // -1 ~ 1 사이 값
+        let joystickVector = { x: 0, y: 0 };
 
-        // 닉네임 생성
         const adjectives = ["배고픈", "졸린", "행복한", "화난", "수상한", "천재", "바보", "빠른", "느린", "강력한", "귀여운", "무서운", "심심한", "즐거운", "용감한", "소심한", "미친", "달리는", "나는", "숨은", "전설의", "가난한", "부유한", "우울한", "신난", "게으른", "부지런한", "더러운", "깨끗한", "섹시한", "못생긴", "잘생긴", "투명한", "단단한", "말랑한", "시끄러운", "조용한", "화려한", "소박한", "거대한"];
-        const nouns = ["사람", "고양이", "강아지", "개발자", "학생", "직장인", "백수", "지렁이", "세포", "호랑이", "사자", "토끼", "다람쥐", "곰", "외계인", "히어로", "로봇", "치킨", "피자", "햄버거", "라면", "김치", "게이머", "유튜버", "아저씨", "아줌마", "할아버지", "할머니", "초딩", "중딩", "고딩", "대딩", "군인", "간호사", "의사", "변호사", "대통령", "외계인", "공룡", "슬라임"];
+        const nouns = ["사람", "고양이", "강아지", "개발자", "학생", "직장인", "백수", "지렁이", "세포", "호랑이", "사자", "토끼", "다람쥐", "곰", "외계인", "히어로", "로봇", "치킨", "피자", "햄버거", "라면", "김치", "게이머", "유튜버", "아저씨", "아줌마", "할아버지", "할머니", "초딩", "중딩", "고딩", "대딩", "군인", "간호사", "의사", "변호사", "대통령", "공룡", "슬라임"];
 
         function generateBotName() {
             return adjectives[Math.floor(Math.random() * adjectives.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
@@ -190,20 +184,17 @@
             canvas.height = window.innerHeight;
             if(startBtn) startBtn.addEventListener('click', startGame);
             
-            // 마우스 초기값 중앙
             mouseX = window.innerWidth / 2;
             mouseY = window.innerHeight / 2;
-
             initJoystick();
         });
 
         function startGame() {
-            if(gameRunning) return; // 중복 실행 방지
-            
-            // 기존 루프 취소
-            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            // [중요] 기존 루프가 돌고 있다면 강제 종료 (화면 겹침 방지)
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            gameRunning = true;
 
-            // 초기화
+            // 데이터 초기화
             player = { x: MAP_SIZE/2, y: MAP_SIZE/2, r: 30, color: '#6c5ce7', name: '나 (Player)' };
             foods = [];
             bots = [];
@@ -211,9 +202,13 @@
             for(let i=0; i<3000; i++) addFood();
             for(let i=0; i<70; i++) addBot();
 
+            // UI 처리
             ui.style.display = 'none';
             ingameAd.style.display = 'block';
-            gameRunning = true;
+            
+            // 입력값 초기화
+            inputX = window.innerWidth / 2;
+            inputY = window.innerHeight / 2;
             
             loop();
         }
@@ -240,26 +235,17 @@
             });
         }
 
-        // --- 조이스틱 로직 ---
         function initJoystick() {
             let stick = joystickStick;
             let zone = joystickZone;
-            let maxDist = 35; // 스틱이 움직일 수 있는 최대 반경
+            let maxDist = 35; 
             let active = false;
-            let startX, startY;
-
+            
             zone.addEventListener('touchstart', e => {
-                e.preventDefault();
-                active = true;
-                inputType = 'joystick';
+                e.preventDefault(); active = true; inputType = 'joystick';
                 let touch = e.touches[0];
                 let rect = zone.getBoundingClientRect();
-                // 조이스틱 중심점
-                let centerX = rect.left + rect.width / 2;
-                let centerY = rect.top + rect.height / 2;
-                startX = centerX;
-                startY = centerY;
-                updateStick(touch.clientX, touch.clientY, centerX, centerY);
+                updateStick(touch.clientX, touch.clientY, rect.left + rect.width/2, rect.top + rect.height/2);
             }, {passive: false});
 
             zone.addEventListener('touchmove', e => {
@@ -267,99 +253,90 @@
                 e.preventDefault();
                 let touch = e.touches[0];
                 let rect = zone.getBoundingClientRect();
-                let centerX = rect.left + rect.width / 2;
-                let centerY = rect.top + rect.height / 2;
-                updateStick(touch.clientX, touch.clientY, centerX, centerY);
+                updateStick(touch.clientX, touch.clientY, rect.left + rect.width/2, rect.top + rect.height/2);
             }, {passive: false});
 
             zone.addEventListener('touchend', e => {
-                e.preventDefault();
-                active = false;
-                stick.style.transform = `translate(-50%, -50%)`; // 원위치
-                joystickVector = { x: 0, y: 0 }; // 정지
+                e.preventDefault(); active = false;
+                stick.style.transform = `translate(-50%, -50%)`;
+                joystickVector = { x: 0, y: 0 };
             });
 
             function updateStick(clientX, clientY, centerX, centerY) {
                 let dx = clientX - centerX;
                 let dy = clientY - centerY;
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                
-                // 벡터 정규화 및 제한
                 if(dist > maxDist) {
                     dx = (dx / dist) * maxDist;
                     dy = (dy / dist) * maxDist;
                 }
-
                 stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                
-                // 게임 루프로 보낼 벡터 (-1 ~ 1)
-                joystickVector = { 
-                    x: dx / maxDist, 
-                    y: dy / maxDist 
-                };
+                joystickVector = { x: dx / maxDist, y: dy / maxDist };
             }
         }
 
         window.addEventListener('mousemove', e => {
-            if(inputType !== 'joystick') {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-            }
+            if(inputType !== 'joystick') { mouseX = e.clientX; mouseY = e.clientY; }
         });
-        // 마우스 클릭하면 다시 마우스 모드로
         window.addEventListener('mousedown', () => { inputType = 'mouse'; });
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 
         function loop() {
             if(!gameRunning) return;
 
+            // [최적화] 화면 전체 지우기
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            let zoom = Math.max(0.15, 30 / (player.r + 50)); // 줌 아웃 비율 조정
+            let zoom = Math.max(0.15, 30 / (player.r + 50));
 
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
             ctx.translate(-player.x, -player.y);
 
-            // 격자
+            // 격자 그리기
             ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 2; ctx.beginPath();
             for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
-
+            
+            // 맵 경계
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-            // 먹이
+            // 먹이 그리기
             for(let i = foods.length - 1; i >= 0; i--) {
                 let f = foods[i];
-                if(Math.abs(f.x - player.x) > (canvas.width/zoom) && Math.abs(f.y - player.y) > (canvas.height/zoom)) continue;
+                // 화면 밖 먹이는 그리지 않음 (렌더링 최적화)
+                if(Math.abs(f.x - player.x) > (canvas.width/zoom + 50) && Math.abs(f.y - player.y) > (canvas.height/zoom + 50)) continue;
+                
                 drawCircle(f.x, f.y, f.r, f.color);
-                if(getDist(player, f) < player.r) {
+                
+                // [최적화] 제곱 거리 계산 (sqrt 제거)
+                let distSq = (player.x-f.x)**2 + (player.y-f.y)**2;
+                if(distSq < player.r**2) {
                     player.r += 0.5; foods.splice(i, 1); addFood();
                 }
             }
 
-            // 봇
+            // 봇 로직
             for(let i = bots.length - 1; i >= 0; i--) {
                 let b = bots[i];
                 b.decisionTimer--;
                 if(b.decisionTimer <= 0) {
                     b.decisionTimer = Math.random() * 30 + 10;
                     let closestTarget = null;
-                    let minD = 1500;
-                    let dToPlayer = getDist(b, player);
-                    if(dToPlayer < minD && player.r < b.r * 0.9) { closestTarget = player; minD = dToPlayer; }
+                    let minDSq = 1500 * 1500; // 시야 제곱
+                    
+                    let dToPlayerSq = (b.x-player.x)**2 + (b.y-player.y)**2;
+                    if(dToPlayerSq < minDSq && player.r < b.r * 0.9) { closestTarget = player; minDSq = dToPlayerSq; }
+                    
                     bots.forEach(other => {
                         if(b === other) return;
-                        let d = getDist(b, other);
-                        if(d < minD && other.r < b.r * 0.9) { closestTarget = other; minD = d; }
+                        let dSq = (b.x-other.x)**2 + (b.y-other.y)**2;
+                        if(dSq < minDSq && other.r < b.r * 0.9) { closestTarget = other; minDSq = dSq; }
                     });
+                    
                     if(closestTarget) b.target = closestTarget;
                     else { b.target = null; b.angle = Math.random() * Math.PI * 2; }
                 }
@@ -368,25 +345,34 @@
                 if(b.target) angle = Math.atan2(b.target.y - b.y, b.target.x - b.x);
                 else { if(!b.angle) b.angle = Math.random() * Math.PI * 2; angle = b.angle; }
 
-                // **속도 하향 조정** (기존 2 -> 1.5, 50 -> 30)
-                let speed = 1.5 + (30 / b.r); 
+                // [속도 상향] 기존 1.5 -> 2.2
+                let speed = 2.2 + (50 / b.r); 
                 b.x += Math.cos(angle) * speed; b.y += Math.sin(angle) * speed;
                 b.x = Math.max(0, Math.min(MAP_SIZE, b.x)); b.y = Math.max(0, Math.min(MAP_SIZE, b.y));
 
                 drawCircle(b.x, b.y, b.r, b.color);
-                ctx.fillStyle = 'white'; ctx.font = `bold ${Math.max(12, b.r/2)}px Noto Sans KR`;
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.name, b.x, b.y);
+                
+                // [닉네임] 원 안에 넣기 (글자 크기 자동 조절)
+                ctx.fillStyle = 'white'; 
+                let fontSize = Math.max(10, b.r * 0.35); // 반지름의 35% 크기
+                ctx.font = `bold ${fontSize}px Noto Sans KR`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
+                ctx.fillText(b.name, b.x, b.y);
 
+                // 봇끼리 먹기
                 for(let j = bots.length - 1; j >= 0; j--) {
                     if(i === j) continue;
                     let target = bots[j];
-                    if(getDist(b, target) < b.r && b.r > target.r * 1.1) {
+                    let distSq = (b.x-target.x)**2 + (b.y-target.y)**2;
+                    // 약간의 여유를 두고 먹음 (반지름의 합보다 작을 때)
+                    if(distSq < (b.r + target.r * 0.5)**2 && b.r > target.r * 1.1) {
                         b.r += target.r * 0.4; bots.splice(j, 1); addBot(); if(j < i) i--;
                     }
                 }
 
-                let dist = getDist(player, b);
-                if(dist < player.r + b.r) {
+                // 플레이어와 충돌
+                let distSq = (player.x-b.x)**2 + (player.y-b.y)**2;
+                if(distSq < (player.r + b.r)**2) {
                     if(player.r > b.r * 1.1) {
                         player.r += b.r * 0.4; bots.splice(i, 1); addBot(); showKillLog(`냠냠! ${b.name} 처치!`);
                     } else if (b.r > player.r * 1.1) {
@@ -395,42 +381,33 @@
                 }
             }
 
-            // 플레이어 이동 로직 (마우스 or 조이스틱)
+            // 플레이어 이동
             let moveX = 0, moveY = 0;
-            
             if (inputType === 'joystick') {
-                // 조이스틱 벡터 사용
-                moveX = joystickVector.x;
-                moveY = joystickVector.y;
+                moveX = joystickVector.x; moveY = joystickVector.y;
             } else {
-                // 마우스 사용
                 let dx = mouseX - window.innerWidth / 2;
                 let dy = mouseY - window.innerHeight / 2;
                 let angle = Math.atan2(dy, dx);
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                
-                // 마우스가 중앙에서 너무 가까우면 정지
-                if(dist > 10) {
-                    moveX = Math.cos(angle);
-                    moveY = Math.sin(angle);
-                }
+                if(dist > 10) { moveX = Math.cos(angle); moveY = Math.sin(angle); }
             }
 
-            // **플레이어 속도 하향** (기존 2 -> 1.5, 50 -> 35)
-            let pSpeed = 1.5 + (35 / player.r);
-            
-            player.x += moveX * pSpeed;
-            player.y += moveY * pSpeed;
-
-            player.x = Math.max(0, Math.min(MAP_SIZE, player.x));
-            player.y = Math.max(0, Math.min(MAP_SIZE, player.y));
+            // [속도 상향] 기존 1.5 -> 2.2
+            let pSpeed = 2.2 + (50 / player.r);
+            player.x += moveX * pSpeed; player.y += moveY * pSpeed;
+            player.x = Math.max(0, Math.min(MAP_SIZE, player.x)); player.y = Math.max(0, Math.min(MAP_SIZE, player.y));
 
             drawCircle(player.x, player.y, player.r, player.color);
-            ctx.fillStyle = 'white'; ctx.font = `bold ${Math.max(14, player.r/2)}px Noto Sans KR`;
+            ctx.fillStyle = 'white'; 
+            let pFontSize = Math.max(12, player.r * 0.35);
+            ctx.font = `bold ${pFontSize}px Noto Sans KR`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText("나", player.x, player.y);
 
             ctx.restore();
             updateLeaderboard();
+            
+            // 루프 ID 저장 (나중에 취소하기 위해)
             animationFrameId = requestAnimationFrame(loop);
         }
 
@@ -439,7 +416,6 @@
             ctx.fillStyle = color; ctx.fill();
             ctx.strokeStyle = 'rgba(0,0,0,0.2)'; ctx.lineWidth = 3; ctx.stroke();
         }
-        function getDist(a, b) { return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2); }
         function showKillLog(msg) {
             killLog.innerText = msg; killLog.style.opacity = 1;
             setTimeout(() => { killLog.style.opacity = 0; }, 2000);
@@ -456,7 +432,9 @@
         }
         function gameOver(killer) {
             gameRunning = false;
-            cancelAnimationFrame(animationFrameId); // 루프 정지
+            // [중요] 루프 확실히 정지
+            cancelAnimationFrame(animationFrameId);
+            
             ingameAd.style.display = 'none';
             ui.style.display = 'block';
             const btn = document.getElementById('start-btn');
