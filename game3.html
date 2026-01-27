@@ -102,7 +102,7 @@
         const joystickStick = document.getElementById('joystick-stick');
 
         const MAP_SIZE = 4000;
-        const PADDING = 200; // 벽 회피 시작 거리
+        const PADDING = 100; // 벽 회피 거리
         
         let snakes = [];
         let foods = [];
@@ -162,8 +162,9 @@
                 speed: 3, radius: 10, length: 10,
                 body: [], color: color,
                 name: isHuman ? '나 (Player)' : getName(),
-                score: 0, dead: false, aiTimer: 0,
-                targetX: 0, targetY: 0
+                score: 0, dead: false, 
+                aiTargetAngle: 0, // AI 목표 각도
+                aiTimer: 0
             });
             
             let s = snakes[snakes.length-1];
@@ -233,12 +234,14 @@
             if(player && !player.dead) ctx.translate(-player.x, -player.y);
             else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
 
+            // 격자 및 경계
             ctx.strokeStyle = '#3d4a4d'; ctx.lineWidth = 2; ctx.beginPath();
             for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
 
+            // 먹이 그리기
             for(let i=foods.length-1; i>=0; i--) {
                 let f = foods[i];
                 if(player && !player.dead && (Math.abs(f.x - player.x) > canvas.width/zoom && Math.abs(f.y - player.y) > canvas.height/zoom)) continue;
@@ -252,6 +255,7 @@
                 if(s.dead) return;
 
                 let targetAngle = s.angle;
+
                 if(s.isHuman) {
                     if(inputType === 'joystick' && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
                         targetAngle = Math.atan2(joystickVector.y, joystickVector.x);
@@ -261,77 +265,96 @@
                         targetAngle = Math.atan2(dy, dx);
                     }
                 } else {
-                    // --- 스마트 AI 로직 ---
+                    // --- 똑똑해진 AI ---
                     s.aiTimer--;
                     if(s.aiTimer <= 0) {
-                        s.aiTimer = Math.random() * 10 + 5; // 판단 주기 단축
+                        s.aiTimer = 5; // 자주 판단
 
-                        // 1. 벽 회피 (최우선)
-                        let wallAvoid = false;
-                        if(s.x < PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
-                        else if(s.x > MAP_SIZE-PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
-                        else if(s.y < PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
-                        else if(s.y > MAP_SIZE-PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
+                        // 1. 위협 감지 (가장 우선)
+                        let danger = false;
+                        let lookAheadDist = 150;
+                        let checkX = s.x + Math.cos(s.angle) * lookAheadDist;
+                        let checkY = s.y + Math.sin(s.angle) * lookAheadDist;
 
-                        if(!wallAvoid) {
-                            // 2. 다른 지렁이 회피 (전방 감지)
-                            let danger = false;
-                            snakes.forEach(other => {
-                                if(s === other || other.dead) return;
-                                // 거리 체크
-                                let d = Math.hypot(s.x - other.x, s.y - other.y);
-                                if(d < 200) {
-                                    // 내 진행 방향에 상대 몸통이 있는지?
-                                    // 단순히 가장 가까운 몸통 파트에서 멀어지는 방향으로
-                                    // (복잡한 충돌 예측 대신 회피 기동)
-                                    s.targetX = s.x - (other.x - s.x);
-                                    s.targetY = s.y - (other.y - s.y);
-                                    danger = true;
+                        // 벽 위협
+                        if(checkX < PADDING || checkX > MAP_SIZE - PADDING || checkY < PADDING || checkY > MAP_SIZE - PADDING) {
+                            // 맵 중앙으로 회전
+                            s.aiTargetAngle = Math.atan2(MAP_SIZE/2 - s.y, MAP_SIZE/2 - s.x);
+                            danger = true;
+                        }
+
+                        // 다른 뱀 위협
+                        if(!danger) {
+                            for(let other of snakes) {
+                                if(s === other || other.dead) continue;
+                                // 내 앞길에 다른 뱀 몸통이 있는가?
+                                for(let i=0; i<other.body.length; i+=3) {
+                                    let bp = other.body[i];
+                                    if(Math.hypot(checkX - bp.x, checkY - bp.y) < s.radius + other.radius + 30) {
+                                        // 충돌 위험! 현재 각도에서 90도 꺾음
+                                        s.aiTargetAngle = s.angle + Math.PI / 2;
+                                        danger = true;
+                                        break;
+                                    }
                                 }
-                            });
+                                if(danger) break;
+                            }
+                        }
 
-                            if(!danger) {
-                                // 3. 먹이 탐색
-                                let closestFood = null;
-                                let minDist = 400; // 시야
-                                foods.forEach(f => {
-                                    let d = Math.hypot(s.x-f.x, s.y-f.y);
-                                    if(d < minDist) { minDist = d; closestFood = f; }
-                                });
-                                
-                                if(closestFood) {
-                                    s.targetX = closestFood.x;
-                                    s.targetY = closestFood.y;
-                                } else {
-                                    // 먹이 없으면 그냥 직진하다가 가끔 방향 전환
-                                    if(Math.random() < 0.05) {
-                                        s.targetX = s.x + (Math.random()-0.5) * 1000;
-                                        s.targetY = s.y + (Math.random()-0.5) * 1000;
+                        // 2. 먹이 탐색 (위협이 없을 때만)
+                        if(!danger) {
+                            let closest = null;
+                            let minDist = 400;
+                            
+                            // 시야각 제한 (내 진행방향 앞쪽에 있는 먹이만 봄 -> 뱅글뱅글 방지)
+                            for(let f of foods) {
+                                let dist = Math.hypot(s.x - f.x, s.y - f.y);
+                                if(dist < minDist) {
+                                    let angleToFood = Math.atan2(f.y - s.y, f.x - s.x);
+                                    let angleDiff = Math.abs(angleToFood - s.angle);
+                                    // -PI ~ PI 보정
+                                    if(angleDiff > Math.PI) angleDiff = Math.PI*2 - angleDiff;
+                                    
+                                    // 내 시야각 90도(PI/2) 이내에 있는 먹이만 타겟팅
+                                    if(angleDiff < Math.PI / 2) {
+                                        minDist = dist;
+                                        closest = f;
                                     }
                                 }
                             }
+
+                            if(closest) {
+                                s.aiTargetAngle = Math.atan2(closest.y - s.y, closest.x - s.x);
+                            } else {
+                                // 먹이 없으면 그냥 직진 (가끔 살짝 방향 전환)
+                                if(Math.random() < 0.05) s.aiTargetAngle += (Math.random() - 0.5);
+                            }
                         }
                     }
-                    targetAngle = Math.atan2(s.targetY - s.y, s.targetX - s.x);
+                    targetAngle = s.aiTargetAngle;
                 }
 
+                // 부드러운 회전
                 let diff = targetAngle - s.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
                 while (diff > Math.PI) diff -= Math.PI*2;
-                s.angle += diff * 0.1;
+                s.angle += diff * 0.15; // 회전 속도 약간 증가
 
+                // 이동
                 let speed = 4;
                 s.x += Math.cos(s.angle) * speed;
                 s.y += Math.sin(s.angle) * speed;
 
-                // 벽 강제 보정 (혹시 뚫고 나갔을 경우)
+                // 벽 강제 제한
                 s.x = Math.max(0, Math.min(MAP_SIZE, s.x));
                 s.y = Math.max(0, Math.min(MAP_SIZE, s.y));
 
+                // 몸통 업데이트
                 s.body.unshift({x: s.x, y: s.y});
                 let neededLength = s.length * 4; 
                 while(s.body.length > neededLength) s.body.pop();
 
+                // 먹이 먹기
                 for(let i=foods.length-1; i>=0; i--) {
                     let f = foods[i];
                     if(Math.hypot(s.x-f.x, s.y-f.y) < s.radius + f.r) {
@@ -343,6 +366,7 @@
                     }
                 }
 
+                // 그리기
                 ctx.lineCap = 'round'; ctx.lineJoin = 'round';
                 for(let i=s.body.length-1; i>=0; i-=4) {
                     let p = s.body[i];
@@ -350,6 +374,7 @@
                     ctx.fillStyle = s.color; ctx.fill();
                 }
                 
+                // 머리
                 ctx.beginPath(); ctx.arc(s.x, s.y, s.radius + 2, 0, Math.PI*2);
                 ctx.fillStyle = '#fff'; ctx.fill();
                 ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
@@ -358,6 +383,7 @@
                 ctx.fillStyle = 'white'; ctx.font = 'bold 12px Noto Sans KR'; ctx.textAlign = 'center';
                 ctx.fillText(s.name, s.x, s.y - s.radius - 10);
 
+                // 충돌 검사
                 snakes.forEach(other => {
                     if(s.dead || other.dead) return;
                     if(s === other) return;
