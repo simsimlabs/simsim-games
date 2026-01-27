@@ -2,70 +2,60 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세포 키우기 - 심심풀이 게임 연구소</title>
     <link rel="stylesheet" href="style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
     <style>
-        /* 필수 스타일 강제 적용 */
-        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
-        
-        /* 캔버스 (게임 화면) */
+        body { 
+            overflow: hidden; 
+            background: #f0f0f0; 
+            margin: 0; 
+            user-select: none; /* 드래그 방지 */
+        }
+        /* 캔버스는 배경으로 (클릭은 받아야 함) */
         canvas { 
-            display: block; 
             position: fixed; 
             top: 0; 
             left: 0; 
             z-index: 1; 
         }
-
-        /* 게임 시작/종료 UI (가장 위) */
-        #game-ui {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 1); /* 불투명 배경 */
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        /* UI는 무조건 캔버스보다 위에 떠야 함 */
+        #game-ui { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            z-index: 1000 !important; /* 최상단 고정 */
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             text-align: center;
+            width: 80%;
+            max-width: 400px;
         }
-
-        /* 인게임 HUD (처음엔 숨김) */
-        #leaderboard, #kill-log {
-            display: none; /* 게임 시작 전에는 절대 안 보이게 설정 */
-            z-index: 5000;
-        }
-
-        /* 버튼 스타일 */
-        .play-btn {
-            background-color: #6c5ce7;
+        #leaderboard {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 500;
+            background: rgba(0,0,0,0.5);
             color: white;
-            font-size: 1.5rem;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
-            transition: transform 0.2s;
-            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            pointer-events: none; /* 게임 방해 안 하게 */
         }
-        .play-btn:active { transform: scale(0.95); }
-
-        /* 광고 영역 스타일 */
-        .ad-container {
-            width: 320px;
-            height: 100px;
-            background: #eee;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+        #kill-log {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 500;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 2px black;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -75,41 +65,61 @@
 
     <div id="leaderboard">
         <h3>🏆 실시간 랭킹</h3>
-        <ul id="rank-list"></ul>
+        <ul id="rank-list" style="list-style: none; padding: 0; margin: 0;"></ul>
     </div>
 
     <div id="kill-log"></div>
 
     <div id="game-ui">
-        <h1 style="font-size: 3rem; margin-bottom: 10px; color: #2d3436;">🦠 세포 키우기</h1>
-        <p style="color: #636e72; font-size: 1.2rem;">마우스로 이동하여 세포를 키우세요!</p>
+        <h1 style="color: #6c5ce7; font-size: 2.5rem; margin-bottom: 10px;">🦠 세포 키우기</h1>
+        <p style="color: #636e72; margin-bottom: 20px;">
+            마우스로 이동하세요.<br>
+            작은 건 먹고, 큰 건 피하세요!
+        </p>
         
-        <div class="ad-container">
+        <div style="margin: 20px 0;">
              <ins class="adsbygoogle"
-                 style="display:inline-block;width:320px;height:100px"
+                 style="display:block; height: 100px;"
                  data-ad-client="ca-pub-2261846676525942"
-                 data-ad-slot="4380369066"></ins>
-            <script>
-                 (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>
+                 data-ad-slot="4380369066"
+                 data-ad-format="horizontal"
+                 data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
-        <button class="play-btn" onclick="startGame()">게임 시작 ▶</button>
-        
+        <button class="play-btn" onclick="startGame()" style="font-size: 1.2rem; cursor: pointer;">게임 시작 ▶</button>
         <br><br>
-        <a href="index.html" style="color: #b2bec3; text-decoration: none;">🏠 메인으로 나가기</a>
+        <a href="index.html" class="back-link" style="color:#b2bec3;">🏠 메인으로 나가기</a>
     </div>
 
     <script>
-        // -------------------------
-        // 게임 설정 및 로직
-        // -------------------------
-        const botNames = ["지나가던사람", "라면먹고싶다", "고양이최고", "시험기간", "살려주세요", "1등내거", "엄마몰래게임중", "개발자나와", "트롤러", "무지개", "배고파", "졸려", "월요일싫어", "불금", "치킨", "피자", "떡볶이", "제로콜라", "다이어트내일부터", "헬린이", "주식망함", "비트코인", "존버", "화성갈끄니까", "우주방어", "팀장님", "신입사원", "학생", "백수", "취준생", "군인", "휴가좀", "퇴근하고싶다", "야근러", "집에갈래", "민초단", "반민초", "찍먹", "부먹", "얼죽아", "뜨아", "아이폰", "갤럭시", "롤린이", "브론즈", "챌린저", "페이커팬", "손흥민", "메시", "호날두", "BTS_ARMY", "뉴진스", "아이브", "르세라핌", "블랙핑크", "탑골공원", "홍대피플", "강남역11번출구", "한강라면", "따릉이", "킥보드", "버스기사", "택시", "짜장면", "짬뽕", "탕수육", "김치찌개", "된장찌개", "삼겹살", "소고기", "다람쥐", "햄스터", "쿼카", "카피바라", "웰시코기", "시바견", "말티즈", "HappyDay", "User1234", "Guest_99", "NoName", "SuperStar", "ProGamer", "심심해", "놀아줘", "커플지옥", "솔로천국", "크리스마스", "새해복", "로또1등", "건물주", "워렌버핏", "일론머스크", "스티브잡스", "빌게이츠"];
+        // ----------------------------------------
+        // 1. 랜덤 닉네임 생성기 (단어 조합형)
+        // ----------------------------------------
+        const adjectives = [
+            "배고픈", "졸린", "행복한", "화난", "수상한", "천재", "바보", "빠른", "느린", "강력한", 
+            "귀여운", "무서운", "심심한", "즐거운", "우울한", "용감한", "겁쟁이", "똑똑한", "멍청한", 
+            "부자", "거지", "전설의", "신비한", "이상한", "평범한", "위대한", "소심한", "미친", 
+            "달리는", "나는", "숨어있는", "춤추는", "노래하는", "공부하는", "게임하는", "야근하는"
+        ];
+        
+        const nouns = [
+            "사람", "고양이", "강아지", "개발자", "학생", "직장인", "백수", "사장님", "알바생", 
+            "지렁이", "세포", "바이러스", "세균", "호랑이", "사자", "토끼", "다람쥐", "곰", 
+            "외계인", "히어로", "악당", "로봇", "컴퓨터", "휴지", "물병", "키보드", "마우스", 
+            "치킨", "피자", "햄버거", "라면", "떡볶이", "김치", "한국인", "미국인", "게이머"
+        ];
+
+        function generateBotName() {
+            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            return `${adj} ${noun}`;
+        }
+        // ----------------------------------------
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const ui = document.getElementById('game-ui');
-        const leaderboard = document.getElementById('leaderboard'); // ID로 직접 가져오기
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
 
@@ -122,31 +132,28 @@
         let gameRunning = false;
         let mapSize = 3000;
         let cameraX = 0, cameraY = 0;
-        let mouseX = canvas.width/2, mouseY = canvas.height/2;
-
-        // 게임 시작 함수 (버튼 클릭 시 실행)
-        function startGame() {
-            // 1. UI 숨기기
-            ui.style.display = 'none';
-            
-            // 2. HUD(점수판) 보이기
-            leaderboard.style.display = 'block';
-            killLog.style.display = 'block';
-
-            // 3. 게임 초기화
-            init();
-        }
 
         function init() {
-            player = { x: mapSize/2, y: mapSize/2, r: 25, color: '#6c5ce7', name: '나(Player)' };
+            player = { x: mapSize/2, y: mapSize/2, r: 25, color: '#6c5ce7', name: '나 (Player)' };
             foods = [];
             bots = [];
-            for(let i=0; i<1000; i++) addFood();
-            for(let i=0; i<50; i++) addBot();
             
+            // 먹이 1000개
+            for(let i=0; i<1000; i++) addFood();
+            
+            // 봇 50마리 (이름 조합 생성)
+            for(let i=0; i<50; i++) addBot();
+
+            // UI 숨기고 게임 시작
+            ui.style.display = 'none';
             gameRunning = true;
             loop();
         }
+
+        // 전역 함수로 등록 (버튼 클릭용)
+        window.startGame = function() {
+            init();
+        };
 
         function addFood() {
             foods.push({
@@ -158,7 +165,6 @@
         }
 
         function addBot() {
-            let randName = botNames[Math.floor(Math.random() * botNames.length)];
             bots.push({
                 x: Math.random() * mapSize,
                 y: Math.random() * mapSize,
@@ -166,40 +172,34 @@
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 dx: Math.random() - 0.5,
                 dy: Math.random() - 0.5,
-                name: randName,
+                name: generateBotName(), // 조합된 이름 사용
                 changeDirTimer: 0,
                 speedMult: Math.random() * 0.5 + 0.8
             });
         }
 
+        let mouseX = canvas.width/2, mouseY = canvas.height/2;
         window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-        // 모바일 터치 지원
-        window.addEventListener('touchmove', e => { 
-            e.preventDefault();
-            mouseX = e.touches[0].clientX; 
-            mouseY = e.touches[0].clientY; 
-        }, {passive: false});
 
         function loop() {
             if(!gameRunning) return;
 
-            // 배경 그리기
-            ctx.fillStyle = '#f8f9fa';
+            // 배경
+            ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             cameraX = player.x - canvas.width / 2;
             cameraY = player.y - canvas.height / 2;
-
             ctx.save();
             ctx.translate(-cameraX, -cameraY);
 
             // 격자 그리기
-            ctx.strokeStyle = '#dfe6e9';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
             for(let x=0; x<=mapSize; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize); ctx.stroke(); }
             for(let y=0; y<=mapSize; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize,y); ctx.stroke(); }
 
-            // 먹이 처리
+            // 먹이
             foods.forEach((f, i) => {
                 drawCircle(f.x, f.y, f.r, f.color);
                 if(getDist(player, f) < player.r) {
@@ -209,12 +209,11 @@
                 }
             });
 
-            // 봇 처리
+            // 봇 로직
             bots.forEach((b, i) => {
-                // AI
                 b.changeDirTimer--;
                 if(b.changeDirTimer <= 0) {
-                    if(Math.random() < 0.3) {
+                    if(Math.random() < 0.2) { // 20% 확률로 플레이어 추적
                          b.dx = (player.x - b.x) / 1000;
                          b.dy = (player.y - b.y) / 1000;
                     } else {
@@ -232,11 +231,11 @@
 
                 drawCircle(b.x, b.y, b.r, b.color);
                 
-                // 닉네임
-                ctx.fillStyle = '#2d3436';
-                ctx.font = 'bold 14px sans-serif';
+                // 봇 이름 표시
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Noto Sans KR';
                 ctx.textAlign = 'center';
-                ctx.fillText(b.name, b.x, b.y + 5);
+                ctx.fillText(b.name, b.x, b.y + 4);
 
                 // 봇끼리 먹기
                 bots.forEach((target, j) => {
@@ -255,7 +254,7 @@
                         player.r += b.r * 0.4;
                         bots.splice(i, 1);
                         addBot();
-                        showKillLog(`${b.name} 처치! (+${Math.floor(b.r)})`);
+                        showKillLog(`${b.name} 처치!`);
                     } else if (b.r > player.r * 1.1) {
                         gameOver(b.name);
                     }
@@ -273,9 +272,9 @@
 
             drawCircle(player.x, player.y, player.r, player.color);
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px sans-serif';
+            ctx.font = 'bold 14px Noto Sans KR';
             ctx.textAlign = 'center';
-            ctx.fillText("나", player.x, player.y + 6);
+            ctx.fillText("나", player.x, player.y + 5);
 
             ctx.restore();
             updateLeaderboard();
@@ -288,7 +287,7 @@
             ctx.fillStyle = color;
             ctx.fill();
             ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 1;
             ctx.stroke();
         }
 
@@ -305,7 +304,7 @@
             let html = '';
             for(let i=0; i<5; i++) {
                 if(!all[i]) break;
-                let name = all[i].name === '나(Player)' ? '<span style="color:#fd79a8">나</span>' : all[i].name;
+                let name = all[i].name === '나 (Player)' ? '<span style="color:#fd79a8">나</span>' : all[i].name;
                 html += `<li>${i+1}. ${name} <small>(${Math.floor(all[i].r)})</small></li>`;
             }
             rankList.innerHTML = html;
@@ -313,33 +312,28 @@
 
         function gameOver(killer) {
             gameRunning = false;
-            
-            // HUD 숨기기
-            leaderboard.style.display = 'none';
-            killLog.style.display = 'none';
-
-            // 메인 UI 보이기
-            ui.style.display = 'flex'; // 다시 Flex로 설정해야 중앙 정렬됨
+            ui.style.display = 'block';
             ui.innerHTML = `
-                <h1 style="color:#ff7675; font-size:3rem;">GAME OVER</h1>
-                <p style="font-size:1.2rem;"><b>${killer}</b>에게 잡아먹혔습니다 😭</p>
-                <h3 style="font-size:1.5rem;">최종 점수: ${Math.floor(player.r * 10)}점</h3>
+                <h1 style="color:#ff7675">GAME OVER</h1>
+                <p><b>${killer}</b>에게 먹혔습니다 😭</p>
+                <h3>최종 크기: ${Math.floor(player.r)}</h3>
                 
-                <div class="ad-container">
+                 <div style="margin: 20px 0;">
                      <ins class="adsbygoogle"
-                         style="display:inline-block;width:320px;height:100px"
+                         style="display:block; height: 100px;"
                          data-ad-client="ca-pub-2261846676525942"
-                         data-ad-slot="4380369066"></ins>
+                         data-ad-slot="4380369066"
+                         data-ad-format="horizontal"
+                         data-full-width-responsive="true"></ins>
                     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                 </div>
 
-                <button class="play-btn" onclick="startGame()">다시 도전하기</button>
+                <button class="play-btn" onclick="startGame()">다시 하기 ↺</button>
                 <br><br>
-                <a href="index.html" style="color: #b2bec3; text-decoration: none;">🏠 메인으로 나가기</a>
+                <a href="index.html" class="back-link" style="color:#b2bec3;">🏠 나가기</a>
             `;
         }
 
-        // 창 크기 조절 대응
         window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
     </script>
 </body>
