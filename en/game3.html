@@ -102,6 +102,7 @@
         const joystickStick = document.getElementById('joystick-stick');
 
         const MAP_SIZE = 4000;
+        const PADDING = 200;
         
         let snakes = [];
         let foods = [];
@@ -150,8 +151,8 @@
         }
 
         function addSnake(isHuman) {
-            let x = Math.random() * MAP_SIZE;
-            let y = Math.random() * MAP_SIZE;
+            let x = Math.random() * (MAP_SIZE - 400) + 200;
+            let y = Math.random() * (MAP_SIZE - 400) + 200;
             let color = isHuman ? '#e74c3c' : `hsl(${Math.random()*360}, 70%, 60%)`;
             
             snakes.push({
@@ -161,7 +162,8 @@
                 speed: 3, radius: 10, length: 10,
                 body: [], color: color,
                 name: isHuman ? 'Me (You)' : getName(),
-                score: 0, dead: false, aiTimer: 0
+                score: 0, dead: false, aiTimer: 0,
+                targetX: 0, targetY: 0
             });
             
             let s = snakes[snakes.length-1];
@@ -261,19 +263,46 @@
                 } else {
                     s.aiTimer--;
                     if(s.aiTimer <= 0) {
-                        s.aiTimer = Math.random() * 20 + 10;
-                        let closestFood = null;
-                        let minDist = 300;
-                        foods.forEach(f => {
-                            let d = Math.hypot(s.x-f.x, s.y-f.y);
-                            if(d < minDist) { minDist = d; closestFood = f; }
-                        });
-                        
-                        if(closestFood) targetAngle = Math.atan2(closestFood.y-s.y, closestFood.x-s.x);
-                        else targetAngle = s.angle + (Math.random()-0.5);
+                        s.aiTimer = Math.random() * 10 + 5;
+                        let wallAvoid = false;
+                        if(s.x < PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
+                        else if(s.x > MAP_SIZE-PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
+                        else if(s.y < PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
+                        else if(s.y > MAP_SIZE-PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
 
-                        if(s.x < 100 || s.x > MAP_SIZE-100 || s.y < 100 || s.y > MAP_SIZE-100) targetAngle += Math.PI;
+                        if(!wallAvoid) {
+                            let danger = false;
+                            snakes.forEach(other => {
+                                if(s === other || other.dead) return;
+                                let d = Math.hypot(s.x - other.x, s.y - other.y);
+                                if(d < 200) {
+                                    s.targetX = s.x - (other.x - s.x);
+                                    s.targetY = s.y - (other.y - s.y);
+                                    danger = true;
+                                }
+                            });
+
+                            if(!danger) {
+                                let closestFood = null;
+                                let minDist = 400;
+                                foods.forEach(f => {
+                                    let d = Math.hypot(s.x-f.x, s.y-f.y);
+                                    if(d < minDist) { minDist = d; closestFood = f; }
+                                });
+                                
+                                if(closestFood) {
+                                    s.targetX = closestFood.x;
+                                    s.targetY = closestFood.y;
+                                } else {
+                                    if(Math.random() < 0.05) {
+                                        s.targetX = s.x + (Math.random()-0.5) * 1000;
+                                        s.targetY = s.y + (Math.random()-0.5) * 1000;
+                                    }
+                                }
+                            }
+                        }
                     }
+                    targetAngle = Math.atan2(s.targetY - s.y, s.targetX - s.x);
                 }
 
                 let diff = targetAngle - s.angle;
