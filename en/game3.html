@@ -162,8 +162,7 @@
                 speed: 3, radius: 10, length: 10,
                 body: [], color: color,
                 name: isHuman ? 'Me (You)' : getName(),
-                score: 0, dead: false, aiTimer: 0,
-                targetX: 0, targetY: 0
+                score: 0, dead: false, aiTargetAngle: 0, aiTimer: 0
             });
             
             let s = snakes[snakes.length-1];
@@ -261,54 +260,73 @@
                         targetAngle = Math.atan2(dy, dx);
                     }
                 } else {
+                    // --- Smarter AI ---
                     s.aiTimer--;
                     if(s.aiTimer <= 0) {
-                        s.aiTimer = Math.random() * 10 + 5;
-                        let wallAvoid = false;
-                        if(s.x < PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
-                        else if(s.x > MAP_SIZE-PADDING) { s.targetX = MAP_SIZE/2; s.targetY = s.y; wallAvoid=true; }
-                        else if(s.y < PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
-                        else if(s.y > MAP_SIZE-PADDING) { s.targetX = s.x; s.targetY = MAP_SIZE/2; wallAvoid=true; }
+                        s.aiTimer = 5;
 
-                        if(!wallAvoid) {
-                            let danger = false;
-                            snakes.forEach(other => {
-                                if(s === other || other.dead) return;
-                                let d = Math.hypot(s.x - other.x, s.y - other.y);
-                                if(d < 200) {
-                                    s.targetX = s.x - (other.x - s.x);
-                                    s.targetY = s.y - (other.y - s.y);
-                                    danger = true;
+                        // 1. Avoid Danger (Priority)
+                        let danger = false;
+                        let lookAheadDist = 150;
+                        let checkX = s.x + Math.cos(s.angle) * lookAheadDist;
+                        let checkY = s.y + Math.sin(s.angle) * lookAheadDist;
+
+                        // Wall
+                        if(checkX < PADDING || checkX > MAP_SIZE - PADDING || checkY < PADDING || checkY > MAP_SIZE - PADDING) {
+                            s.aiTargetAngle = Math.atan2(MAP_SIZE/2 - s.y, MAP_SIZE/2 - s.x);
+                            danger = true;
+                        }
+
+                        // Other Snakes
+                        if(!danger) {
+                            for(let other of snakes) {
+                                if(s === other || other.dead) continue;
+                                for(let i=0; i<other.body.length; i+=3) {
+                                    let bp = other.body[i];
+                                    if(Math.hypot(checkX - bp.x, checkY - bp.y) < s.radius + other.radius + 30) {
+                                        s.aiTargetAngle = s.angle + Math.PI / 2;
+                                        danger = true;
+                                        break;
+                                    }
                                 }
-                            });
+                                if(danger) break;
+                            }
+                        }
 
-                            if(!danger) {
-                                let closestFood = null;
-                                let minDist = 400;
-                                foods.forEach(f => {
-                                    let d = Math.hypot(s.x-f.x, s.y-f.y);
-                                    if(d < minDist) { minDist = d; closestFood = f; }
-                                });
-                                
-                                if(closestFood) {
-                                    s.targetX = closestFood.x;
-                                    s.targetY = closestFood.y;
-                                } else {
-                                    if(Math.random() < 0.05) {
-                                        s.targetX = s.x + (Math.random()-0.5) * 1000;
-                                        s.targetY = s.y + (Math.random()-0.5) * 1000;
+                        // 2. Hunt Food
+                        if(!danger) {
+                            let closest = null;
+                            let minDist = 400;
+                            
+                            for(let f of foods) {
+                                let dist = Math.hypot(s.x - f.x, s.y - f.y);
+                                if(dist < minDist) {
+                                    let angleToFood = Math.atan2(f.y - s.y, f.x - s.x);
+                                    let angleDiff = Math.abs(angleToFood - s.angle);
+                                    if(angleDiff > Math.PI) angleDiff = Math.PI*2 - angleDiff;
+                                    
+                                    // Only target food in front (90 degree FOV)
+                                    if(angleDiff < Math.PI / 2) {
+                                        minDist = dist;
+                                        closest = f;
                                     }
                                 }
                             }
+
+                            if(closest) {
+                                s.aiTargetAngle = Math.atan2(closest.y - s.y, closest.x - s.x);
+                            } else {
+                                if(Math.random() < 0.05) s.aiTargetAngle += (Math.random() - 0.5);
+                            }
                         }
                     }
-                    targetAngle = Math.atan2(s.targetY - s.y, s.targetX - s.x);
+                    targetAngle = s.aiTargetAngle;
                 }
 
                 let diff = targetAngle - s.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
                 while (diff > Math.PI) diff -= Math.PI*2;
-                s.angle += diff * 0.1;
+                s.angle += diff * 0.15;
 
                 let speed = 4;
                 s.x += Math.cos(s.angle) * speed;
