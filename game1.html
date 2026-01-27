@@ -131,7 +131,7 @@
         <h1>🦠 세포 키우기</h1>
         <p>
             PC: 마우스 이동<br>
-            모바일: 좌측 하단 조이스틱<br> 
+            모바일: 좌측 하단 조이스틱<br>
         </p>
         
         <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
@@ -166,7 +166,7 @@
         let foods = [];
         let bots = [];
         let gameRunning = false;
-        let animationFrameId; // 루프 ID 관리 (버그 수정 핵심)
+        let animationFrameId;
 
         let inputType = 'mouse';
         let mouseX = 0, mouseY = 0;
@@ -190,11 +190,16 @@
         });
 
         function startGame() {
-            // [중요] 기존 루프가 돌고 있다면 강제 종료 (화면 겹침 방지)
+            // [버그 수정 핵심] 기존 루프 취소 및 캔버스 초기화
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            // 캔버스 잔상 제거
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             gameRunning = true;
 
-            // 데이터 초기화
             player = { x: MAP_SIZE/2, y: MAP_SIZE/2, r: 30, color: '#6c5ce7', name: '나 (Player)' };
             foods = [];
             bots = [];
@@ -202,11 +207,9 @@
             for(let i=0; i<3000; i++) addFood();
             for(let i=0; i<70; i++) addBot();
 
-            // UI 처리
             ui.style.display = 'none';
             ingameAd.style.display = 'block';
             
-            // 입력값 초기화
             inputX = window.innerWidth / 2;
             inputY = window.innerHeight / 2;
             
@@ -284,7 +287,6 @@
         function loop() {
             if(!gameRunning) return;
 
-            // [최적화] 화면 전체 지우기
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -295,38 +297,31 @@
             ctx.scale(zoom, zoom);
             ctx.translate(-player.x, -player.y);
 
-            // 격자 그리기
             ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 2; ctx.beginPath();
             for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
             
-            // 맵 경계
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-            // 먹이 그리기
             for(let i = foods.length - 1; i >= 0; i--) {
                 let f = foods[i];
-                // 화면 밖 먹이는 그리지 않음 (렌더링 최적화)
                 if(Math.abs(f.x - player.x) > (canvas.width/zoom + 50) && Math.abs(f.y - player.y) > (canvas.height/zoom + 50)) continue;
-                
                 drawCircle(f.x, f.y, f.r, f.color);
                 
-                // [최적화] 제곱 거리 계산 (sqrt 제거)
                 let distSq = (player.x-f.x)**2 + (player.y-f.y)**2;
                 if(distSq < player.r**2) {
                     player.r += 0.5; foods.splice(i, 1); addFood();
                 }
             }
 
-            // 봇 로직
             for(let i = bots.length - 1; i >= 0; i--) {
                 let b = bots[i];
                 b.decisionTimer--;
                 if(b.decisionTimer <= 0) {
                     b.decisionTimer = Math.random() * 30 + 10;
                     let closestTarget = null;
-                    let minDSq = 1500 * 1500; // 시야 제곱
+                    let minDSq = 1500 * 1500;
                     
                     let dToPlayerSq = (b.x-player.x)**2 + (b.y-player.y)**2;
                     if(dToPlayerSq < minDSq && player.r < b.r * 0.9) { closestTarget = player; minDSq = dToPlayerSq; }
@@ -345,32 +340,27 @@
                 if(b.target) angle = Math.atan2(b.target.y - b.y, b.target.x - b.x);
                 else { if(!b.angle) b.angle = Math.random() * Math.PI * 2; angle = b.angle; }
 
-                // [속도 상향] 기존 1.5 -> 2.2
                 let speed = 2.2 + (50 / b.r); 
                 b.x += Math.cos(angle) * speed; b.y += Math.sin(angle) * speed;
                 b.x = Math.max(0, Math.min(MAP_SIZE, b.x)); b.y = Math.max(0, Math.min(MAP_SIZE, b.y));
 
                 drawCircle(b.x, b.y, b.r, b.color);
                 
-                // [닉네임] 원 안에 넣기 (글자 크기 자동 조절)
                 ctx.fillStyle = 'white'; 
-                let fontSize = Math.max(10, b.r * 0.35); // 반지름의 35% 크기
+                let fontSize = Math.max(10, b.r * 0.35); 
                 ctx.font = `bold ${fontSize}px Noto Sans KR`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
                 ctx.fillText(b.name, b.x, b.y);
 
-                // 봇끼리 먹기
                 for(let j = bots.length - 1; j >= 0; j--) {
                     if(i === j) continue;
                     let target = bots[j];
                     let distSq = (b.x-target.x)**2 + (b.y-target.y)**2;
-                    // 약간의 여유를 두고 먹음 (반지름의 합보다 작을 때)
                     if(distSq < (b.r + target.r * 0.5)**2 && b.r > target.r * 1.1) {
                         b.r += target.r * 0.4; bots.splice(j, 1); addBot(); if(j < i) i--;
                     }
                 }
 
-                // 플레이어와 충돌
                 let distSq = (player.x-b.x)**2 + (player.y-b.y)**2;
                 if(distSq < (player.r + b.r)**2) {
                     if(player.r > b.r * 1.1) {
@@ -381,7 +371,6 @@
                 }
             }
 
-            // 플레이어 이동
             let moveX = 0, moveY = 0;
             if (inputType === 'joystick') {
                 moveX = joystickVector.x; moveY = joystickVector.y;
@@ -393,7 +382,6 @@
                 if(dist > 10) { moveX = Math.cos(angle); moveY = Math.sin(angle); }
             }
 
-            // [속도 상향] 기존 1.5 -> 2.2
             let pSpeed = 2.2 + (50 / player.r);
             player.x += moveX * pSpeed; player.y += moveY * pSpeed;
             player.x = Math.max(0, Math.min(MAP_SIZE, player.x)); player.y = Math.max(0, Math.min(MAP_SIZE, player.y));
@@ -406,8 +394,6 @@
 
             ctx.restore();
             updateLeaderboard();
-            
-            // 루프 ID 저장 (나중에 취소하기 위해)
             animationFrameId = requestAnimationFrame(loop);
         }
 
@@ -432,7 +418,7 @@
         }
         function gameOver(killer) {
             gameRunning = false;
-            // [중요] 루프 확실히 정지
+            // [중요] 게임 오버 시 루프 확실히 정지
             cancelAnimationFrame(animationFrameId);
             
             ingameAd.style.display = 'none';
