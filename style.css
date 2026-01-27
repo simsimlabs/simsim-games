@@ -1,60 +1,59 @@
-/* 폰트 설정 (본진과 동일한 깔끔한 고딕 + 게임용 폰트) */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Black+Han+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap'); /* 게임용 귀여운 폰트 */
 
 :root {
-    --primary-color: #6c5ce7; /* 메인 테마색 (소프트 퍼플) */
+    --primary-color: #6c5ce7;
     --secondary-color: #a29bfe;
-    --accent-color: #ff7675; /* 포인트 색상 (핑크/레드) */
-    --bg-color: #f0f2f5; /* 아주 연한 회색 배경 */
-    --card-bg: #ffffff;
+    --accent-color: #fd79a8;
+    --background-color: #f8f9fa;
     --text-color: #2d3436;
+    --card-bg: #ffffff;
 }
 
 body {
     font-family: 'Noto Sans KR', sans-serif;
-    background-color: var(--bg-color);
+    background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
     padding: 0;
-    text-align: center;
     line-height: 1.6;
 }
 
-/* 헤더 디자인 (본진 느낌 유지) */
+/* 헤더 스타일 (본진과 통일감) */
 header {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
     padding: 40px 20px;
+    text-align: center;
     box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     position: relative;
 }
 
 header h1 {
-    font-family: 'Black Han Sans', sans-serif;
+    font-family: 'Jua', sans-serif;
     font-size: 2.5rem;
     margin: 0 0 10px 0;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
 .lang-switch {
     position: absolute;
-    top: 15px;
+    top: 20px;
     right: 20px;
 }
 
 .lang-switch a {
+    background: rgba(255, 255, 255, 0.2);
     color: white;
-    text-decoration: none;
-    background: rgba(255,255,255,0.2);
     padding: 5px 12px;
     border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: bold;
+    text-decoration: none;
+    font-size: 0.9rem;
     transition: background 0.3s;
 }
 
 .lang-switch a:hover {
-    background: rgba(255,255,255,0.4);
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .back-link {
@@ -62,79 +61,144 @@ header h1 {
     margin-top: 15px;
     color: white;
     text-decoration: none;
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-size: 0.9rem;
-    transition: all 0.3s;
+    font-size: 1rem;
+    opacity: 0.9;
+    border-bottom: 1px dashed white;
 }
 
 .back-link:hover {
-    background-color: white;
-    color: var(--primary-color);
+    opacity: 1;
+    border-bottom: 1px solid white;
+}
+
+/* 메인 컨테이너 */
+.game-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+/* 게임 카드 디자인 */
+.game-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(108, 92, 231, 0.15);
+}
+
+.game-icon {
+    font-size: 3.5rem;
+    background: #f1f2f6;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    transition: transform 0.3s;
+}
+
+.game-card:hover .game-icon {
+    transform: scale(1.1) rotate(10deg);
+}
+
+.game-card h2 {
+    font-family: 'Jua', sans-serif;
+    color: var(--text-color);
+    margin: 10px 0;
+    font-size: 1.5rem;
+}
+
+.game-card p {
+    color: #636e72;
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    height: 48px; /* 줄맞춤 */
+    overflow: hidden;
+}
+
+.play-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+}
+
+.play-btn:hover {
+    background: #5649c0;
     transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
+}
+
+.play-btn.disabled {
+    background: #dfe6e9;
+    color: #b2bec3;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.coming-soon {
+    opacity: 0.8;
 }
 
 /* 광고 배너 */
 .ad-banner {
-    margin: 30px auto;
+    width: 100%;
     max-width: 728px;
-    background-color: #fff;
-    border: 1px solid #eee;
-    min-height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: 30px auto;
+    text-align: center;
+    background: #fff;
+    padding: 10px;
     border-radius: 10px;
-    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
 }
 
-/* 캔버스 게임 UI */
+/* 게임 UI 및 캔버스 */
+canvas {
+    display: block;
+    cursor: crosshair;
+}
+
 #game-ui {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    text-align: center;
     background: rgba(255, 255, 255, 0.95);
     padding: 50px;
     border-radius: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    text-align: center;
-    min-width: 300px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    width: 90%;
+    max-width: 500px;
 }
 
 #game-ui h1 {
+    font-family: 'Jua', sans-serif;
     color: var(--primary-color);
-    font-family: 'Black Han Sans', sans-serif;
     font-size: 3rem;
     margin-bottom: 20px;
 }
 
-.play-btn {
-    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 1.2rem;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.play-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
-}
-
-.play-btn:active {
-    transform: translateY(2px);
-}
-
-/* 인게임 오버레이 (리더보드, 킬로그) */
 #leaderboard {
     position: fixed;
     top: 20px;
@@ -142,25 +206,24 @@ header h1 {
     background: rgba(0, 0, 0, 0.6);
     color: white;
     padding: 15px;
-    border-radius: 10px;
-    text-align: left;
+    border-radius: 15px;
     min-width: 150px;
     backdrop-filter: blur(5px);
-    pointer-events: none; /* 클릭 통과 */
+    font-size: 0.9rem;
+    pointer-events: none;
 }
 
 #leaderboard h3 {
     margin: 0 0 10px 0;
-    font-size: 1rem;
     border-bottom: 1px solid rgba(255,255,255,0.3);
     padding-bottom: 5px;
+    font-size: 1rem;
 }
 
 #rank-list {
     list-style: none;
     padding: 0;
     margin: 0;
-    font-size: 0.9rem;
 }
 
 #rank-list li {
@@ -172,27 +235,34 @@ header h1 {
     bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
-    color: #ff7675;
+    background: rgba(255, 50, 50, 0.8);
+    color: white;
     padding: 10px 20px;
-    border-radius: 20px;
+    border-radius: 30px;
     font-weight: bold;
-    pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s;
+    pointer-events: none;
 }
 
-canvas {
-    display: block;
-    background-color: #f8f9fa; /* 게임 배경도 밝게 */
-    cursor: crosshair;
+/* 푸터 */
+footer {
+    background: #f1f2f6;
+    color: #636e72;
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    border-top: 1px solid #dfe6e9;
 }
 
-/* 모바일 대응 */
-@media (max-width: 600px) {
-    #game-ui {
-        width: 80%;
-        padding: 30px;
-    }
-    #game-ui h1 { font-size: 2rem; }
+.footer-links a {
+    color: #636e72;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+    font-weight: bold;
 }
