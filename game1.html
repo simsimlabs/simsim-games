@@ -13,20 +13,20 @@
             font-family: 'Noto Sans KR', sans-serif; user-select: none;
         }
 
-        /* 캔버스 (게임 화면) - 맨 뒤 */
+        /* 캔버스 (게임 화면) */
         canvas { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             z-index: 0; background-color: #f0f0f0;
         }
 
-        /* 게임 UI (팝업) - 맨 앞 */
+        /* 게임 UI (팝업) */
         #game-ui { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; /* 무조건 최상단 */
+            z-index: 9999; 
             background: rgba(255, 255, 255, 0.98);
             padding: 40px; border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            text-align: center; width: 90%; max-width: 400px;
+            text-align: center; width: 90%; max-width: 450px;
             border: 4px solid #6c5ce7;
         }
 
@@ -36,7 +36,6 @@
         }
         #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
 
-        /* 시작 버튼 스타일 */
         #start-btn {
             background: #ff7675; color: white; border: none; padding: 15px 0;
             font-size: 1.6rem; font-family: 'Jua', sans-serif; border-radius: 50px;
@@ -50,7 +49,6 @@
             display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; font-size: 0.9rem; 
             cursor: pointer;
         }
-        .back-link:hover { color: #636e72; text-decoration: underline; }
 
         /* 랭킹 & 로그 */
         #leaderboard {
@@ -61,16 +59,36 @@
         #rank-list { list-style: none; padding: 0; margin: 0; }
         
         #kill-log {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
             z-index: 100; background: rgba(231, 76, 60, 0.9); color: white;
             padding: 8px 20px; border-radius: 20px; font-weight: bold;
             opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+
+        /* ★ 인게임 하단 고정 광고 (게임 중에도 보임) */
+        #ingame-ad {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            z-index: 50; /* 캔버스보다 위, UI보다 아래 */
+            background: rgba(255,255,255,0.8);
+            padding: 5px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
     <canvas id="gameCanvas"></canvas>
+
+    <div id="ingame-ad">
+        <span style="font-size: 10px; color: #999;">SPONSORED</span>
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:320px;height:50px"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
     <div id="leaderboard">
         <h3>🏆 실시간 랭킹</h3>
@@ -81,7 +99,9 @@
 
     <div id="game-ui">
         <h1>🦠 세포 키우기</h1>
-        <p>넓은 맵에서 살아남으세요!<br>초반엔 조심히 커야 합니다.</p>
+        <p>
+            작은 건 먹고, 큰 건 피하세요!
+        </p>
         
         <div style="margin: 15px 0; min-height: 100px;">
              <ins class="adsbygoogle"
@@ -106,26 +126,29 @@
             }
         });
 
-        // 2. 닉네임 데이터 (대폭 추가)
+        // ----------------------------------------
+        // 닉네임 다양화 (형용사 40개 + 명사 40개 = 1600개 조합)
+        // ----------------------------------------
         const adjectives = [
             "배고픈", "졸린", "행복한", "화난", "수상한", "천재", "바보", "빠른", "느린", "강력한", 
             "귀여운", "무서운", "심심한", "즐거운", "용감한", "소심한", "미친", "달리는", "나는", "숨은",
-            "노래하는", "춤추는", "공부하는", "야근하는", "퇴근한", "배부른", "목마른", "가난한", "부유한", "성실한",
-            "게으른", "더러운", "깨끗한", "시끄러운", "조용한", "차가운", "뜨거운", "매운", "달콤한", "짜릿한",
-            "우울한", "신난", "지루한", "바쁜", "한가한", "못생긴", "잘생긴", "예쁜", "멋진", "전설의"
+            "가난한", "부유한", "전설의", "이상한", "평범한", "위대한", "신비한", "섹시한", "못생긴", "잘생긴",
+            "우울한", "기쁜", "시끄러운", "조용한", "친절한", "나쁜", "착한", "투명한", "황금", "빨간"
         ];
         const nouns = [
             "사람", "고양이", "강아지", "개발자", "학생", "직장인", "백수", "지렁이", "세포", "호랑이", 
             "사자", "토끼", "다람쥐", "곰", "외계인", "히어로", "로봇", "치킨", "피자", "햄버거", 
-            "라면", "김치", "게이머", "유튜버", "사장님", "알바생", "선생님", "경찰", "도둑", "마법사",
-            "전사", "궁수", "힐러", "탱커", "슬라임", "드래곤", "해적", "닌자", "왕", "거지",
-            "천사", "악마", "귀신", "좀비", "뱀파이어", "늑대", "여우", "원숭이", "판다", "펭귄"
+            "라면", "김치", "게이머", "유튜버", "비트코인", "주식", "건물주", "알바생", "선생님", "박사님",
+            "아이언맨", "헐크", "스파이더맨", "배트맨", "조커", "마법사", "닌자", "해적", "왕", "거지"
         ];
 
         function generateBotName() {
             return adjectives[Math.floor(Math.random() * adjectives.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
         }
 
+        // ----------------------------------------
+        // 게임 설정
+        // ----------------------------------------
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const ui = document.getElementById('game-ui');
@@ -140,7 +163,7 @@
         let bots = [];
         let gameRunning = false;
         
-        // 3. 맵 크기 확장 (3000 -> 6000)
+        // ★ 난이도 상향: 맵 크기 6000 (기존 3000)
         let mapSize = 6000;
         
         function startGame() {
@@ -149,9 +172,11 @@
             foods = [];
             bots = [];
             
-            // 맵이 넓어진 만큼 먹이와 봇도 대폭 추가
-            for(let i=0; i<2000; i++) addFood();
-            for(let i=0; i<80; i++) addBot(); // 봇 80마리 (난이도 상승)
+            // 먹이 대량 생성
+            for(let i=0; i<1500; i++) addFood();
+            
+            // ★ 난이도 상향: 봇 80마리 (기존 40)
+            for(let i=0; i<80; i++) addBot();
 
             ui.style.display = 'none';
             gameRunning = true;
@@ -171,13 +196,14 @@
             bots.push({
                 x: Math.random() * mapSize,
                 y: Math.random() * mapSize,
-                r: Math.random() * 60 + 15, // 더 큰 봇도 등장
+                r: Math.random() * 50 + 20, // 봇 크기도 다양하게
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 dx: Math.random() - 0.5,
                 dy: Math.random() - 0.5,
                 name: generateBotName(),
                 changeDirTimer: 0,
-                speedMult: Math.random() * 0.5 + 0.8
+                // 봇 속도 (플레이어와 비슷하게 조정)
+                speedMult: Math.random() * 0.6 + 0.9 
             });
         }
 
@@ -187,6 +213,7 @@
         function loop() {
             if(!gameRunning) return;
 
+            // 배경
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -195,7 +222,7 @@
             ctx.save();
             ctx.translate(-cameraX, -cameraY);
 
-            // 격자 그리기
+            // 격자 (더 넓게 그림)
             ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 1;
             for(let x=0; x<=mapSize; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize); ctx.stroke(); }
             for(let y=0; y<=mapSize; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize,y); ctx.stroke(); }
@@ -204,27 +231,22 @@
             foods.forEach((f, i) => {
                 drawCircle(f.x, f.y, f.r, f.color);
                 if(getDist(player, f) < player.r) {
-                    player.r += 0.2; foods.splice(i, 1); addFood();
+                    player.r += 0.3; // 성장 속도 조금 상향
+                    foods.splice(i, 1); addFood();
                 }
             });
 
-            // 봇 로직 (난이도 상향)
+            // 봇 로직 (더 똑똑하게)
             bots.forEach((b, i) => {
                 b.changeDirTimer--;
                 if(b.changeDirTimer <= 0) {
-                    b.dx = (Math.random()-0.5)*4; b.dy = (Math.random()-0.5)*4;
+                    b.dx = (Math.random()-0.5)*5; b.dy = (Math.random()-0.5)*5;
                     
-                    // 40% 확률로 플레이어를 추적 (공격성 증가)
+                    // ★ 난이도 상향: 40% 확률로 플레이어 추적
                     if(Math.random() < 0.4) { 
-                        let angle = Math.atan2(player.y - b.y, player.x - b.x);
-                        // 내가 더 크면 도망가고, 내가 작으면 쫓아옴
-                        if(player.r > b.r * 1.1) {
-                             b.dx = -Math.cos(angle); b.dy = -Math.sin(angle); // 도망
-                        } else {
-                             b.dx = Math.cos(angle); b.dy = Math.sin(angle); // 추적
-                        }
+                        b.dx = (player.x - b.x)/500; b.dy = (player.y - b.y)/500;
                     }
-                    b.changeDirTimer = Math.random()*100 + 30; // 방향 전환 더 자주 함
+                    b.changeDirTimer = Math.random()*80 + 20; // 방향 더 자주 바꿈
                 }
                 b.x += b.dx * b.speedMult; b.y += b.dy * b.speedMult;
                 b.x = Math.max(0, Math.min(mapSize, b.x)); b.y = Math.max(0, Math.min(mapSize, b.y));
@@ -233,6 +255,15 @@
                 ctx.fillStyle = '#2d3436'; ctx.font = 'bold 12px Noto Sans KR';
                 ctx.textAlign = 'center'; ctx.fillText(b.name, b.x, b.y + 5);
 
+                // 봇끼리 먹기
+                bots.forEach((target, j) => {
+                    if(i === j) return;
+                    if(getDist(b, target) < b.r && b.r > target.r * 1.1) {
+                        b.r += target.r * 0.4; bots.splice(j, 1); addBot();
+                    }
+                });
+
+                // 플레이어와 충돌
                 let dist = getDist(player, b);
                 if(dist < player.r + b.r) {
                     if(player.r > b.r * 1.1) {
@@ -243,13 +274,11 @@
                 }
             });
 
-            // 플레이어 이동 (속도 조절)
+            // ★ 플레이어 속도 조절 (초반에 너무 빠르지 않게)
             let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-            // 4. 초기 속도 공식 수정: (100 / r) + 3 
-            // r=25일 때 약 7 (기존 14.5보다 훨씬 느려짐)
-            let speed = (100 / player.r) + 3;
-            // 최소 속도 제한
-            if(speed < 1.5) speed = 1.5;
+            // 공식 수정: 덩치가 커질수록 느려지되, 초반 속도를 봇과 비슷하게 (약 4~5)
+            let speed = (150 / player.r) + 2; 
+            if(speed > 6) speed = 6; // 최대 속도 제한
 
             player.x += Math.cos(angle) * speed; player.y += Math.sin(angle) * speed;
             player.x = Math.max(0, Math.min(mapSize, player.x)); player.y = Math.max(0, Math.min(mapSize, player.y));
@@ -283,7 +312,6 @@
             }
             rankList.innerHTML = html;
         }
-
         function gameOver(killer) {
             gameRunning = false;
             ui.style.display = 'block';
