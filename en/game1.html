@@ -90,7 +90,6 @@
         <p>
             PC: Use Mouse<br>
             Mobile: Use Joystick (Bottom Left)<br>
-            <span style="color:#ff7675; font-size:0.9rem;">(Optimized Speed & No Lag!)</span>
         </p>
         
         <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
@@ -151,6 +150,12 @@
 
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            // Clear previous canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             gameRunning = true;
 
             player = { x: MAP_SIZE/2, y: MAP_SIZE/2, r: 30, color: '#6c5ce7', name: 'Me (You)' };
