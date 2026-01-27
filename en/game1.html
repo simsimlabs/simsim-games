@@ -4,10 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cell Eaters - SimSim Game Labs</title>
-    <link rel="stylesheet" href="../style.css"> <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
-    <style>body { overflow: hidden; background: #f0f0f0; }</style>
+    <link rel="stylesheet" href="../style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    <style>
+        body { 
+            overflow: hidden; 
+            background: #f0f0f0; 
+            margin: 0; 
+        }
+        canvas { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: 1; 
+        }
+        #game-ui { 
+            z-index: 9999 !important; 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+        }
+        #leaderboard, #kill-log {
+            z-index: 9999 !important;
+        }
+    </style>
 </head>
 <body>
+
+    <canvas id="gameCanvas"></canvas>
 
     <div id="leaderboard">
         <h3>🏆 Leaderboard</h3>
@@ -32,15 +57,10 @@
 
         <button class="play-btn" onclick="startGame()">Play Now</button>
         <br><br>
-        <a href="index.html" class="back-link" style="color:#636e72; border-color:#b2bec3;">🏠 Back to Main</a>
+        <a href="index.html" class="back-link" style="color:#636e72; border-color:#b2bec3;">🏠 Main Menu</a>
     </div>
 
-    <canvas id="gameCanvas"></canvas>
-
     <script>
-        // -------------------------
-        // Real-like English Nicknames (100+)
-        // -------------------------
         const botNames = [
             "ProGamer", "NoobMaster69", "DontEatMe", "ILovePizza", "WinnerWinner", "ChickenDinner",
             "Guest_102", "Guest_999", "PlayerOne", "TheBoss", "BigGuy", "TinyCell",
@@ -81,6 +101,7 @@
             bots = [];
             for(let i=0; i<1000; i++) addFood();
             for(let i=0; i<50; i++) addBot();
+
             ui.style.display = 'none';
             gameRunning = true;
             loop();
@@ -152,7 +173,6 @@
                     }
                     b.changeDirTimer = Math.random() * 100 + 50;
                 }
-                
                 b.x += b.dx * b.speedMult;
                 b.y += b.dy * b.speedMult;
 
@@ -161,7 +181,7 @@
 
                 drawCircle(b.x, b.y, b.r, b.color);
                 ctx.fillStyle = '#2d3436';
-                ctx.font = 'bold 14px Noto Sans KR';
+                ctx.font = 'bold 14px "Noto Sans KR"';
                 ctx.textAlign = 'center';
                 ctx.fillText(b.name, b.x, b.y + 5);
 
@@ -197,7 +217,7 @@
 
             drawCircle(player.x, player.y, player.r, player.color);
             ctx.fillStyle = 'white';
-            ctx.font = 'bold 16px Noto Sans KR';
+            ctx.font = 'bold 16px "Noto Sans KR"';
             ctx.textAlign = 'center';
             ctx.fillText("Me", player.x, player.y + 6);
 
