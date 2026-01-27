@@ -2,11 +2,483 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임 준비중</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>블랙홀 키우기 - 심심풀이 게임 연구소</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; background-color: #34495e; 
+            font-family: 'Noto Sans KR', sans-serif; user-select: none; touch-action: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
+
+        #game-ui { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 9999; background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            pointer-events: auto;
+        }
+
+        #game-ui h1 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #1a1a1a; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #bdc3c7; }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+
+        #start-btn {
+            background: #2c3e50; color: white; border: none; padding: 15px 0;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #1a252f; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+        }
+        #start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .back-link { display: inline-block; margin-top: 10px; color: #7f8c8d; text-decoration: none; cursor: pointer; }
+        .back-link:hover { color: #2c3e50; text-decoration: underline; }
+
+        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Jua', sans-serif; min-width: 160px; }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(44, 62, 80, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+
+        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
+        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+
+        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
+        #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
+        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+
+        @media (max-width: 600px) {
+            #game-ui { width: 85%; }
+            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
+            #joystick-zone { display: block; }
+        }
+    </style>
 </head>
-<body style="background-color: #2c3e50; color: white; text-align: center; padding-top: 100px;">
-    <h1>🚧 열심히 게임을 개발 중입니다! 🚧</h1>
-    <p>곧 재미있는 게임으로 찾아올게요.</p>
-    <a href="index.html" style="color: yellow; font-size: 20px;">[메인으로 돌아가기]</a>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="leaderboard" class="game-overlay">
+        <h3>🏆 실시간 랭킹</h3>
+        <ul id="rank-list"><li>로딩 중...</li></ul>
+    </div>
+
+    <div id="kill-log" class="game-overlay"></div>
+
+    <div id="joystick-zone">
+        <div id="joystick-bg"><div id="joystick-stick"></div></div>
+    </div>
+
+    <div id="ingame-ad">
+        <span class="ad-label">Sponsored</span>
+        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div id="game-ui">
+        <h1>🕳️ 블랙홀 키우기</h1>
+        <p>도시의 모든 것을 삼키세요!<br>사람 → 자동차 → 건물 순으로 먹을 수 있습니다.</p>
+        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
+             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <button id="start-btn">게임 시작 ▶</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 메인으로 나가기</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('game-ui');
+        const rankList = document.getElementById('rank-list');
+        const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
+        const startBtn = document.getElementById('start-btn');
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickStick = document.getElementById('joystick-stick');
+
+        const MAP_SIZE = 3000;
+        const MAP_BG_COLOR = '#ecf0f1';
+        
+        let holes = [];
+        let props = []; // 먹이(사물)들
+        let gameRunning = false;
+        let animationFrameId;
+        
+        let playerIndex = -1;
+        let inputType = 'mouse';
+        let mouseX = 0, mouseY = 0;
+        let joystickVector = { x: 0, y: 0 };
+
+        const adjectives = ["배고픈", "검은", "무서운", "거대한", "수상한", "강력한", "심연의", "우주", "차원의"];
+        const nouns = ["블랙홀", "구멍", "싱크홀", "포식자", "청소기", "괴물", "공허", "유령"];
+        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+
+        // 사물 유형 정의
+        const PROP_TYPES = [
+            { type: 0, color: '#27ae60', r: 4, score: 1 },   // 사람/풀 (가장 작음)
+            { type: 1, color: '#e67e22', r: 8, score: 3 },   // 벤치/박스
+            { type: 2, color: '#e74c3c', r: 12, score: 5 },  // 자동차
+            { type: 3, color: '#95a5a6', r: 20, score: 15 }, // 작은 건물
+            { type: 4, color: '#34495e', r: 35, score: 30 }  // 큰 건물
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if(startBtn) startBtn.addEventListener('click', startGame);
+            mouseX = window.innerWidth/2; mouseY = window.innerHeight/2;
+            initJoystick();
+            window.addEventListener('mousemove', e => { if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } });
+            window.addEventListener('mousedown', () => inputType='mouse');
+            window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+        });
+
+        function startGame() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            gameRunning = true;
+            holes = [];
+            props = [];
+
+            // 사물 생성 (대량)
+            for(let i=0; i<1500; i++) addProp();
+
+            // 플레이어 생성
+            playerIndex = addHole(true);
+            
+            // 봇 생성
+            for(let i=0; i<15; i++) addHole(false);
+
+            ui.style.display = 'none';
+            ingameAd.style.display = 'block';
+            loop();
+        }
+
+        function addHole(isHuman) {
+            let r = 20; // 초기 크기
+            // 봇은 다양한 크기로 시작
+            if(!isHuman) r = 20 + Math.random() * 20;
+
+            let hole = {
+                isHuman: isHuman,
+                x: Math.random() * (MAP_SIZE - 200) + 100,
+                y: Math.random() * (MAP_SIZE - 200) + 100,
+                r: r,
+                color: isHuman ? '#000000' : '#1a1a1a',
+                rimColor: isHuman ? '#6c5ce7' : `hsl(${Math.random()*360}, 70%, 50%)`,
+                name: isHuman ? '나 (Player)' : getName(),
+                score: 0,
+                dead: false,
+                aiTargetX: 0, aiTargetY: 0, aiTimer: 0
+            };
+            holes.push(hole);
+            return holes.length - 1;
+        }
+
+        function addProp() {
+            // 확률적으로 큰 사물 생성 (작은게 더 많게)
+            let rand = Math.random();
+            let typeIdx = 0;
+            if (rand < 0.6) typeIdx = 0;      // 60%
+            else if (rand < 0.85) typeIdx = 1; // 25%
+            else if (rand < 0.95) typeIdx = 2; // 10%
+            else if (rand < 0.98) typeIdx = 3; // 3%
+            else typeIdx = 4;                  // 2%
+
+            let type = PROP_TYPES[typeIdx];
+            
+            props.push({
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                ...type,
+                alive: true,
+                suckTarget: null // 빨려들어갈 대상
+            });
+        }
+
+        function initJoystick() {
+            let stick = joystickStick;
+            let zone = joystickZone;
+            let maxDist = 35; let active = false;
+            
+            zone.addEventListener('touchstart', e => {
+                e.preventDefault(); active=true; inputType='joystick';
+                let t = e.touches[0];
+                let rect = zone.getBoundingClientRect();
+                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
+            }, {passive:false});
+
+            zone.addEventListener('touchmove', e => {
+                if(!active) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let rect = zone.getBoundingClientRect();
+                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
+            }, {passive:false});
+
+            zone.addEventListener('touchend', e => {
+                e.preventDefault(); active=false;
+                stick.style.transform = `translate(-50%, -50%)`;
+                joystickVector = {x:0, y:0};
+            });
+
+            function updateStick(clientX, clientY, centerX, centerY) {
+                let dx = clientX - centerX;
+                let dy = clientY - centerY;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
+                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                joystickVector = {x: dx, y: dy};
+            }
+        }
+
+        function loop() {
+            if(!gameRunning) return;
+
+            // 배경
+            ctx.fillStyle = MAP_BG_COLOR;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let player = holes[playerIndex];
+            let zoom = 1;
+            if(player && !player.dead) zoom = Math.max(0.3, 30 / (player.r + 20));
+
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(zoom, zoom);
+            if(player && !player.dead) ctx.translate(-player.x, -player.y);
+            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
+
+            // 맵 그리드 (도로 느낌)
+            ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 2; ctx.beginPath();
+            for(let x=0; x<=MAP_SIZE; x+=150) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+            for(let y=0; y<=MAP_SIZE; y+=150) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
+            ctx.stroke();
+            ctx.strokeStyle = '#7f8c8d'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
+
+            // 사물 처리 및 그리기
+            for(let i=props.length-1; i>=0; i--) {
+                let p = props[i];
+                if(!p.alive) continue;
+
+                // 화면 밖 최적화
+                if(player && !player.dead && Math.abs(p.x - player.x) > (canvas.width/zoom + 50)) continue;
+
+                // 빨려들어가는 효과
+                let drawX = p.x;
+                let drawY = p.y;
+                let drawR = p.r;
+
+                if(p.suckTarget && !p.suckTarget.dead) {
+                    // 빨려들어감
+                    let dx = p.suckTarget.x - p.x;
+                    let dy = p.suckTarget.y - p.y;
+                    p.x += dx * 0.15;
+                    p.y += dy * 0.15;
+                    drawR = p.r * (1 - 0.15); // 점점 작아짐
+                    
+                    if(Math.hypot(dx, dy) < 5) {
+                        // 완전히 먹힘
+                        p.suckTarget.score += p.score;
+                        p.suckTarget.r += p.score * 0.05; // 성장
+                        props.splice(i, 1);
+                        if(Math.random() < 0.2) addProp(); // 리필
+                        continue;
+                    }
+                }
+
+                // 그리기 (네모 or 원)
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                if(p.type >= 1) ctx.fillRect(drawX - drawR, drawY - drawR, drawR*2, drawR*2); // 네모
+                else ctx.arc(drawX, drawY, drawR, 0, Math.PI*2); // 원
+                ctx.fill();
+            }
+
+            // 블랙홀 처리
+            holes.forEach((h, index) => {
+                if(h.dead) return;
+
+                // 이동 로직
+                let dx = 0, dy = 0;
+                let speed = 3 + (50 / h.r); // 크면 느려짐
+
+                if(h.isHuman) {
+                    if(inputType === 'joystick') { dx = joystickVector.x; dy = joystickVector.y; }
+                    else {
+                        let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
+                        let dist = Math.hypot(mouseX - canvas.width/2, mouseY - canvas.height/2);
+                        if(dist > 10) { dx = Math.cos(angle); dy = Math.sin(angle); }
+                    }
+                    // 정규화
+                    let len = Math.hypot(dx, dy);
+                    if(len > 1) { dx/=len; dy/=len; }
+                } else {
+                    // AI
+                    h.aiTimer--;
+                    if(h.aiTimer <= 0) {
+                        h.aiTimer = Math.random() * 20 + 10;
+                        
+                        // 1. 큰놈 피하기
+                        let danger = false;
+                        for(let other of holes) {
+                            if(h !== other && !other.dead && other.r > h.r * 1.1) {
+                                let d = Math.hypot(h.x - other.x, h.y - other.y);
+                                if(d < 300) {
+                                    h.aiTargetX = h.x - (other.x - h.x); // 반대 방향
+                                    h.aiTargetY = h.y - (other.y - h.y);
+                                    danger = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 2. 먹이/작은놈 찾기
+                        if(!danger) {
+                            let closest = null;
+                            let minDist = 400;
+                            
+                            // 작은 블랙홀 우선
+                            for(let other of holes) {
+                                if(h !== other && !other.dead && h.r > other.r * 1.1) {
+                                    let d = Math.hypot(h.x - other.x, h.y - other.y);
+                                    if(d < minDist) { minDist = d; closest = {x:other.x, y:other.y}; }
+                                }
+                            }
+
+                            // 없으면 사물
+                            if(!closest) {
+                                for(let p of props) {
+                                    if(!p.alive || p.suckTarget) continue;
+                                    if(h.r > p.r) { // 먹을 수 있는 것만
+                                        let d = Math.hypot(h.x - p.x, h.y - p.y);
+                                        if(d < minDist) { minDist = d; closest = p; }
+                                    }
+                                }
+                            }
+
+                            if(closest) {
+                                h.aiTargetX = closest.x;
+                                h.aiTargetY = closest.y;
+                            } else {
+                                // 랜덤
+                                h.aiTargetX = Math.random() * MAP_SIZE;
+                                h.aiTargetY = Math.random() * MAP_SIZE;
+                            }
+                        }
+                    }
+                    let angle = Math.atan2(h.aiTargetY - h.y, h.aiTargetX - h.x);
+                    dx = Math.cos(angle);
+                    dy = Math.sin(angle);
+                }
+
+                h.x += dx * speed;
+                h.y += dy * speed;
+                h.x = Math.max(0, Math.min(MAP_SIZE, h.x));
+                h.y = Math.max(0, Math.min(MAP_SIZE, h.y));
+
+                // 그리기 (블랙홀)
+                ctx.beginPath();
+                ctx.arc(h.x, h.y, h.r, 0, Math.PI*2);
+                ctx.fillStyle = h.color;
+                ctx.fill();
+                // 테두리
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = h.rimColor;
+                ctx.stroke();
+
+                // 이름
+                ctx.fillStyle = '#333';
+                ctx.font = `bold ${Math.max(12, h.r/3)}px Noto Sans KR`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(h.name, h.x, h.y);
+
+                // 충돌 검사 (사물 먹기)
+                props.forEach(p => {
+                    if(p.suckTarget) return; // 이미 빨려가는 중
+                    let dist = Math.hypot(h.x - p.x, h.y - p.y);
+                    // 내 반지름보다 사물이 작고, 사물이 중심부 근처에 오면 빨아들임
+                    // 단, 물리적으로 사물 중심이 구멍 안에 들어와야 함
+                    if(dist < h.r && h.r > p.r) {
+                        p.suckTarget = h; // 빨려 들어감 시작
+                    }
+                });
+
+                // 충돌 검사 (다른 블랙홀 먹기)
+                holes.forEach((other, oIdx) => {
+                    if(h === other || other.dead) return;
+                    let dist = Math.hypot(h.x - other.x, h.y - other.y);
+                    
+                    // 중심이 겹치고 크기 차이가 나면
+                    if(dist < h.r && h.r > other.r * 1.1) {
+                        // h가 other를 먹음
+                        h.r += other.r * 0.2;
+                        h.score += 50;
+                        killHole(oIdx);
+                    }
+                });
+            });
+
+            ctx.restore();
+            
+            // 사물 리필 (너무 줄어들면)
+            if(props.length < 500) addProp();
+
+            updateLeaderboard();
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function killHole(idx) {
+            let h = holes[idx];
+            h.dead = true;
+            
+            if(h.isHuman) gameOver(h.name); // 내가 죽음 (이름은 버그 방지용)
+            else {
+                showKillLog(`${h.name} 소멸!`);
+                setTimeout(() => { if(gameRunning) { holes.splice(idx, 1); addHole(false); } }, 3000);
+            }
+        }
+
+        function showKillLog(msg) {
+            killLog.innerText = msg; killLog.style.opacity = 1;
+            setTimeout(() => { killLog.style.opacity = 0; }, 2000);
+        }
+
+        function updateLeaderboard() {
+            let list = [...holes].filter(h => !h.dead).sort((a,b) => b.r - a.r);
+            let html = '';
+            for(let i=0; i<Math.min(5, list.length); i++) {
+                let h = list[i];
+                let name = h.isHuman ? `<span style="color:#6c5ce7">${h.name}</span>` : h.name;
+                html += `<li>${i+1}. ${name} <small>(${Math.floor(h.r)})</small></li>`;
+            }
+            rankList.innerHTML = html;
+        }
+
+        function gameOver(killer) {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            ingameAd.style.display = 'none';
+            ui.style.display = 'block';
+            
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "다시 삼키기 ↺";
+            ui.querySelector('h1').innerText = "💀 소멸됨";
+            
+            // killer 인자가 없거나 엉뚱할 수 있으므로 텍스트 고정
+            ui.querySelector('p').innerHTML = `
+                더 큰 블랙홀에게 흡수되었습니다.<br>
+                최종 크기: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(holes[playerIndex].r)}</span>
+            `;
+        }
+    </script>
 </body>
 </html>
