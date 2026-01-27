@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Cell Eaters - SimSim Game Labs</title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
     <style>
@@ -10,64 +10,62 @@
 
         body { 
             margin: 0; padding: 0; overflow: hidden; background-color: #f0f0f0; 
-            font-family: 'Roboto', sans-serif; user-select: none;
+            font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
         }
 
-        canvas { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 0; background-color: #f0f0f0;
-        }
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background-color: #f0f0f0; }
+
+        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
 
         #game-ui { 
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; 
-            background: rgba(255, 255, 255, 0.98);
-            padding: 30px; border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            text-align: center; width: 90%; max-width: 380px;
-            border: 4px solid #6c5ce7;
+            z-index: 9999; background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            pointer-events: auto;
         }
 
         #game-ui h1 {
-            font-family: 'Fredoka One', cursive; font-size: 2.5rem; color: #6c5ce7; margin: 0 0 10px 0;
-            text-shadow: 2px 2px 0px #a29bfe;
+            font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0;
+            text-shadow: 3px 3px 0px #a29bfe;
         }
-        #game-ui p { color: #636e72; font-size: 1rem; margin-bottom: 20px; }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
 
         #start-btn {
-            background: #ff7675; color: white; border: none; padding: 12px 0;
-            font-size: 1.5rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 4px 0 #d63031; width: 100%; margin-bottom: 15px;
+            background: #ff7675; color: white; border: none; padding: 15px 0;
+            font-size: 1.8rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #d63031; width: 100%; margin-bottom: 15px;
             transition: transform 0.1s; display: block;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
         #start-btn:hover { background: #ff6b6b; }
 
-        .back-link { 
-            display: inline-block; margin-top: 5px; color: #b2bec3; text-decoration: none; font-size: 0.9rem; 
-            cursor: pointer;
-        }
+        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; cursor: pointer; }
         .back-link:hover { color: #636e72; text-decoration: underline; }
 
         #leaderboard {
-            position: fixed; top: 15px; right: 15px; z-index: 100;
-            background: rgba(0,0,0,0.6); color: white; padding: 15px;
-            border-radius: 10px; font-family: 'Fredoka One', cursive; pointer-events: none;
+            top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px;
+            border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px;
         }
         #rank-list { list-style: none; padding: 0; margin: 0; }
-        
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
         #kill-log {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-            z-index: 100; background: rgba(231, 76, 60, 0.9); color: white;
-            padding: 8px 20px; border-radius: 20px; font-weight: bold;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            bottom: 120px; left: 50%; transform: translateX(-50%);
+            background: rgba(214, 48, 49, 0.9); color: white; padding: 10px 25px; border-radius: 30px;
+            font-weight: bold; font-size: 1.1rem; opacity: 0; transition: opacity 0.3s;
         }
 
         #ingame-ad {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            z-index: 50; width: 320px; height: 50px;
-            background: rgba(255,255,255,0.8);
-            display: flex; justify-content: center; align-items: center;
+            position: fixed; bottom: 10px; right: 10px; z-index: 50;
+            background: white; padding: 5px; border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none;
+        }
+        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+        
+        @media (max-width: 600px) {
+            #game-ui { width: 85%; }
+            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
         }
     </style>
 </head>
@@ -75,16 +73,17 @@
 
     <canvas id="gameCanvas"></canvas>
 
-    <div id="leaderboard">
+    <div id="leaderboard" class="game-overlay">
         <h3>🏆 Leaderboard</h3>
         <ul id="rank-list"><li>Loading...</li></ul>
     </div>
 
-    <div id="kill-log"></div>
+    <div id="kill-log" class="game-overlay"></div>
 
     <div id="ingame-ad">
-         <ins class="adsbygoogle"
-             style="display:inline-block;width:320px;height:50px"
+        <span class="ad-label">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:300px;height:250px"
              data-ad-client="ca-pub-2261846676525942"
              data-ad-slot="4380369066"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
@@ -92,9 +91,13 @@
 
     <div id="game-ui">
         <h1>🦠 Cell Eaters</h1>
-        <p>Eat smaller cells, avoid big ones!</p>
+        <p>
+            Move with Mouse/Touch.<br>
+            Eat small, Run from big!<br>
+            <span style="color:#ff7675; font-size:0.9rem;">(Map size x100 Expanded!)</span>
+        </p>
         
-        <div style="margin: 10px 0; height: 100px; overflow:hidden;">
+        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
              <ins class="adsbygoogle"
                  style="display:block; height: 100px;"
                  data-ad-client="ca-pub-2261846676525942"
@@ -110,151 +113,161 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const startBtn = document.getElementById('start-btn');
-            if(startBtn) {
-                startBtn.addEventListener('click', startGame);
-            }
-        });
-
-        const adjectives = [
-            "Hungry", "Sleepy", "Happy", "Angry", "Crazy", "Super", "Lazy", "Fast", "Slow", "Brave", 
-            "Scared", "Smart", "Dumb", "Rich", "Poor", "Epic", "Mystery", "Strange", "Tiny", "Giant", 
-            "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark", "Golden", "Invisible",
-            "Flying", "Dancing", "Singing", "Fighting", "Running", "Jumping", "Silent", "Loud"
-        ];
-        const nouns = [
-            "Cat", "Dog", "Bear", "Lion", "Tiger", "Human", "Gamer", "Noob", "Pro", "Hacker", 
-            "Boss", "Ninja", "Robot", "Alien", "Ghost", "Zombie", "Virus", "Cell", "Pizza", "Burger",
-            "Taco", "Sushi", "Dragon", "Wolf", "Fox", "Bunny", "Mouse", "Eagle", "Shark", "Whale",
-            "King", "Queen", "Prince", "Princess", "Wizard", "Knight", "Warrior", "Soldier"
-        ];
-
-        function generateBotName() {
-            return adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)];
-        }
-
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const ui = document.getElementById('game-ui');
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
+        const startBtn = document.getElementById('start-btn');
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
+        const MAP_SIZE = 10000;
+        
         let player = { x: 0, y: 0, r: 0, color: '', name: '' };
         let foods = [];
         let bots = [];
         let gameRunning = false;
-        let mapSize = 5000;
-        
+        let inputX = 0, inputY = 0;
+
+        const adjectives = ["Hungry", "Sleepy", "Happy", "Angry", "Crazy", "Super", "Lazy", "Fast", "Slow", "Brave", "Scared", "Smart", "Dumb", "Rich", "Poor", "Epic", "Mystery", "Strange", "Tiny", "Giant", "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark", "Neon", "Cyber"];
+        const nouns = ["Cat", "Dog", "Bear", "Lion", "Tiger", "Human", "Gamer", "Noob", "Pro", "Hacker", "Boss", "Ninja", "Robot", "Alien", "Ghost", "Zombie", "Virus", "Cell", "Pizza", "Burger", "King", "Queen", "Joker", "Knight", "Wizard", "Dragon", "Slime"];
+
+        function generateBotName() {
+            return adjectives[Math.floor(Math.random() * adjectives.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if(startBtn) startBtn.addEventListener('click', startGame);
+        });
+
         function startGame() {
-            player = { x: mapSize/2, y: mapSize/2, r: 25, color: '#6c5ce7', name: 'Me (You)' };
+            player = { x: MAP_SIZE/2, y: MAP_SIZE/2, r: 30, color: '#6c5ce7', name: 'Me (You)' };
             foods = [];
             bots = [];
-            
-            for(let i=0; i<1500; i++) addFood();
-            for(let i=0; i<60; i++) addBot();
+            for(let i=0; i<3000; i++) addFood();
+            for(let i=0; i<70; i++) addBot();
 
             ui.style.display = 'none';
+            ingameAd.style.display = 'block';
             gameRunning = true;
+            inputX = window.innerWidth / 2;
+            inputY = window.innerHeight / 2;
             loop();
         }
 
         function addFood() {
             foods.push({
-                x: Math.random() * mapSize, y: Math.random() * mapSize,
-                r: Math.random() * 5 + 3, color: `hsl(${Math.random()*360}, 80%, 70%)`
+                x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE,
+                r: Math.random() * 8 + 4, color: `hsl(${Math.random()*360}, 80%, 70%)`
             });
         }
 
         function addBot() {
             bots.push({
-                x: Math.random() * mapSize, y: Math.random() * mapSize,
+                x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE,
                 r: Math.random() * 50 + 20, color: `hsl(${Math.random()*360}, 60%, 50%)`,
-                dx: Math.random() - 0.5, dy: Math.random() - 0.5,
-                name: generateBotName(), changeDirTimer: 0, speedMult: Math.random() * 0.4 + 0.6
+                dx: 0, dy: 0, name: generateBotName(), decisionTimer: 0, target: null
             });
         }
 
-        let mouseX = canvas.width/2, mouseY = canvas.height/2;
-        window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+        window.addEventListener('mousemove', e => { inputX = e.clientX; inputY = e.clientY; });
+        window.addEventListener('touchmove', e => { e.preventDefault(); inputX = e.touches[0].clientX; inputY = e.touches[0].clientY; }, {passive: false});
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
 
         function loop() {
             if(!gameRunning) return;
 
-            // Zoom logic
-            let currentZoom = Math.max(0.1, 40 / (player.r + 20));
-
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            let zoom = Math.max(0.1, 40 / (player.r + 10));
+
             ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.scale(currentZoom, currentZoom);
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(zoom, zoom);
             ctx.translate(-player.x, -player.y);
 
-            ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 2;
-            for(let x=0; x<=mapSize; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize); ctx.stroke(); }
-            for(let y=0; y<=mapSize; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize,y); ctx.stroke(); }
-            
-            ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 10;
-            ctx.strokeRect(0, 0, mapSize, mapSize);
+            ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 2; ctx.beginPath();
+            for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+            for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
+            ctx.stroke();
 
-            foods.forEach((f, i) => {
+            ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
+
+            for(let i = foods.length - 1; i >= 0; i--) {
+                let f = foods[i];
+                if(Math.abs(f.x - player.x) > (canvas.width/zoom) && Math.abs(f.y - player.y) > (canvas.height/zoom)) continue;
                 drawCircle(f.x, f.y, f.r, f.color);
                 if(getDist(player, f) < player.r) {
-                    player.r += 0.3; foods.splice(i, 1); addFood();
+                    player.r += 0.5; foods.splice(i, 1); addFood();
                 }
-            });
+            }
 
-            bots.forEach((b, i) => {
-                b.changeDirTimer--;
-                if(b.changeDirTimer <= 0) {
-                    if(Math.random() < 0.5) {
-                        let target = player;
-                        if(b.r > target.r * 1.1) {
-                             b.dx = (target.x - b.x); b.dy = (target.y - b.y);
-                        } else if(target.r > b.r * 1.1) {
-                             b.dx = (b.x - target.x); b.dy = (b.y - target.y);
-                        } else {
-                             b.dx = (Math.random()-0.5); b.dy = (Math.random()-0.5);
-                        }
-                    } else {
-                        b.dx = (Math.random() - 0.5); b.dy = (Math.random() - 0.5);
-                    }
-                    let len = Math.sqrt(b.dx*b.dx + b.dy*b.dy);
-                    if(len > 0) { b.dx /= len; b.dy /= len; }
-                    b.changeDirTimer = Math.random()*50 + 20;
+            for(let i = bots.length - 1; i >= 0; i--) {
+                let b = bots[i];
+                b.decisionTimer--;
+                if(b.decisionTimer <= 0) {
+                    b.decisionTimer = Math.random() * 30 + 10;
+                    let closestTarget = null;
+                    let minD = 1500;
+                    let dToPlayer = getDist(b, player);
+                    if(dToPlayer < minD && player.r < b.r * 0.9) { closestTarget = player; minD = dToPlayer; }
+                    bots.forEach(other => {
+                        if(b === other) return;
+                        let d = getDist(b, other);
+                        if(d < minD && other.r < b.r * 0.9) { closestTarget = other; minD = d; }
+                    });
+                    if(closestTarget) b.target = closestTarget;
+                    else { b.target = null; b.angle = Math.random() * Math.PI * 2; }
                 }
-                
-                let botSpeed = (150 / b.r) + 1;
-                b.x += b.dx * botSpeed; b.y += b.dy * botSpeed;
-                b.x = Math.max(0, Math.min(mapSize, b.x)); b.y = Math.max(0, Math.min(mapSize, b.y));
+
+                let angle = 0;
+                if(b.target) angle = Math.atan2(b.target.y - b.y, b.target.x - b.x);
+                else { if(!b.angle) b.angle = Math.random() * Math.PI * 2; angle = b.angle; }
+
+                let speed = 2 + (50 / b.r);
+                b.x += Math.cos(angle) * speed; b.y += Math.sin(angle) * speed;
+                b.x = Math.max(0, Math.min(MAP_SIZE, b.x)); b.y = Math.max(0, Math.min(MAP_SIZE, b.y));
 
                 drawCircle(b.x, b.y, b.r, b.color);
-                ctx.fillStyle = '#2d3436'; ctx.font = `bold ${Math.max(12, b.r/2)}px Roboto`;
-                ctx.textAlign = 'center'; ctx.fillText(b.name, b.x, b.y + b.r + 10);
+                ctx.fillStyle = 'white'; ctx.font = `bold ${Math.max(12, b.r/2)}px sans-serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(b.name, b.x, b.y);
+
+                for(let j = bots.length - 1; j >= 0; j--) {
+                    if(i === j) continue;
+                    let target = bots[j];
+                    if(getDist(b, target) < b.r && b.r > target.r * 1.1) {
+                        b.r += target.r * 0.4; bots.splice(j, 1); addBot(); if(j < i) i--;
+                    }
+                }
 
                 let dist = getDist(player, b);
                 if(dist < player.r + b.r) {
                     if(player.r > b.r * 1.1) {
-                        player.r += b.r * 0.5; bots.splice(i, 1); addBot(); showKillLog(`Ate ${b.name}!`);
+                        player.r += b.r * 0.4; bots.splice(i, 1); addBot(); showKillLog(`Ate ${b.name}!`);
                     } else if (b.r > player.r * 1.1) {
-                        gameOver(b.name);
+                        gameOver(b.name); return;
                     }
                 }
-            });
+            }
 
-            let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-            let playerSpeed = (150 / player.r) + 1.5;
-            player.x += Math.cos(angle) * playerSpeed; player.y += Math.sin(angle) * playerSpeed;
-            player.x = Math.max(0, Math.min(mapSize, player.x)); player.y = Math.max(0, Math.min(mapSize, player.y));
+            let dx = inputX - window.innerWidth / 2;
+            let dy = inputY - window.innerHeight / 2;
+            let pAngle = Math.atan2(dy, dx);
+            let pSpeed = 2 + (50 / player.r);
+            
+            if(Math.sqrt(dx*dx + dy*dy) > 10) {
+                player.x += Math.cos(pAngle) * pSpeed;
+                player.y += Math.sin(pAngle) * pSpeed;
+            }
+            player.x = Math.max(0, Math.min(MAP_SIZE, player.x));
+            player.y = Math.max(0, Math.min(MAP_SIZE, player.y));
 
             drawCircle(player.x, player.y, player.r, player.color);
-            ctx.fillStyle = 'white'; ctx.font = `bold ${Math.max(14, player.r/2)}px Roboto`;
-            ctx.textAlign = 'center'; ctx.fillText("Me", player.x, player.y + player.r + 10);
+            ctx.fillStyle = 'white'; ctx.font = `bold ${Math.max(14, player.r/2)}px sans-serif`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText("Me", player.x, player.y);
 
             ctx.restore();
             updateLeaderboard();
@@ -283,14 +296,13 @@
         }
         function gameOver(killer) {
             gameRunning = false;
+            ingameAd.style.display = 'none';
             ui.style.display = 'block';
             const btn = document.getElementById('start-btn');
-            btn.innerText = "Play Again ↺";
-            ui.querySelector('h1').innerText = "GAME OVER";
-            ui.querySelector('p').innerHTML = `Eaten by <b>${killer}</b> 😭<br>Final Size: ${Math.floor(player.r)}`;
+            btn.innerText = "Revenge! (Restart)";
+            ui.querySelector('h1').innerText = "💀 Game Over";
+            ui.querySelector('p').innerHTML = `Eaten by <b>${killer}</b>...<br>Final Size: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(player.r)}</span>`;
         }
-
-        window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
     </script>
 </body>
 </html>
