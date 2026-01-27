@@ -2,11 +2,456 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임 준비중</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>지렁이 키우기 - 심심풀이 게임 연구소</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; background-color: #2d3436; 
+            font-family: 'Noto Sans KR', sans-serif; user-select: none; touch-action: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background-color: #2d3436; }
+        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
+
+        #game-ui { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 9999; background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            pointer-events: auto;
+        }
+
+        #game-ui h1 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #a29bfe; }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+
+        #start-btn {
+            background: #ff7675; color: white; border: none; padding: 15px 0;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #d63031; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+        }
+        #start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; cursor: pointer; }
+        .back-link:hover { color: #636e72; text-decoration: underline; }
+
+        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Jua', sans-serif; min-width: 160px; }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(214, 48, 49, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+
+        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
+        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+
+        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
+        #joystick-bg { width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
+        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+
+        @media (max-width: 600px) {
+            #game-ui { width: 85%; }
+            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
+            #joystick-zone { display: block; }
+        }
+    </style>
 </head>
-<body style="background-color: #2c3e50; color: white; text-align: center; padding-top: 100px;">
-    <h1>🚧 열심히 게임을 개발 중입니다! 🚧</h1>
-    <p>곧 재미있는 게임으로 찾아올게요.</p>
-    <a href="index.html" style="color: yellow; font-size: 20px;">[메인으로 돌아가기]</a>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="leaderboard" class="game-overlay">
+        <h3>🏆 길이 순위</h3>
+        <ul id="rank-list"><li>로딩 중...</li></ul>
+    </div>
+
+    <div id="kill-log" class="game-overlay"></div>
+
+    <div id="joystick-zone">
+        <div id="joystick-bg"><div id="joystick-stick"></div></div>
+    </div>
+
+    <div id="ingame-ad">
+        <span class="ad-label">Sponsored</span>
+        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div id="game-ui">
+        <h1>🐍 지렁이 키우기</h1>
+        <p>빛을 먹고 길어지세요!<br>다른 지렁이의 몸에 머리를 박으면 죽습니다.</p>
+        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
+             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <button id="start-btn">게임 시작 ▶</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 메인으로 나가기</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('game-ui');
+        const rankList = document.getElementById('rank-list');
+        const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
+        const startBtn = document.getElementById('start-btn');
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickStick = document.getElementById('joystick-stick');
+
+        const MAP_SIZE = 4000;
+        
+        let snakes = [];
+        let foods = [];
+        let gameRunning = false;
+        let animationFrameId;
+        
+        let playerIndex = -1;
+        let inputType = 'mouse';
+        let mouseX = 0, mouseY = 0;
+        let joystickVector = { x: 0, y: 0 };
+
+        const adjectives = ["꿈틀대는", "긴", "짧은", "화난", "배고픈", "빛나는", "투명한", "빠른", "느린", "용감한", "무지개", "황금", "어둠의"];
+        const nouns = ["지렁이", "뱀", "아나콘다", "코브라", "구렁이", "장어", "국수", "소세지", "가래떡", "우동", "라면", "파스타"];
+        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if(startBtn) startBtn.addEventListener('click', startGame);
+            mouseX = window.innerWidth/2; mouseY = window.innerHeight/2;
+            initJoystick();
+            window.addEventListener('mousemove', e => { if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } });
+            window.addEventListener('mousedown', () => inputType='mouse');
+            window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+        });
+
+        function startGame() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#2d3436';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            gameRunning = true;
+            snakes = [];
+            foods = [];
+
+            // 먹이 생성
+            for(let i=0; i<1000; i++) addFood();
+
+            // 플레이어
+            playerIndex = addSnake(true);
+            
+            // 봇
+            for(let i=0; i<30; i++) addSnake(false);
+
+            ui.style.display = 'none';
+            ingameAd.style.display = 'block';
+            loop();
+        }
+
+        function addSnake(isHuman) {
+            let x = Math.random() * MAP_SIZE;
+            let y = Math.random() * MAP_SIZE;
+            let color = isHuman ? '#e74c3c' : `hsl(${Math.random()*360}, 70%, 60%)`;
+            
+            snakes.push({
+                isHuman: isHuman,
+                x: x, y: y,
+                angle: Math.random() * Math.PI * 2,
+                speed: 3,
+                radius: 10,
+                length: 10, // 목표 길이
+                body: [], // 실제 몸통 좌표 배열
+                color: color,
+                name: isHuman ? '나 (Player)' : getName(),
+                score: 0,
+                dead: false,
+                aiTimer: 0
+            });
+            
+            // 초기 몸통 생성
+            let s = snakes[snakes.length-1];
+            for(let i=0; i<20; i++) {
+                s.body.push({x: x, y: y});
+            }
+            return snakes.length - 1;
+        }
+
+        function addFood(x, y, value=1) {
+            foods.push({
+                x: x || Math.random() * MAP_SIZE,
+                y: y || Math.random() * MAP_SIZE,
+                r: value > 1 ? 6 : 3, // 큰 먹이는 조금 더 크게
+                color: `hsl(${Math.random()*360}, 100%, 70%)`,
+                value: value
+            });
+        }
+
+        function initJoystick() {
+            let stick = joystickStick;
+            let zone = joystickZone;
+            let maxDist = 35; let active = false;
+            let startX, startY;
+
+            zone.addEventListener('touchstart', e => {
+                e.preventDefault(); active=true; inputType='joystick';
+                let t = e.touches[0];
+                let rect = zone.getBoundingClientRect();
+                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
+            }, {passive:false});
+
+            zone.addEventListener('touchmove', e => {
+                if(!active) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let rect = zone.getBoundingClientRect();
+                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
+            }, {passive:false});
+
+            zone.addEventListener('touchend', e => {
+                e.preventDefault(); active=false;
+                stick.style.transform = `translate(-50%, -50%)`;
+                joystickVector = {x:0, y:0};
+            });
+
+            function updateStick(clientX, clientY, centerX, centerY) {
+                let dx = clientX - centerX;
+                let dy = clientY - centerY;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
+                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                joystickVector = {x: dx, y: dy}; // 벡터 저장
+            }
+        }
+
+        function loop() {
+            if(!gameRunning) return;
+
+            // 배경 지우기
+            ctx.fillStyle = '#2d3436';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 카메라
+            let player = snakes[playerIndex];
+            let zoom = 1;
+            if(player && !player.dead) zoom = Math.max(0.5, 20 / (player.radius + 10)); // 줌아웃
+
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(zoom, zoom);
+            if(player && !player.dead) ctx.translate(-player.x, -player.y);
+            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2); // 죽으면 맵 중앙? 혹은 죽은자리
+
+            // 격자 및 경계
+            ctx.strokeStyle = '#3d4a4d'; ctx.lineWidth = 2; ctx.beginPath();
+            for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+            for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
+            ctx.stroke();
+            ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
+
+            // 먹이 그리기 & 처리
+            for(let i=foods.length-1; i>=0; i--) {
+                let f = foods[i];
+                // 화면 밖 최적화
+                if(player && !player.dead && (Math.abs(f.x - player.x) > canvas.width/zoom && Math.abs(f.y - player.y) > canvas.height/zoom)) continue;
+                
+                ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+                ctx.fillStyle = f.color; 
+                ctx.shadowBlur = 10; ctx.shadowColor = f.color; // 빛나는 효과
+                ctx.fill(); ctx.shadowBlur = 0;
+            }
+
+            // 지렁이 로직
+            snakes.forEach((s, index) => {
+                if(s.dead) return;
+
+                // 1. 방향 전환
+                let targetAngle = s.angle;
+                if(s.isHuman) {
+                    if(inputType === 'joystick' && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
+                        targetAngle = Math.atan2(joystickVector.y, joystickVector.x);
+                    } else {
+                        let dx = mouseX - canvas.width/2;
+                        let dy = mouseY - canvas.height/2;
+                        targetAngle = Math.atan2(dy, dx);
+                    }
+                } else {
+                    // AI
+                    s.aiTimer--;
+                    if(s.aiTimer <= 0) {
+                        s.aiTimer = Math.random() * 20 + 10;
+                        // 기본: 먹이 찾기 or 랜덤
+                        let closestFood = null;
+                        let minDist = 300;
+                        foods.forEach(f => {
+                            let d = Math.hypot(s.x-f.x, s.y-f.y);
+                            if(d < minDist) { minDist = d; closestFood = f; }
+                        });
+                        
+                        if(closestFood) targetAngle = Math.atan2(closestFood.y-s.y, closestFood.x-s.x);
+                        else targetAngle = s.angle + (Math.random()-0.5);
+
+                        // 회피 (벽이나 다른 뱀)
+                        if(s.x < 100 || s.x > MAP_SIZE-100 || s.y < 100 || s.y > MAP_SIZE-100) targetAngle += Math.PI;
+                    }
+                    // 부드러운 회전은 아래 로직에서 처리
+                }
+
+                // 부드러운 회전
+                let diff = targetAngle - s.angle;
+                while (diff <= -Math.PI) diff += Math.PI*2;
+                while (diff > Math.PI) diff -= Math.PI*2;
+                s.angle += diff * 0.1; // 회전 속도
+
+                // 2. 이동
+                let speed = 4; // 기본 속도
+                s.x += Math.cos(s.angle) * speed;
+                s.y += Math.sin(s.angle) * speed;
+
+                // 벽 제한
+                s.x = Math.max(0, Math.min(MAP_SIZE, s.x));
+                s.y = Math.max(0, Math.min(MAP_SIZE, s.y));
+
+                // 3. 몸통 업데이트
+                // 머리 위치 추가
+                s.body.unshift({x: s.x, y: s.y});
+                
+                // 길이 제한 (꼬리 자르기)
+                // body 배열에는 매 프레임 좌표가 들어가므로, 실제 길이 * 간격 만큼 유지
+                let neededLength = s.length * 4; 
+                while(s.body.length > neededLength) s.body.pop();
+
+                // 4. 먹이 먹기
+                for(let i=foods.length-1; i>=0; i--) {
+                    let f = foods[i];
+                    if(Math.hypot(s.x-f.x, s.y-f.y) < s.radius + f.r) {
+                        s.length += f.value * 0.5; // 성장
+                        s.radius = Math.min(25, 10 + s.length * 0.05); // 굵기 증가 제한
+                        s.score += Math.floor(f.value * 10);
+                        foods.splice(i, 1);
+                        // 먹이 리필
+                        if(Math.random() < 0.3) addFood();
+                    }
+                }
+
+                // 5. 그리기 (꼬리부터)
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                // 몸통 (간격을 두고 그림)
+                // 간단하게 구현하기 위해 원을 여러개 그림
+                for(let i=s.body.length-1; i>=0; i-=4) { // 4프레임마다 하나씩 그림 (최적화)
+                    let p = s.body[i];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, s.radius, 0, Math.PI*2);
+                    ctx.fillStyle = s.color;
+                    ctx.fill();
+                }
+                
+                // 머리
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius + 2, 0, Math.PI*2);
+                ctx.fillStyle = '#fff'; // 눈 흰자 느낌
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+                ctx.fillStyle = s.color;
+                ctx.fill();
+
+                // 이름
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Noto Sans KR';
+                ctx.textAlign = 'center';
+                ctx.fillText(s.name, s.x, s.y - s.radius - 10);
+
+                // 6. 충돌 검사 (머리 vs 다른 뱀 몸통)
+                snakes.forEach(other => {
+                    if(s.dead || other.dead) return;
+                    if(s === other) return; // 자기는 통과
+
+                    // 최적화: 거리 체크 먼저
+                    if(Math.abs(s.x - other.x) > 500 || Math.abs(s.y - other.y) > 500) return;
+
+                    // other의 몸통 점들과 비교
+                    // 너무 촘촘하게 검사하면 느리므로 적당히 건너뛰며 검사
+                    for(let i=0; i<other.body.length; i+=5) {
+                        let bp = other.body[i];
+                        if(Math.hypot(s.x - bp.x, s.y - bp.y) < s.radius + other.radius - 2) {
+                            // 충돌! s 사망
+                            killSnake(index);
+                            return; // 루프 종료
+                        }
+                    }
+                });
+            });
+
+            ctx.restore();
+            
+            // 먹이 부족하면 보충
+            if(foods.length < 500) addFood();
+
+            updateLeaderboard();
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function killSnake(idx) {
+            let s = snakes[idx];
+            s.dead = true;
+            
+            // 죽은 자리에 먹이 뿌리기 (길이만큼)
+            for(let i=0; i<s.body.length; i+=3) { // 듬성듬성
+                addFood(s.body[i].x, s.body[i].y, 2); // 가치 2짜리 큰 먹이
+            }
+
+            if(s.isHuman) {
+                gameOver(s.name); // 자신이라면 게임오버
+            } else {
+                // 봇은 부활
+                showKillLog(`${s.name} 사망!`);
+                setTimeout(() => {
+                    if(gameRunning) {
+                        snakes.splice(idx, 1); // 제거 후
+                        addSnake(false); // 새 봇 추가
+                    }
+                }, 2000);
+            }
+        }
+
+        function showKillLog(msg) {
+            killLog.innerText = msg; killLog.style.opacity = 1;
+            setTimeout(() => { killLog.style.opacity = 0; }, 2000);
+        }
+
+        function updateLeaderboard() {
+            let list = [...snakes].filter(s => !s.dead).sort((a,b) => b.length - a.length);
+            let html = '';
+            for(let i=0; i<Math.min(5, list.length); i++) {
+                let s = list[i];
+                let name = s.isHuman ? `<span style="color:#fd79a8">${s.name}</span>` : s.name;
+                html += `<li>${i+1}. ${name} <small>(${Math.floor(s.length)})</small></li>`;
+            }
+            rankList.innerHTML = html;
+        }
+
+        function gameOver(killerName) {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            ingameAd.style.display = 'none';
+            ui.style.display = 'block';
+            
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "복수하러 가기! (재시작)";
+            ui.querySelector('h1').innerText = "💀 게임 오버";
+            ui.querySelector('p').innerHTML = `
+                다른 지렁이에게 부딪혔습니다.<br>
+                최종 길이: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(snakes[playerIndex].length)}</span>
+            `;
+        }
+    </script>
 </body>
 </html>
