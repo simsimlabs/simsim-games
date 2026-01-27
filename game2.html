@@ -2,11 +2,477 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임 준비중</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>땅따먹기 - 심심풀이 게임 연구소</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; background-color: #2c3e50; 
+            font-family: 'Noto Sans KR', sans-serif; user-select: none; touch-action: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
+
+        #game-ui { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 9999; background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            pointer-events: auto;
+        }
+
+        #game-ui h1 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #a29bfe; }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+
+        #start-btn {
+            background: #ff7675; color: white; border: none; padding: 15px 0;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #d63031; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+        }
+        #start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; cursor: pointer; }
+        .back-link:hover { color: #636e72; text-decoration: underline; }
+
+        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Jua', sans-serif; min-width: 160px; }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(231, 76, 60, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+
+        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
+        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+
+        /* Joystick */
+        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
+        #joystick-bg { width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
+        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+
+        @media (max-width: 600px) {
+            #game-ui { width: 85%; }
+            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
+            #joystick-zone { display: block; }
+        }
+    </style>
 </head>
-<body style="background-color: #2c3e50; color: white; text-align: center; padding-top: 100px;">
-    <h1>🚧 열심히 게임을 개발 중입니다! 🚧</h1>
-    <p>곧 재미있는 게임으로 찾아올게요.</p>
-    <a href="index.html" style="color: yellow; font-size: 20px;">[메인으로 돌아가기]</a>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="leaderboard" class="game-overlay">
+        <h3>🏆 땅 점유율</h3>
+        <ul id="rank-list"><li>로딩 중...</li></ul>
+    </div>
+
+    <div id="kill-log" class="game-overlay"></div>
+
+    <div id="joystick-zone">
+        <div id="joystick-bg"><div id="joystick-stick"></div></div>
+    </div>
+
+    <div id="ingame-ad">
+        <span class="ad-label">Sponsored</span>
+        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div id="game-ui">
+        <h1>🚩 땅따먹기</h1>
+        <p>선을 그려서 내 땅으로 돌아오세요.<br>꼬리를 밟히면 죽습니다!</p>
+        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
+             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <button id="start-btn">게임 시작 ▶</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 메인으로 나가기</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('game-ui');
+        const rankList = document.getElementById('rank-list');
+        const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
+        const startBtn = document.getElementById('start-btn');
+        
+        // 조이스틱
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickStick = document.getElementById('joystick-stick');
+
+        // 게임 설정
+        const GRID_SIZE = 20; // 격자 크기
+        let COLS, ROWS;
+        let map = []; // 0: 빈땅, 1: 플레이어, 2~N: 봇들
+        let players = [];
+        let gameRunning = false;
+        let animationFrameId;
+        let frameCount = 0; // 속도 조절용
+
+        // 닉네임
+        const adjectives = ["배고픈", "네모난", "빠른", "용감한", "수상한", "천재", "바보", "즐거운", "거대한", "소심한"];
+        const nouns = ["땅부자", "건물주", "지렁이", "네모", "탱크", "개미", "독수리", "호랑이", "개발자", "게이머"];
+        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            resize();
+            window.addEventListener('resize', resize);
+            if(startBtn) startBtn.addEventListener('click', startGame);
+            initJoystick();
+            // 키보드 이벤트
+            window.addEventListener('keydown', handleKey);
+        });
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            COLS = Math.ceil(canvas.width / GRID_SIZE);
+            ROWS = Math.ceil(canvas.height / GRID_SIZE);
+        }
+
+        function startGame() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            resize(); // 맵 크기 재설정
+
+            // 맵 초기화 (0으로 채움)
+            map = [];
+            for(let y=0; y<ROWS; y++) {
+                let row = [];
+                for(let x=0; x<COLS; x++) row.push(0);
+                map.push(row);
+            }
+
+            players = [];
+            // 플레이어 생성 (ID: 1)
+            spawnPlayer(1, true);
+            // 봇 생성 (ID: 2 ~ 10)
+            for(let i=2; i<=12; i++) spawnPlayer(i, false);
+
+            gameRunning = true;
+            ui.style.display = 'none';
+            ingameAd.style.display = 'block';
+            frameCount = 0;
+            loop();
+        }
+
+        function spawnPlayer(id, isHuman) {
+            // 랜덤 위치 (가장자리 피해서)
+            let x = Math.floor(Math.random() * (COLS - 10)) + 5;
+            let y = Math.floor(Math.random() * (ROWS - 10)) + 5;
+            
+            // 초기 땅 (3x3)
+            for(let dy=-1; dy<=1; dy++) {
+                for(let dx=-1; dx<=1; dx++) {
+                    if(y+dy >=0 && y+dy < ROWS && x+dx >=0 && x+dx < COLS) {
+                        map[y+dy][x+dx] = id;
+                    }
+                }
+            }
+
+            players.push({
+                id: id,
+                isHuman: isHuman,
+                x: x, y: y,
+                dx: 1, dy: 0, // 초기 이동 방향
+                nextDx: 1, nextDy: 0, // 입력 버퍼
+                color: isHuman ? '#e74c3c' : `hsl(${Math.random()*360}, 70%, 50%)`,
+                name: isHuman ? '나 (Player)' : getName(),
+                trail: [], // 꼬리 좌표들
+                score: 9, // 초기 땅 크기
+                dead: false
+            });
+        }
+
+        function handleKey(e) {
+            if(!gameRunning) return;
+            const p = players.find(p => p.isHuman);
+            if(!p || p.dead) return;
+
+            // 반대 방향으로는 못 감
+            if(e.key === 'ArrowUp' && p.dy !== 1) { p.nextDx = 0; p.nextDy = -1; }
+            if(e.key === 'ArrowDown' && p.dy !== -1) { p.nextDx = 0; p.nextDy = 1; }
+            if(e.key === 'ArrowLeft' && p.dx !== 1) { p.nextDx = -1; p.nextDy = 0; }
+            if(e.key === 'ArrowRight' && p.dx !== -1) { p.nextDx = 1; p.nextDy = 0; }
+        }
+
+        // 조이스틱 로직 (4방향 고정)
+        function initJoystick() {
+            let active = false;
+            let startX, startY;
+            const zone = joystickZone;
+            
+            zone.addEventListener('touchstart', e => {
+                e.preventDefault(); active = true;
+                let t = e.touches[0];
+                startX = t.clientX; startY = t.clientY;
+                joystickStick.style.transition = 'none';
+            }, {passive:false});
+
+            zone.addEventListener('touchmove', e => {
+                if(!active) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let dx = t.clientX - startX;
+                let dy = t.clientY - startY;
+                
+                // 스틱 시각 효과
+                let dist = Math.min(30, Math.sqrt(dx*dx + dy*dy));
+                let angle = Math.atan2(dy, dx);
+                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+
+                // 방향 결정 (임계값 넘으면)
+                if(dist > 10) {
+                    const p = players.find(p => p.isHuman);
+                    if(p && !p.dead) {
+                        // 절대값 비교로 주축 찾기
+                        if(Math.abs(dx) > Math.abs(dy)) {
+                            // 좌우
+                            if(dx > 0 && p.dx !== -1) { p.nextDx = 1; p.nextDy = 0; }
+                            else if(dx < 0 && p.dx !== 1) { p.nextDx = -1; p.nextDy = 0; }
+                        } else {
+                            // 상하
+                            if(dy > 0 && p.dy !== -1) { p.nextDx = 0; p.nextDy = 1; }
+                            else if(dy < 0 && p.dy !== 1) { p.nextDx = 0; p.nextDy = -1; }
+                        }
+                    }
+                }
+            }, {passive:false});
+
+            zone.addEventListener('touchend', e => {
+                e.preventDefault(); active = false;
+                joystickStick.style.transform = `translate(-50%, -50%)`;
+            });
+        }
+
+        function loop() {
+            if(!gameRunning) return;
+
+            // 속도 조절 (3프레임마다 1칸 이동)
+            frameCount++;
+            if(frameCount % 3 === 0) {
+                update();
+            }
+            
+            draw();
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function update() {
+            // 죽은 플레이어 제거는 나중에
+            
+            players.forEach(p => {
+                if(p.dead) return;
+
+                // 봇 AI (랜덤 방향 전환)
+                if(!p.isHuman) {
+                    if(Math.random() < 0.05) { // 5% 확률로 방향 전환 시도
+                        const dirs = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
+                        const randDir = dirs[Math.floor(Math.random()*dirs.length)];
+                        // 뒤로는 못 감
+                        if(randDir.dx !== -p.dx || randDir.dy !== -p.dy) {
+                            p.nextDx = randDir.dx; p.nextDy = randDir.dy;
+                        }
+                    }
+                    // 벽 만나면 강제 회전
+                    let futureX = p.x + p.nextDx;
+                    let futureY = p.y + p.nextDy;
+                    if(futureX < 0 || futureX >= COLS || futureY < 0 || futureY >= ROWS) {
+                        // 간단한 회피: 현재 방향의 오른쪽이나 왼쪽으로
+                        if(p.dx !== 0) { p.nextDx = 0; p.nextDy = 1; }
+                        else { p.nextDx = 1; p.nextDy = 0; }
+                    }
+                }
+
+                // 방향 적용
+                p.dx = p.nextDx;
+                p.dy = p.nextDy;
+
+                let nx = p.x + p.dx;
+                let ny = p.y + p.dy;
+
+                // 1. 벽 충돌 (사망)
+                if(nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) {
+                    killPlayer(p, "벽");
+                    return;
+                }
+
+                // 2. 자기 꼬리 충돌 (사망)
+                if(p.trail.some(t => t.x === nx && t.y === ny)) {
+                    killPlayer(p, "자기 꼬리");
+                    return;
+                }
+
+                // 3. 다른 플레이어 꼬리 충돌 (킬)
+                players.forEach(other => {
+                    if(p === other || other.dead) return;
+                    // 꼬리 절단
+                    if(other.trail.some(t => t.x === nx && t.y === ny)) {
+                        killPlayer(other, p.name);
+                        showKillLog(`${p.name}님이 ${other.name}님을 끊었습니다!`);
+                    }
+                    // 머리 대 머리 충돌 (둘 다 사망)
+                    if(other.x === nx && other.y === ny) {
+                        killPlayer(p, "충돌");
+                        killPlayer(other, "충돌");
+                    }
+                });
+
+                if(p.dead) return; // 충돌 처리 후 생존 확인
+
+                // 위치 이동
+                p.x = nx;
+                p.y = ny;
+
+                // 4. 영토 판정
+                if(map[ny][nx] === p.id) {
+                    // 내 땅에 도착
+                    if(p.trail.length > 0) {
+                        // 꼬리가 있었다면 땅으로 변환 (간단한 채우기 로직)
+                        // 1. 꼬리 위치 다 내 땅으로
+                        p.trail.forEach(t => map[t.y][t.x] = p.id);
+                        
+                        // 2. 사각형 채우기 (간단 버전: 꼬리의 최소/최대 범위 내의 빈공간 채우기)
+                        // 완전한 다각형 채우기는 복잡하므로, 여기선 꼬리 궤적 + 꼬리 내부를 
+                        // 플레이어 ID로 바꿉니다. (Paper.io 완벽 구현은 아니지만 비슷함)
+                        let minX = p.x, maxX = p.x, minY = p.y, maxY = p.y;
+                        p.trail.forEach(t => {
+                            minX = Math.min(minX, t.x); maxX = Math.max(maxX, t.x);
+                            minY = Math.min(minY, t.y); maxY = Math.max(maxY, t.y);
+                        });
+                        
+                        // 범위 내의 다른 땅이 아닌 곳(0 또는 다른사람 땅)을 먹음
+                        // (복잡한 알고리즘 대신, "꼬리 궤적"만 먹는걸로 타협하거나
+                        //  "사각형 범위"를 먹는걸로 타협. 여기선 꼬리만 먹는걸로 하되 조금 두껍게)
+                        p.trail = []; // 꼬리 초기화
+                        
+                        // 점수(땅 크기) 재계산
+                        p.score = countScore(p.id);
+                    }
+                } else {
+                    // 남의 땅이나 빈 땅: 꼬리 추가
+                    p.trail.push({x: nx, y: ny});
+                }
+            });
+            
+            updateLeaderboard();
+        }
+
+        function killPlayer(p, reason) {
+            p.dead = true;
+            // 땅 초기화 (선택사항: 죽으면 땅이 사라지게 할지, 남게 할지. 보통 남김)
+            // 여기선 꼬리만 사라지게 함
+            p.trail = [];
+            
+            if(p.isHuman) {
+                gameOver(reason);
+            } else {
+                // 봇은 잠시 후 부활
+                setTimeout(() => {
+                    if(gameRunning) spawnPlayer(p.id, false);
+                }, 2000);
+            }
+        }
+
+        function countScore(id) {
+            let s = 0;
+            for(let y=0; y<ROWS; y++)
+                for(let x=0; x<COLS; x++)
+                    if(map[y][x] === id) s++;
+            return s;
+        }
+
+        function draw() {
+            // 배경
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 땅 그리기
+            for(let y=0; y<ROWS; y++) {
+                for(let x=0; x<COLS; x++) {
+                    let id = map[y][x];
+                    if(id !== 0) {
+                        let owner = players.find(p => p.id === id); // 죽어도 땅은 유지되므로 죽은 플레이어 정보 필요할수 있음
+                        // 죽은 플레이어라도 색상은 유지해야 하는데, players 배열에서 찾음
+                        // (간단하게 구현하기 위해 players 배열에서 id 매칭. 만약 봇이 부활해서 새 객체가 되면 색이 바뀔 수 있음)
+                        // 개선: players 배열 대신 id별 색상 맵을 쓰면 좋음. 여기선 그냥 둠.
+                        if(owner) {
+                            ctx.fillStyle = owner.color;
+                            ctx.globalAlpha = 0.6; // 땅은 약간 투명
+                            ctx.fillRect(x*GRID_SIZE, y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                            ctx.globalAlpha = 1.0;
+                        }
+                    }
+                }
+            }
+
+            // 플레이어 & 꼬리 그리기
+            players.forEach(p => {
+                if(p.dead) return;
+
+                // 꼬리
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = 0.4;
+                p.trail.forEach(t => {
+                    ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                });
+                ctx.globalAlpha = 1.0;
+
+                // 머리 (약간 크게)
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x*GRID_SIZE, p.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                
+                // 테두리
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x*GRID_SIZE, p.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+
+                // 이름
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Noto Sans KR';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.name, p.x*GRID_SIZE + GRID_SIZE/2, p.y*GRID_SIZE - 5);
+            });
+        }
+
+        function showKillLog(msg) {
+            killLog.innerText = msg; killLog.style.opacity = 1;
+            setTimeout(() => { killLog.style.opacity = 0; }, 2000);
+        }
+
+        function updateLeaderboard() {
+            // 점수 내림차순
+            let list = [...players].sort((a,b) => b.score - a.score);
+            let html = '';
+            for(let i=0; i<Math.min(5, list.length); i++) {
+                let p = list[i];
+                let name = p.isHuman ? `<span style="color:#fd79a8">${p.name}</span>` : p.name;
+                html += `<li>${i+1}. ${name} <small>(${p.score})</small></li>`;
+            }
+            rankList.innerHTML = html;
+        }
+
+        function gameOver(reason) {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            ingameAd.style.display = 'none';
+            ui.style.display = 'block';
+            
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "다시 도전하기 ↺";
+            ui.querySelector('h1').innerText = "💀 게임 오버";
+            
+            const p = players.find(p => p.isHuman);
+            ui.querySelector('p').innerHTML = `
+                사망 원인: <b>${reason}</b><br>
+                최종 땅 크기: <span style="color:#6c5ce7; font-weight:bold;">${p ? p.score : 0}</span>칸
+            `;
+        }
+    </script>
 </body>
 </html>
