@@ -14,53 +14,77 @@
         }
 
         canvas { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; 
-            background-color: #f0f0f0; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 0; background-color: #f0f0f0;
         }
 
         #game-ui { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;
-            background: rgba(255, 255, 255, 0.98); padding: 40px; border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; width: 90%; max-width: 400px;
-            border: 5px solid #6c5ce7;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 9999; 
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            text-align: center; width: 90%; max-width: 450px;
+            border: 4px solid #6c5ce7;
         }
 
         #game-ui h1 {
-            font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 20px 0;
+            font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0;
             text-shadow: 2px 2px 0px #a29bfe;
         }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
 
-        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 30px; line-height: 1.6; }
-
-        .play-btn {
-            background: #ff7675; color: white; border: none; padding: 15px 40px; font-size: 1.5rem;
-            font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
-            box-shadow: 0 5px 0 #d63031; transition: transform 0.1s; width: 100%; margin-bottom: 20px;
+        #start-btn {
+            background: #ff7675; color: white; border: none; padding: 15px 0;
+            font-size: 1.6rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #d63031; width: 100%; margin-bottom: 15px;
+            transition: transform 0.1s; display: block;
         }
-        .play-btn:active { transform: translateY(4px); box-shadow: none; }
+        #start-btn:active { transform: translateY(4px); box-shadow: none; }
+        #start-btn:hover { background: #ff6b6b; }
 
-        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; }
-        .back-link:hover { color: #636e72; text-decoration: underline; }
+        .back-link { 
+            display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; font-size: 0.9rem; 
+            cursor: pointer;
+        }
 
         #leaderboard {
-            position: fixed; top: 20px; right: 20px; z-index: 500; background: rgba(0, 0, 0, 0.6);
-            color: white; padding: 15px; border-radius: 10px; min-width: 150px; pointer-events: none;
-            font-family: 'Fredoka One', cursive;
+            position: fixed; top: 15px; right: 15px; z-index: 100;
+            background: rgba(0,0,0,0.6); color: white; padding: 15px;
+            border-radius: 10px; font-family: 'Fredoka One', cursive; pointer-events: none;
         }
-        #leaderboard h3 { margin: 0 0 10px 0; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px; }
-        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
-        #rank-list li { margin-bottom: 5px; }
-
+        #rank-list { list-style: none; padding: 0; margin: 0; }
+        
         #kill-log {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 500;
-            background: rgba(231, 76, 60, 0.9); color: white; padding: 10px 30px; border-radius: 30px;
-            font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            z-index: 100; background: rgba(231, 76, 60, 0.9); color: white;
+            padding: 8px 20px; border-radius: 20px; font-weight: bold;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+
+        #ingame-ad {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            z-index: 50;
+            background: rgba(255,255,255,0.8);
+            padding: 5px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
     <canvas id="gameCanvas"></canvas>
+
+    <div id="ingame-ad">
+        <span style="font-size: 10px; color: #999;">SPONSORED</span>
+        <ins class="adsbygoogle"
+             style="display:inline-block;width:320px;height:50px"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
 
     <div id="leaderboard">
         <h3>🏆 Leaderboard</h3>
@@ -72,13 +96,12 @@
     <div id="game-ui">
         <h1>🦠 Cell Eaters</h1>
         <p>
-            Move your cell with the mouse.<br>
-            Eat smaller cells, avoid big ones!
+            Eat smaller cells, run from bigger ones!
         </p>
         
-        <div style="margin: 20px auto; width: 100%; overflow: hidden;">
+        <div style="margin: 15px 0; min-height: 100px;">
              <ins class="adsbygoogle"
-                 style="display:block; height: 100px;"
+                 style="display:block"
                  data-ad-client="ca-pub-2261846676525942"
                  data-ad-slot="4380369066"
                  data-ad-format="horizontal"
@@ -86,27 +109,34 @@
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
-        <button class="play-btn" onclick="startGame()">Play Now ▶</button>
+        <button id="start-btn">Play Now ▶</button>
         <br>
-        <a href="index.html" class="back-link">🏠 Exit to Menu</a>
+        <a href="index.html" class="back-link">🏠 Main Menu</a>
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('start-btn');
+            if(startBtn) {
+                startBtn.addEventListener('click', startGame);
+            }
+        });
+
         const adjectives = [
             "Hungry", "Sleepy", "Happy", "Angry", "Crazy", "Super", "Lazy", "Fast", "Slow", "Brave", 
-            "Scared", "Smart", "Dumb", "Rich", "Poor", "Epic", "Mystery", "Strange", "Normal", "Great", 
-            "Tiny", "Giant", "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark"
+            "Scared", "Smart", "Dumb", "Rich", "Poor", "Epic", "Mystery", "Strange", "Tiny", "Giant", 
+            "Wild", "Cute", "Evil", "Good", "Bad", "Lucky", "Unlucky", "Dark", "Funny", "Serious",
+            "Magic", "Golden", "Toxic", "Invisible", "Red", "Blue", "Green", "Flying", "Running"
         ];
         const nouns = [
             "Cat", "Dog", "Bear", "Lion", "Tiger", "Human", "Gamer", "Noob", "Pro", "Hacker", 
-            "Coder", "Boss", "King", "Queen", "Prince", "Ninja", "Robot", "Alien", "Ghost", 
-            "Zombie", "Vampire", "Dragon", "Wolf", "Fox", "Bunny", "Mouse", "Cell", "Virus"
+            "Boss", "Ninja", "Robot", "Alien", "Ghost", "Zombie", "Virus", "Cell", "Pizza", "Burger",
+            "Taco", "Sushi", "Cookie", "Donut", "Potato", "Tomato", "King", "Queen", "Prince", "Hero",
+            "Dragon", "Wolf", "Fox", "Bunny", "Mouse", "Star", "Moon", "Sun", "Cloud"
         ];
 
         function generateBotName() {
-            const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-            const noun = nouns[Math.floor(Math.random() * nouns.length)];
-            return `${adj}${noun}`;
+            return adjectives[Math.floor(Math.random() * adjectives.length)] + nouns[Math.floor(Math.random() * nouns.length)];
         }
 
         const canvas = document.getElementById('gameCanvas');
@@ -118,50 +148,43 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        let player = {};
+        let player = { x: 0, y: 0, r: 0, color: '', name: '' };
         let foods = [];
         let bots = [];
         let gameRunning = false;
-        let mapSize = 3000;
-        let cameraX = 0, cameraY = 0;
-
-        function init() {
+        
+        // ★ HARDER DIFFICULTY
+        let mapSize = 6000;
+        
+        function startGame() {
             player = { x: mapSize/2, y: mapSize/2, r: 25, color: '#6c5ce7', name: 'Me (You)' };
             foods = [];
             bots = [];
             
-            for(let i=0; i<800; i++) addFood();
-            for(let i=0; i<40; i++) addBot();
+            for(let i=0; i<1500; i++) addFood();
+            for(let i=0; i<80; i++) addBot();
 
             ui.style.display = 'none';
             gameRunning = true;
             loop();
         }
 
-        window.startGame = function() {
-            init();
-        };
-
         function addFood() {
             foods.push({
-                x: Math.random() * mapSize,
-                y: Math.random() * mapSize,
-                r: Math.random() * 5 + 3,
-                color: `hsl(${Math.random()*360}, 80%, 70%)`
+                x: Math.random() * mapSize, y: Math.random() * mapSize,
+                r: Math.random() * 5 + 3, color: `hsl(${Math.random()*360}, 80%, 70%)`
             });
         }
 
         function addBot() {
             bots.push({
-                x: Math.random() * mapSize,
-                y: Math.random() * mapSize,
-                r: Math.random() * 40 + 15,
+                x: Math.random() * mapSize, y: Math.random() * mapSize,
+                r: Math.random() * 50 + 20, 
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
-                dx: Math.random() - 0.5,
-                dy: Math.random() - 0.5,
-                name: generateBotName(),
-                changeDirTimer: 0,
-                speedMult: Math.random() * 0.5 + 0.8
+                dx: Math.random() - 0.5, dy: Math.random() - 0.5,
+                name: generateBotName(), 
+                changeDirTimer: 0, 
+                speedMult: Math.random() * 0.6 + 0.9
             });
         }
 
@@ -174,85 +197,58 @@
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            cameraX = player.x - canvas.width / 2;
-            cameraY = player.y - canvas.height / 2;
+            let cameraX = player.x - canvas.width / 2;
+            let cameraY = player.y - canvas.height / 2;
             ctx.save();
             ctx.translate(-cameraX, -cameraY);
 
-            ctx.strokeStyle = '#dcdde1';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#dcdde1'; ctx.lineWidth = 1;
             for(let x=0; x<=mapSize; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize); ctx.stroke(); }
             for(let y=0; y<=mapSize; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize,y); ctx.stroke(); }
 
             foods.forEach((f, i) => {
                 drawCircle(f.x, f.y, f.r, f.color);
                 if(getDist(player, f) < player.r) {
-                    player.r += 0.2;
-                    foods.splice(i, 1);
-                    addFood();
+                    player.r += 0.3; foods.splice(i, 1); addFood();
                 }
             });
 
             bots.forEach((b, i) => {
                 b.changeDirTimer--;
                 if(b.changeDirTimer <= 0) {
-                    if(Math.random() < 0.25) { 
-                         b.dx = (player.x - b.x) / 1000;
-                         b.dy = (player.y - b.y) / 1000;
-                    } else {
-                        b.dx = (Math.random() - 0.5) * 4;
-                        b.dy = (Math.random() - 0.5) * 4;
+                    b.dx = (Math.random()-0.5)*5; b.dy = (Math.random()-0.5)*5;
+                    if(Math.random() < 0.4) {
+                        b.dx = (player.x - b.x)/500; b.dy = (player.y - b.y)/500;
                     }
-                    b.changeDirTimer = Math.random() * 100 + 50;
+                    b.changeDirTimer = Math.random()*80 + 20;
                 }
-                b.x += b.dx * b.speedMult;
-                b.y += b.dy * b.speedMult;
-
-                b.x = Math.max(0, Math.min(mapSize, b.x));
-                b.y = Math.max(0, Math.min(mapSize, b.y));
+                b.x += b.dx * b.speedMult; b.y += b.dy * b.speedMult;
+                b.x = Math.max(0, Math.min(mapSize, b.x)); b.y = Math.max(0, Math.min(mapSize, b.y));
 
                 drawCircle(b.x, b.y, b.r, b.color);
-                
-                ctx.fillStyle = '#2d3436';
-                ctx.font = 'bold 12px Roboto';
-                ctx.textAlign = 'center';
-                ctx.fillText(b.name, b.x, b.y + 5);
-
-                bots.forEach((target, j) => {
-                    if(i === j) return;
-                    if(getDist(b, target) < b.r && b.r > target.r * 1.1) {
-                        b.r += target.r * 0.4;
-                        bots.splice(j, 1);
-                        addBot();
-                    }
-                });
+                ctx.fillStyle = '#2d3436'; ctx.font = 'bold 12px Roboto';
+                ctx.textAlign = 'center'; ctx.fillText(b.name, b.x, b.y + 5);
 
                 let dist = getDist(player, b);
                 if(dist < player.r + b.r) {
                     if(player.r > b.r * 1.1) {
-                        player.r += b.r * 0.4;
-                        bots.splice(i, 1);
-                        addBot();
-                        showKillLog(`Ate ${b.name}!`);
+                        player.r += b.r * 0.4; bots.splice(i, 1); addBot(); showKillLog(`Ate ${b.name}!`);
                     } else if (b.r > player.r * 1.1) {
                         gameOver(b.name);
                     }
                 }
             });
 
-            let targetAngle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-            let speed = (300 / player.r) + 2.5;
-            player.x += Math.cos(targetAngle) * speed;
-            player.y += Math.sin(targetAngle) * speed;
-
-            player.x = Math.max(0, Math.min(mapSize, player.x));
-            player.y = Math.max(0, Math.min(mapSize, player.y));
+            let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
+            let speed = (150 / player.r) + 2; 
+            if(speed > 6) speed = 6;
+            
+            player.x += Math.cos(angle) * speed; player.y += Math.sin(angle) * speed;
+            player.x = Math.max(0, Math.min(mapSize, player.x)); player.y = Math.max(0, Math.min(mapSize, player.y));
 
             drawCircle(player.x, player.y, player.r, player.color);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 14px Roboto';
-            ctx.textAlign = 'center';
-            ctx.fillText("Me", player.x, player.y + 5);
+            ctx.fillStyle = 'white'; ctx.font = 'bold 14px Roboto';
+            ctx.textAlign = 'center'; ctx.fillText("Me", player.x, player.y + 5);
 
             ctx.restore();
             updateLeaderboard();
@@ -260,23 +256,15 @@
         }
 
         function drawCircle(x, y, r, color) {
-            ctx.beginPath();
-            ctx.arc(x, y, r, 0, Math.PI*2);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+            ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2; ctx.stroke();
         }
-
         function getDist(a, b) { return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2); }
-
         function showKillLog(msg) {
-            killLog.innerText = msg;
-            killLog.style.opacity = 1;
+            killLog.innerText = msg; killLog.style.opacity = 1;
             setTimeout(() => { killLog.style.opacity = 0; }, 2000);
         }
-
         function updateLeaderboard() {
             let all = [...bots, player].sort((a,b) => b.r - a.r);
             let html = '';
@@ -287,29 +275,13 @@
             }
             rankList.innerHTML = html;
         }
-
         function gameOver(killer) {
             gameRunning = false;
             ui.style.display = 'block';
-            ui.innerHTML = `
-                <h1 style="color:#ff7675">GAME OVER</h1>
-                <p>Eaten by <b>${killer}</b> 😭</p>
-                <h3>Final Size: ${Math.floor(player.r)}</h3>
-                
-                <div style="margin: 20px auto; width: 100%; overflow: hidden;">
-                     <ins class="adsbygoogle"
-                         style="display:block; height: 100px;"
-                         data-ad-client="ca-pub-2261846676525942"
-                         data-ad-slot="4380369066"
-                         data-ad-format="horizontal"
-                         data-full-width-responsive="true"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-                </div>
-
-                <button class="play-btn" onclick="startGame()">Play Again ↺</button>
-                <br>
-                <a href="index.html" class="back-link">🏠 Exit</a>
-            `;
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "Play Again ↺";
+            ui.querySelector('h1').innerText = "GAME OVER";
+            ui.querySelector('p').innerHTML = `Eaten by <b>${killer}</b> 😭<br>Final Size: ${Math.floor(player.r)}`;
         }
 
         window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
