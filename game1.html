@@ -4,57 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세포 키우기 - 심심풀이 게임 연구소</title>
-    <link rel="stylesheet" href="style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
     <style>
+        /* 폰트 불러오기 */
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        /* 초기화 및 기본 설정 */
         body { 
-            overflow: hidden; 
-            background: #f0f0f0; 
             margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background-color: #f0f0f0; 
+            font-family: 'Noto Sans KR', sans-serif;
             user-select: none; /* 드래그 방지 */
         }
-        /* 캔버스는 배경으로 (클릭은 받아야 함) */
+
+        /* 1. 게임 화면 (캔버스) - 맨 뒤로 보냄 */
         canvas { 
             position: fixed; 
             top: 0; 
             left: 0; 
-            z-index: 1; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 0; 
+            background-color: #f0f0f0; /* 배경색 명시 */
         }
-        /* UI는 무조건 캔버스보다 위에 떠야 함 */
+
+        /* 2. 게임 UI (시작 화면/종료 화면) - 맨 앞으로 가져옴 */
         #game-ui { 
-            position: absolute; 
+            position: fixed; 
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%);
-            z-index: 1000 !important; /* 최상단 고정 */
-            background: rgba(255, 255, 255, 0.95);
+            z-index: 1000; /* 최상단 고정 */
+            
+            background: rgba(255, 255, 255, 0.98); /* 거의 불투명하게 */
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             text-align: center;
-            width: 80%;
+            width: 90%;
             max-width: 400px;
+            border: 5px solid #6c5ce7; /* 테두리 추가로 구분감 줌 */
         }
+
+        /* UI 내부 텍스트 디자인 */
+        #game-ui h1 {
+            font-family: 'Jua', sans-serif;
+            font-size: 3rem;
+            color: #6c5ce7;
+            margin: 0 0 20px 0;
+            text-shadow: 2px 2px 0px #a29bfe;
+        }
+
+        #game-ui p {
+            color: #636e72;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* 게임 시작 버튼 디자인 */
+        .play-btn {
+            background: #ff7675;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Jua', sans-serif;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #d63031;
+            transition: transform 0.1s;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .play-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* 나가기 링크 */
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #b2bec3;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { color: #636e72; text-decoration: underline; }
+
+        /* 3. 리더보드 (우측 상단) */
         #leaderboard {
             position: fixed;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
             z-index: 500;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.6);
             color: white;
-            padding: 10px;
+            padding: 15px;
             border-radius: 10px;
-            pointer-events: none; /* 게임 방해 안 하게 */
+            min-width: 150px;
+            pointer-events: none; /* 클릭 통과 */
+            font-family: 'Jua', sans-serif;
         }
+        #leaderboard h3 { margin: 0 0 10px 0; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px; }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
+        #rank-list li { margin-bottom: 5px; }
+
+        /* 4. 킬 로그 (중앙 하단) */
         #kill-log {
             position: fixed;
-            bottom: 50px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 500;
+            background: rgba(231, 76, 60, 0.9);
             color: white;
+            padding: 10px 30px;
+            border-radius: 30px;
             font-weight: bold;
-            text-shadow: 2px 2px 2px black;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
             pointer-events: none;
         }
     </style>
@@ -65,19 +138,19 @@
 
     <div id="leaderboard">
         <h3>🏆 실시간 랭킹</h3>
-        <ul id="rank-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+        <ul id="rank-list"><li>불러오는 중...</li></ul>
     </div>
 
     <div id="kill-log"></div>
 
     <div id="game-ui">
-        <h1 style="color: #6c5ce7; font-size: 2.5rem; margin-bottom: 10px;">🦠 세포 키우기</h1>
-        <p style="color: #636e72; margin-bottom: 20px;">
-            마우스로 이동하세요.<br>
+        <h1>🦠 세포 키우기</h1>
+        <p>
+            마우스로 세포를 움직이세요.<br>
             작은 건 먹고, 큰 건 피하세요!
         </p>
         
-        <div style="margin: 20px 0;">
+        <div style="margin: 20px auto; width: 100%; overflow: hidden;">
              <ins class="adsbygoogle"
                  style="display:block; height: 100px;"
                  data-ad-client="ca-pub-2261846676525942"
@@ -87,27 +160,26 @@
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
-        <button class="play-btn" onclick="startGame()" style="font-size: 1.2rem; cursor: pointer;">게임 시작 ▶</button>
-        <br><br>
-        <a href="index.html" class="back-link" style="color:#b2bec3;">🏠 메인으로 나가기</a>
+        <button class="play-btn" onclick="startGame()">게임 시작 ▶</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 메인 메뉴로 나가기</a>
     </div>
 
     <script>
         // ----------------------------------------
-        // 1. 랜덤 닉네임 생성기 (단어 조합형)
+        // 닉네임 생성기 (형용사 + 명사)
         // ----------------------------------------
         const adjectives = [
             "배고픈", "졸린", "행복한", "화난", "수상한", "천재", "바보", "빠른", "느린", "강력한", 
             "귀여운", "무서운", "심심한", "즐거운", "우울한", "용감한", "겁쟁이", "똑똑한", "멍청한", 
             "부자", "거지", "전설의", "신비한", "이상한", "평범한", "위대한", "소심한", "미친", 
-            "달리는", "나는", "숨어있는", "춤추는", "노래하는", "공부하는", "게임하는", "야근하는"
+            "달리는", "나는", "숨어있는", "춤추는", "노래하는", "공부하는", "게임하는", "야근하는", "퇴근한"
         ];
-        
         const nouns = [
             "사람", "고양이", "강아지", "개발자", "학생", "직장인", "백수", "사장님", "알바생", 
             "지렁이", "세포", "바이러스", "세균", "호랑이", "사자", "토끼", "다람쥐", "곰", 
             "외계인", "히어로", "악당", "로봇", "컴퓨터", "휴지", "물병", "키보드", "마우스", 
-            "치킨", "피자", "햄버거", "라면", "떡볶이", "김치", "한국인", "미국인", "게이머"
+            "치킨", "피자", "햄버거", "라면", "떡볶이", "김치", "한국인", "미국인", "게이머", "유튜버"
         ];
 
         function generateBotName() {
@@ -115,8 +187,10 @@
             const noun = nouns[Math.floor(Math.random() * nouns.length)];
             return `${adj} ${noun}`;
         }
-        // ----------------------------------------
 
+        // ----------------------------------------
+        // 게임 로직
+        // ----------------------------------------
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const ui = document.getElementById('game-ui');
@@ -138,13 +212,10 @@
             foods = [];
             bots = [];
             
-            // 먹이 1000개
-            for(let i=0; i<1000; i++) addFood();
-            
-            // 봇 50마리 (이름 조합 생성)
-            for(let i=0; i<50; i++) addBot();
+            for(let i=0; i<800; i++) addFood();
+            for(let i=0; i<40; i++) addBot();
 
-            // UI 숨기고 게임 시작
+            // UI 숨기기
             ui.style.display = 'none';
             gameRunning = true;
             loop();
@@ -172,7 +243,7 @@
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 dx: Math.random() - 0.5,
                 dy: Math.random() - 0.5,
-                name: generateBotName(), // 조합된 이름 사용
+                name: generateBotName(),
                 changeDirTimer: 0,
                 speedMult: Math.random() * 0.5 + 0.8
             });
@@ -184,7 +255,7 @@
         function loop() {
             if(!gameRunning) return;
 
-            // 배경
+            // 배경 지우기
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -194,12 +265,12 @@
             ctx.translate(-cameraX, -cameraY);
 
             // 격자 그리기
-            ctx.strokeStyle = '#e0e0e0';
+            ctx.strokeStyle = '#dcdde1';
             ctx.lineWidth = 1;
             for(let x=0; x<=mapSize; x+=100) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize); ctx.stroke(); }
             for(let y=0; y<=mapSize; y+=100) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize,y); ctx.stroke(); }
 
-            // 먹이
+            // 먹이 그리기
             foods.forEach((f, i) => {
                 drawCircle(f.x, f.y, f.r, f.color);
                 if(getDist(player, f) < player.r) {
@@ -213,7 +284,7 @@
             bots.forEach((b, i) => {
                 b.changeDirTimer--;
                 if(b.changeDirTimer <= 0) {
-                    if(Math.random() < 0.2) { // 20% 확률로 플레이어 추적
+                    if(Math.random() < 0.25) { 
                          b.dx = (player.x - b.x) / 1000;
                          b.dy = (player.y - b.y) / 1000;
                     } else {
@@ -225,19 +296,16 @@
                 b.x += b.dx * b.speedMult;
                 b.y += b.dy * b.speedMult;
 
-                // 맵 밖 방지
                 b.x = Math.max(0, Math.min(mapSize, b.x));
                 b.y = Math.max(0, Math.min(mapSize, b.y));
 
                 drawCircle(b.x, b.y, b.r, b.color);
                 
-                // 봇 이름 표시
-                ctx.fillStyle = 'black';
-                ctx.font = '12px Noto Sans KR';
+                ctx.fillStyle = '#2d3436';
+                ctx.font = 'bold 12px Noto Sans KR';
                 ctx.textAlign = 'center';
-                ctx.fillText(b.name, b.x, b.y + 4);
+                ctx.fillText(b.name, b.x, b.y + 5);
 
-                // 봇끼리 먹기
                 bots.forEach((target, j) => {
                     if(i === j) return;
                     if(getDist(b, target) < b.r && b.r > target.r * 1.1) {
@@ -247,7 +315,6 @@
                     }
                 });
 
-                // 플레이어와 충돌
                 let dist = getDist(player, b);
                 if(dist < player.r + b.r) {
                     if(player.r > b.r * 1.1) {
@@ -263,7 +330,7 @@
 
             // 플레이어 이동
             let targetAngle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-            let speed = (300 / player.r) + 2; 
+            let speed = (300 / player.r) + 2.5; 
             player.x += Math.cos(targetAngle) * speed;
             player.y += Math.sin(targetAngle) * speed;
 
@@ -287,7 +354,7 @@
             ctx.fillStyle = color;
             ctx.fill();
             ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 2;
             ctx.stroke();
         }
 
@@ -318,7 +385,7 @@
                 <p><b>${killer}</b>에게 먹혔습니다 😭</p>
                 <h3>최종 크기: ${Math.floor(player.r)}</h3>
                 
-                 <div style="margin: 20px 0;">
+                <div style="margin: 20px auto; width: 100%; overflow: hidden;">
                      <ins class="adsbygoogle"
                          style="display:block; height: 100px;"
                          data-ad-client="ca-pub-2261846676525942"
@@ -329,8 +396,8 @@
                 </div>
 
                 <button class="play-btn" onclick="startGame()">다시 하기 ↺</button>
-                <br><br>
-                <a href="index.html" class="back-link" style="color:#b2bec3;">🏠 나가기</a>
+                <br>
+                <a href="index.html" class="back-link">🏠 나가기</a>
             `;
         }
 
