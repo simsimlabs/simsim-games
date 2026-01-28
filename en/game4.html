@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Black Hole - SimSim Game Labs</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; background-color: #34495e; 
+            font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
+
+        #game-ui { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 9999; background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            pointer-events: auto;
+        }
+
+        #game-ui h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #1a1a1a; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #bdc3c7; }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+
+        #start-btn {
+            background: #2c3e50; color: white; border: none; padding: 15px 0;
+            font-size: 1.8rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #1a252f; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+        }
+        #start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .back-link { display: inline-block; margin-top: 10px; color: #7f8c8d; text-decoration: none; cursor: pointer; }
+        .back-link:hover { color: #2c3e50; text-decoration: underline; }
+
+        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px; }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(44, 62, 80, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+
+        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
+        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+
+        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
+        #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
+        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+
+        @media (max-width: 600px) {
+            #game-ui { width: 85%; }
+            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
+            #joystick-zone { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="leaderboard" class="game-overlay">
+        <h3>🏆 Biggest Holes</h3>
+        <ul id="rank-list"><li>Loading...</li></ul>
+    </div>
+
+    <div id="kill-log" class="game-overlay"></div>
+
+    <div id="joystick-zone">
+        <div id="joystick-bg"><div id="joystick-stick"></div></div>
+    </div>
+
+    <div id="ingame-ad">
+        <span class="ad-label">Sponsored</span>
+        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div id="game-ui">
+        <h1>🕳️ Black Hole</h1>
+        <p>Swallow everything in the city!<br>People → Cars → Buildings</p>
+        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
+             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <button id="start-btn">Play Now ▶</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 Main Menu</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('game-ui');
+        const rankList = document.getElementById('rank-list');
+        const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
+        const startBtn = document.getElementById('start-btn');
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickStick = document.getElementById('joystick-stick');
+
+        const MAP_SIZE = 5000;
+        const MAP_BG_COLOR = '#ecf0f1';
+        
+        let holes = [];
+        let props = [];
+        let gameRunning = false;
+        let animationFrameId;
+        
+        let playerIndex = -1;
+        let inputType = 'mouse';
+        let mouseX = 0, mouseY = 0;
+        let joystickVector = { x: 0, y: 0 };
+
+        const adjectives = ["Hungry", "Black", "Scary", "Giant", "Cosmic", "Dark", "Empty", "Super"];
+        const nouns = ["Hole", "Void", "Eater", "Monster", "Vacuum", "Abyss", "Ghost"];
+        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+
+        const PROP_TYPES = [
+            { type: 0, color: '#27ae60', r: 5, score: 1 },   // Person
+            { type: 1, color: '#e67e22', r: 9, score: 3 },   // Tree
+            { type: 2, color: '#e74c3c', r: 14, score: 5 },  // Car
+            { type: 3, color: '#95a5a6', r: 25, score: 15 }, // Small Building
+            { type: 4, color: '#34495e', r: 40, score: 30 }  // Big Building
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if(startBtn) startBtn.addEventListener('click', startGame);
+            mouseX = window.innerWidth/2; mouseY = window.innerHeight/2;
+            initJoystick();
+            window.addEventListener('mousemove', e => { if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } });
+            window.addEventListener('mousedown', () => inputType='mouse');
+            window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+        });
+
+        function startGame() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            gameRunning = true;
+            holes = [];
+            props = [];
+
+            for(let i=0; i<2000; i++) addProp();
+            playerIndex = addHole(true);
+            for(let i=0; i<15; i++) addHole(false);
+
+            ui.style.display = 'none';
+            ingameAd.style.display = 'block';
+            loop();
+        }
+
+        function addHole(isHuman) {
+            let r = 20;
+            if(!isHuman) r = 20 + Math.random() * 20;
+
+            let hole = {
+                isHuman: isHuman,
+                x: Math.random() * (MAP_SIZE - 200) + 100,
+                y: Math.random() * (MAP_SIZE - 200) + 100,
+                r: r,
+                color: '#000000',
+                rimColor: isHuman ? '#6c5ce7' : `hsl(${Math.random()*360}, 70%, 50%)`,
+                name: isHuman ? 'Me (You)' : getName(),
+                score: 0, dead: false,
+                aiTargetX: 0, aiTargetY: 0, aiTimer: 0
+            };
+            holes.push(hole);
+            return holes.length - 1;
+        }
+
+        function addProp() {
+            let rand = Math.random();
+            let typeIdx = 0;
+            if (rand < 0.5) typeIdx = 0;
+            else if (rand < 0.8) typeIdx = 1;
+            else if (rand < 0.92) typeIdx = 2;
+            else if (rand < 0.98) typeIdx = 3;
+            else typeIdx = 4;
+
+            let type = PROP_TYPES[typeIdx];
+            props.push({
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                ...type,
+                angle: Math.random() * Math.PI * 2,
+                alive: true,
+                suckTarget: null
+            });
+        }
+
+        function initJoystick() {
+            let stick = joystickStick;
+            let zone = joystickZone;
+            let maxDist = 35; let active = false;
+            
+            zone.addEventListener('touchstart', e => {
+                e.preventDefault(); active=true; inputType='joystick';
+                let t = e.touches[0];
+                let rect = zone.getBoundingClientRect();
+                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
+            }, {passive:false});
+
+            zone.addEventListener('touchmove', e => {
+                if(!active) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let rect = zone.getBoundingClientRect();
+                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
+            }, {passive:false});
+
+            zone.addEventListener('touchend', e => {
+                e.preventDefault(); active=false;
+                stick.style.transform = `translate(-50%, -50%)`;
+                joystickVector = {x:0, y:0};
+            });
+
+            function updateStick(clientX, clientY, centerX, centerY) {
+                let dx = clientX - centerX;
+                let dy = clientY - centerY;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if(dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
+                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+                joystickVector = {x: dx, y: dy};
+            }
+        }
+
+        function drawProp(ctx, p) {
+            let size = p.r * 2;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+
+            if (p.type === 0) { // Person
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI*2); ctx.fill();
+            } else if (p.type === 1) { // Tree
+                ctx.fillStyle = '#2ecc71';
+                ctx.beginPath(); ctx.arc(-p.r/2, 0, p.r, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(p.r/2, 0, p.r*0.8, 0, Math.PI*2); ctx.fill();
+            } else if (p.type === 2) { // Car
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.r, -p.r/2, size, p.r);
+                ctx.fillStyle = '#ecf0f1';
+                ctx.fillRect(-p.r+2, -p.r/2+2, 4, p.r-4);
+            } else if (p.type >= 3) { // Building
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(-p.r + 5, -p.r + 5, size, size);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.r, -p.r, size, size);
+                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-p.r+2, -p.r+2, size-4, size-4);
+            }
+            ctx.restore();
+        }
+
+        function loop() {
+            if(!gameRunning) return;
+
+            ctx.fillStyle = MAP_BG_COLOR;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let player = holes[playerIndex];
+            let zoom = 1;
+            if(player && !player.dead) zoom = Math.max(0.3, 30 / (player.r + 20));
+
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(zoom, zoom);
+            if(player && !player.dead) ctx.translate(-player.x, -player.y);
+            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
+
+            ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 40; ctx.lineCap = 'round';
+            ctx.beginPath();
+            for(let x=0; x<=MAP_SIZE; x+=300) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+            for(let y=0; y<=MAP_SIZE; y+=300) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
+            ctx.stroke();
+            
+            ctx.strokeStyle = '#7f8c8d'; ctx.lineWidth = 20; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
+
+            for(let i=props.length-1; i>=0; i--) {
+                let p = props[i];
+                if(!p.alive) continue;
+                if(player && !player.dead && Math.abs(p.x - player.x) > (canvas.width/zoom + 100)) continue;
+
+                if(p.suckTarget && !p.suckTarget.dead) {
+                    let dx = p.suckTarget.x - p.x;
+                    let dy = p.suckTarget.y - p.y;
+                    p.x += dx * 0.15;
+                    p.y += dy * 0.15;
+                    p.r *= 0.85;
+                    
+                    if(Math.hypot(dx, dy) < 5) {
+                        p.suckTarget.score += p.score;
+                        p.suckTarget.r += p.score * 0.05; 
+                        props.splice(i, 1);
+                        if(Math.random() < 0.2) addProp();
+                        continue;
+                    }
+                }
+                drawProp(ctx, p);
+            }
+
+            holes.forEach((h, index) => {
+                if(h.dead) return;
+
+                let dx = 0, dy = 0;
+                let speed = 2.5 + (40 / h.r);
+
+                if(h.isHuman) {
+                    if(inputType === 'joystick') { dx = joystickVector.x; dy = joystickVector.y; }
+                    else {
+                        let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
+                        let dist = Math.hypot(mouseX - canvas.width/2, mouseY - canvas.height/2);
+                        if(dist > 10) { dx = Math.cos(angle); dy = Math.sin(angle); }
+                    }
+                    let len = Math.hypot(dx, dy);
+                    if(len > 1) { dx/=len; dy/=len; }
+                } else {
+                    h.aiTimer--;
+                    if(h.aiTimer <= 0) {
+                        h.aiTimer = Math.random() * 20 + 10;
+                        let danger = false;
+                        for(let other of holes) {
+                            if(h !== other && !other.dead && other.r > h.r * 1.1) {
+                                let d = Math.hypot(h.x - other.x, h.y - other.y);
+                                if(d < 300) {
+                                    h.aiTargetX = h.x - (other.x - h.x);
+                                    h.aiTargetY = h.y - (other.y - h.y);
+                                    danger = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!danger) {
+                            let closest = null;
+                            let minDist = 500;
+                            for(let other of holes) {
+                                if(h !== other && !other.dead && h.r > other.r * 1.1) {
+                                    let d = Math.hypot(h.x - other.x, h.y - other.y);
+                                    if(d < minDist) { minDist = d; closest = {x:other.x, y:other.y}; }
+                                }
+                            }
+                            if(!closest) {
+                                for(let p of props) {
+                                    if(!p.alive || p.suckTarget) continue;
+                                    if(h.r > p.r) { 
+                                        let d = Math.hypot(h.x - p.x, h.y - p.y);
+                                        if(d < minDist) { minDist = d; closest = p; }
+                                    }
+                                }
+                            }
+                            if(closest) { h.aiTargetX = closest.x; h.aiTargetY = closest.y; }
+                            else { h.aiTargetX = Math.random() * MAP_SIZE; h.aiTargetY = Math.random() * MAP_SIZE; }
+                        }
+                    }
+                    let angle = Math.atan2(h.aiTargetY - h.y, h.aiTargetX - h.x);
+                    dx = Math.cos(angle); dy = Math.sin(angle);
+                }
+
+                h.x += dx * speed;
+                h.y += dy * speed;
+                h.x = Math.max(0, Math.min(MAP_SIZE, h.x));
+                h.y = Math.max(0, Math.min(MAP_SIZE, h.y));
+
+                ctx.beginPath();
+                ctx.arc(h.x, h.y, h.r + 2, 0, Math.PI*2);
+                ctx.fillStyle = h.rimColor;
+                ctx.shadowBlur = 15; ctx.shadowColor = h.rimColor;
+                ctx.fill(); ctx.shadowBlur = 0;
+
+                ctx.beginPath();
+                ctx.arc(h.x, h.y, h.r, 0, Math.PI*2);
+                ctx.fillStyle = 'black';
+                ctx.fill();
+
+                ctx.fillStyle = '#333';
+                ctx.font = `bold ${Math.max(12, h.r/3)}px sans-serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(h.name, h.x, h.y);
+
+                props.forEach(p => {
+                    if(p.suckTarget) return; 
+                    let dist = Math.hypot(h.x - p.x, h.y - p.y);
+                    if(dist < h.r - p.r/2 && h.r > p.r) {
+                        p.suckTarget = h; 
+                    }
+                });
+
+                holes.forEach((other, oIdx) => {
+                    if(h === other || other.dead) return;
+                    let dist = Math.hypot(h.x - other.x, h.y - other.y);
+                    if(dist < h.r && h.r > other.r * 1.1) {
+                        h.r += other.r * 0.2; h.score += 50; killHole(oIdx);
+                    }
+                });
+            });
+
+            ctx.restore();
+            if(props.length < 500) addProp();
+            updateLeaderboard();
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function killHole(idx) {
+            let h = holes[idx];
+            h.dead = true;
+            if(h.isHuman) gameOver(h.name);
+            else {
+                showKillLog(`${h.name} Destroyed!`);
+                setTimeout(() => { if(gameRunning) { holes.splice(idx, 1); addHole(false); } }, 3000);
+            }
+        }
+
+        function showKillLog(msg) {
+            killLog.innerText = msg; killLog.style.opacity = 1;
+            setTimeout(() => { killLog.style.opacity = 0; }, 2000);
+        }
+
+        function updateLeaderboard() {
+            let list = [...holes].filter(h => !h.dead).sort((a,b) => b.r - a.r);
+            let html = '';
+            for(let i=0; i<Math.min(5, list.length); i++) {
+                let h = list[i];
+                let name = h.isHuman ? `<span style="color:#6c5ce7">${h.name}</span>` : h.name;
+                html += `<li>${i+1}. ${name} <small>(${Math.floor(h.r)})</small></li>`;
+            }
+            rankList.innerHTML = html;
+        }
+
+        function gameOver(killer) {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            ingameAd.style.display = 'none';
+            ui.style.display = 'block';
+            
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "Play Again ↺";
+            ui.querySelector('h1').innerText = "💀 Destroyed";
+            ui.querySelector('p').innerHTML = `
+                Absorbed by a bigger hole.<br>
+                Final Size: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(holes[playerIndex].r)}</span>
+            `;
+        }
+    </script>
+</body>
+</html>
