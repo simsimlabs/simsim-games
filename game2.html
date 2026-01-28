@@ -105,10 +105,10 @@
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
-        // 게임 설정
-        const GRID_SIZE = 25; // 그리드 크기 키움 (가시성 확보)
-        const MAP_WIDTH = 100; // 맵 너비 (칸 수)
-        const MAP_HEIGHT = 100; // 맵 높이 (칸 수)
+        // Game Settings
+        const GRID_SIZE = 25; 
+        const MAP_WIDTH = 150; // Increased map size
+        const MAP_HEIGHT = 150;
         
         let map = []; 
         let players = [];
@@ -135,11 +135,9 @@
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             
-            // 좌표계 초기화
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 맵 생성 (100x100)
             map = [];
             for(let y=0; y<MAP_HEIGHT; y++) {
                 let row = [];
@@ -148,8 +146,8 @@
             }
 
             players = [];
-            spawnPlayer(1, true); // 나
-            for(let i=2; i<=15; i++) spawnPlayer(i, false); // 봇
+            spawnPlayer(1, true); 
+            for(let i=2; i<=20; i++) spawnPlayer(i, false); // Increased bot count
 
             gameRunning = true;
             ui.style.display = 'none';
@@ -162,7 +160,6 @@
             let x = Math.floor(Math.random() * (MAP_WIDTH - 10)) + 5;
             let y = Math.floor(Math.random() * (MAP_HEIGHT - 10)) + 5;
             
-            // 초기 땅 생성
             for(let dy=-1; dy<=1; dy++) {
                 for(let dx=-1; dx<=1; dx++) {
                     map[y+dy][x+dx] = id;
@@ -205,9 +202,7 @@
                 let t = e.touches[0];
                 let dx = t.clientX - startX; let dy = t.clientY - startY;
                 let dist = Math.min(30, Math.sqrt(dx*dx + dy*dy));
-                let angle = Math.atan2(dy, dx);
-                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-
+                
                 if(dist > 10) {
                     const p = players.find(p => p.isHuman);
                     if(p && !p.dead) {
@@ -220,6 +215,8 @@
                         }
                     }
                 }
+                let angle = Math.atan2(dy, dx);
+                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
             }, {passive:false});
 
             zone.addEventListener('touchend', e => {
@@ -230,10 +227,8 @@
 
         function loop() {
             if(!gameRunning) return;
-
-            // [속도 조절] 3 -> 6 (숫자가 클수록 느려짐)
             frameCount++;
-            if(frameCount % 6 === 0) {
+            if(frameCount % 8 === 0) { // Slower speed: update every 8 frames
                 update();
             }
             draw();
@@ -245,13 +240,11 @@
                 if(p.dead) return;
 
                 if(!p.isHuman) {
-                    // AI: 랜덤 이동 + 벽 회피
                     if(Math.random() < 0.05) {
                         const dirs = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
                         const randDir = dirs[Math.floor(Math.random()*dirs.length)];
                         if(randDir.dx !== -p.dx || randDir.dy !== -p.dy) { p.nextDx = randDir.dx; p.nextDy = randDir.dy; }
                     }
-                    // 맵 밖으로 나가려 하면 방향 전환
                     let futureX = p.x + p.nextDx;
                     let futureY = p.y + p.nextDy;
                     if(futureX < 0 || futureX >= MAP_WIDTH || futureY < 0 || futureY >= MAP_HEIGHT) {
@@ -263,20 +256,15 @@
                 p.dx = p.nextDx; p.dy = p.nextDy;
                 let nx = p.x + p.dx; let ny = p.y + p.dy;
 
-                // 사망 조건: 벽 충돌
                 if(nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT) { killPlayer(p, "벽 충돌"); return; }
-                // 사망 조건: 자기 꼬리 밟음
                 if(p.trail.some(t => t.x === nx && t.y === ny)) { killPlayer(p, "자기 꼬리"); return; }
 
-                // 다른 플레이어와의 상호작용
                 players.forEach(other => {
                     if(p === other || other.dead) return;
-                    // 남의 꼬리 끊기
                     if(other.trail.some(t => t.x === nx && t.y === ny)) {
                         killPlayer(other, p.name);
                         if(p.isHuman) showKillLog(`${other.name}님을 끊었습니다!`);
                     }
-                    // 머리 충돌
                     if(other.x === nx && other.y === ny) { killPlayer(p, "충돌"); killPlayer(other, "충돌"); }
                 });
 
@@ -284,12 +272,10 @@
 
                 p.x = nx; p.y = ny;
 
-                // 내 땅 도착
                 if(map[ny][nx] === p.id) {
                     if(p.trail.length > 0) {
                         p.trail.forEach(t => map[t.y][t.x] = p.id);
                         
-                        // 사각형 채우기 알고리즘 (간이)
                         let minX=p.x, maxX=p.x, minY=p.y, maxY=p.y;
                         p.trail.forEach(t => {
                             minX = Math.min(minX, t.x); maxX = Math.max(maxX, t.x);
@@ -297,7 +283,6 @@
                         });
                         for(let cy=minY; cy<=maxY; cy++) {
                             for(let cx=minX; cx<=maxX; cx++) {
-                                // 간단하게 빈땅이거나 꼬리 내부면 먹음
                                 if(map[cy][cx] !== p.id) map[cy][cx] = p.id; 
                             }
                         }
@@ -314,7 +299,6 @@
 
         function killPlayer(p, reason) {
             p.dead = true; p.trail = [];
-            // 땅은 남겨둠 (유령 땅이 됨)
             if(p.isHuman) gameOver(reason);
             else setTimeout(() => { if(gameRunning) spawnPlayer(p.id, false); }, 2000);
         }
@@ -326,24 +310,22 @@
         }
 
         function draw() {
-            // [중요] 카메라 로직 적용
-            ctx.setTransform(1, 0, 0, 1, 0, 0); // 초기화
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = '#2c3e50';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             const p = players.find(pl => pl.isHuman);
-            if(!p) return; // 로딩중
+            if(!p) return;
 
             let camX = p.x * GRID_SIZE - canvas.width / 2;
             let camY = p.y * GRID_SIZE - canvas.height / 2;
             
             ctx.translate(-camX, -camY);
 
-            // 격자 그리기 (배경)
             ctx.strokeStyle = '#34495e';
             ctx.lineWidth = 1;
             ctx.beginPath();
-            // 화면에 보이는 영역만 그리기 최적화
+            
             let startCol = Math.floor(camX / GRID_SIZE);
             let endCol = startCol + (canvas.width / GRID_SIZE) + 1;
             let startRow = Math.floor(camY / GRID_SIZE);
@@ -359,12 +341,10 @@
             }
             ctx.stroke();
 
-            // 맵 경계선
             ctx.strokeStyle = '#c0392b';
             ctx.lineWidth = 5;
             ctx.strokeRect(0, 0, MAP_WIDTH * GRID_SIZE, MAP_HEIGHT * GRID_SIZE);
 
-            // 땅 그리기 (전체 순회는 비효율적이지만 100x100은 괜찮음)
             for(let y=Math.max(0, startRow); y<Math.min(MAP_HEIGHT, endRow); y++) {
                 for(let x=Math.max(0, startCol); x<Math.min(MAP_WIDTH, endCol); x++) {
                     let id = map[y][x];
@@ -372,7 +352,7 @@
                         let owner = players.find(pl => pl.id === id);
                         if(owner) {
                             ctx.fillStyle = owner.color;
-                            ctx.globalAlpha = 0.4; // 약간 투명하게
+                            ctx.globalAlpha = 0.4; 
                             ctx.fillRect(x*GRID_SIZE, y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                             ctx.globalAlpha = 1.0;
                         }
@@ -380,33 +360,27 @@
                 }
             }
 
-            // 플레이어 & 꼬리 그리기
             players.forEach(pl => {
                 if(pl.dead) return;
 
-                // 꼬리
                 ctx.fillStyle = pl.color;
                 ctx.globalAlpha = 0.6;
                 pl.trail.forEach(t => ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE));
                 ctx.globalAlpha = 1.0;
 
-                // 머리 (그림자 효과 추가)
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = 'black';
                 ctx.fillStyle = pl.color;
                 ctx.fillRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                 ctx.shadowBlur = 0;
 
-                // 테두리
                 ctx.strokeStyle = '#fff';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
 
-                // 이름
                 ctx.fillStyle = '#fff';
                 ctx.font = 'bold 12px Noto Sans KR';
                 ctx.textAlign = 'center';
-                // 이름이 맵 밖으로 안 나가게 살짝 조정은 생략 (심플하게)
                 ctx.fillText(pl.name, pl.x*GRID_SIZE + GRID_SIZE/2, pl.y*GRID_SIZE - 5);
             });
         }
@@ -446,4 +420,3 @@
     </script>
 </body>
 </html>
-
