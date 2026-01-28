@@ -106,19 +106,19 @@
 
         const MAP_SIZE = 4000;
         
-        let entities = []; // 모든 객체
+        let entities = []; 
         let particles = [];
         let gameRunning = false;
         let animationFrameId;
         
         let player = null;
+        let inputType = 'mouse';
         let mouseX = 0, mouseY = 0;
+        let joystickVector = { x: 0, y: 0 };
         let isFiring = false;
         
         let keys = { w: false, a: false, s: false, d: false };
         let joystickActive = false;
-        let joystickVector = { x: 0, y: 0 };
-        let lastCamX = MAP_SIZE/2, lastCamY = MAP_SIZE/2;
 
         const adjectives = ["강철", "빠른", "무거운", "성난", "용감한", "미친", "조용한", "전설의"];
         const nouns = ["탱크", "전차", "대포", "수호자", "파괴자", "저격수", "사령관", "파일럿"];
@@ -130,12 +130,15 @@
             if(startBtn) startBtn.addEventListener('click', startGame);
             initJoystick();
             
-            // 마우스 이벤트
-            window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
-            window.addEventListener('mousedown', () => isFiring = true);
-            window.addEventListener('mouseup', () => isFiring = false);
+            // Mouse
+            window.addEventListener('mousemove', e => { 
+                mouseX = e.clientX; 
+                mouseY = e.clientY; 
+            });
+            window.addEventListener('mousedown', () => { isFiring = true; inputType='mouse'; });
+            window.addEventListener('mouseup', () => { isFiring = false; });
             
-            // 키보드 이벤트 (대소문자 구분 없이)
+            // Keyboard (WASD)
             window.addEventListener('keydown', e => { 
                 if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; 
             });
@@ -143,7 +146,7 @@
                 if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; 
             });
             
-            // 모바일 터치 발사
+            // Touch
             window.addEventListener('touchstart', e => {
                 if(e.touches[0].clientX > window.innerWidth/2) isFiring = true;
             }, {passive:false});
@@ -160,12 +163,14 @@
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
             gameRunning = true;
             entities = [];
             particles = [];
             isFiring = false;
             keys = { w: false, a: false, s: false, d: false };
-            lastCamX = MAP_SIZE/2; lastCamY = MAP_SIZE/2;
 
             for(let i=0; i<300; i++) spawnShape();
             player = spawnTank(true);
@@ -190,9 +195,9 @@
                 score: 0, level: 1,
                 name: isHuman ? '나 (Player)' : getName(),
                 reload: 0, reloadTime: 30,
-                damage: 10, speed: 3.0,
+                damage: 10, speed: 2.8,
                 aiTarget: null, aiTimer: 0,
-                remove: false // 삭제 플래그
+                remove: false
             };
             entities.push(t);
             return t;
@@ -218,7 +223,7 @@
         }
 
         function spawnBullet(owner) {
-            owner.x -= Math.cos(owner.gunAngle) * 2;
+            owner.x -= Math.cos(owner.gunAngle) * 2; // 반동
             owner.y -= Math.sin(owner.gunAngle) * 2;
             entities.push({
                 type: 'bullet',
@@ -285,24 +290,24 @@
             ctx.fillStyle = '#b4b4b4';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. 카메라 (안전장치 포함)
-            let camX = lastCamX;
-            let camY = lastCamY;
+            // 2. 플레이어 체크 & 카메라
+            let camX = MAP_SIZE/2, camY = MAP_SIZE/2;
             let zoom = 1;
 
             if (player && !player.remove && !isNaN(player.x)) {
-                camX = player.x;
-                camY = player.y;
+                camX = player.x; camY = player.y;
                 zoom = Math.max(0.6, 25 / (player.r + 10));
-                lastCamX = camX;
-                lastCamY = camY;
+            } else {
+                if(!entities.find(e => e === player && !e.remove)) {
+                     // 플레이어가 죽으면 재생성 대기 중이거나 게임오버 상태
+                }
             }
 
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
             ctx.translate(-camX, -camY);
 
-            // 3. 격자 그리기
+            // 3. 격자
             ctx.strokeStyle = '#a4a4a4'; ctx.lineWidth = 2; ctx.beginPath();
             let viewW = canvas.width / zoom;
             let viewH = canvas.height / zoom;
@@ -318,10 +323,9 @@
                 if(y>=0 && y<=MAP_SIZE) { ctx.moveTo(Math.max(0, startX), y); ctx.lineTo(Math.min(MAP_SIZE, endX), y); }
             }
             ctx.stroke();
-            
             ctx.strokeStyle = '#636e72'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
 
-            // 4. 로직 업데이트 (삭제는 나중에 한꺼번에)
+            // 4. 로직 업데이트 (삭제는 나중에)
             for(let i=0; i<entities.length; i++) {
                 let e = entities[i];
                 if(e.remove) continue;
@@ -331,7 +335,7 @@
                 else if(e.type === 'shape') updateShape(e);
             }
 
-            // 5. 충돌 체크 (안정성을 위해 별도 루프)
+            // 5. 충돌 체크 (안전 루프)
             for(let i=0; i<entities.length; i++) {
                 let b = entities[i];
                 if(b.type !== 'bullet' || b.remove) continue;
@@ -343,11 +347,11 @@
                     let dist = Math.hypot(b.x - e.x, b.y - e.y);
                     if(dist < b.r + e.r) {
                         e.hp -= b.damage;
-                        b.remove = true; // 총알 삭제 마킹
+                        b.remove = true; 
                         createParticles(e.x, e.y, e.color, 3);
 
                         if(e.hp <= 0) {
-                            e.remove = true; // 대상 삭제 마킹
+                            e.remove = true;
                             let owner = entities.find(ent => ent.id === b.ownerId);
                             if(owner && !owner.remove) {
                                 owner.score += e.score || 100;
@@ -355,14 +359,10 @@
                                     owner.level++; owner.damage += 2; owner.maxHp += 10; owner.hp = owner.maxHp; owner.r += 1;
                                 }
                             }
-
-                            if(e.type === 'tank') {
-                                killTank(e, owner ? owner.name : 'Unknown');
-                            } else {
-                                createParticles(e.x, e.y, e.color, 5);
-                            }
+                            if(e.type === 'tank') killTank(e, owner ? owner.name : 'Unknown');
+                            else createParticles(e.x, e.y, e.color, 5);
                         }
-                        break; // 총알 하나는 하나만 맞춤
+                        break; 
                     }
                 }
             }
@@ -372,7 +372,6 @@
 
             // 7. 그리기
             for(let e of entities) {
-                // 화면 밖 최적화
                 if(Math.abs(e.x - camX) > (viewW/2 + 200) || Math.abs(e.y - camY) > (viewH/2 + 200)) {
                     if(e.type !== 'tank') continue;
                 }
@@ -385,7 +384,6 @@
                 p.x += p.vx; p.y += p.vy; p.life--;
                 if(p.life <= 0) { particles.splice(i,1); continue; }
                 if(Math.abs(p.x - camX) > viewW) continue;
-
                 ctx.globalAlpha = p.life / 30;
                 ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
@@ -403,15 +401,16 @@
             let moveX = 0, moveY = 0;
             
             if(t.isHuman) {
-                // 1. 조준 (마우스/터치)
+                // 조준 (마우스/터치)
                 if(inputType === 'mouse') {
-                    // 화면 중앙 기준 마우스 각도
-                    t.gunAngle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
+                    let centerX = canvas.width / 2;
+                    let centerY = canvas.height / 2;
+                    t.gunAngle = Math.atan2(mouseY - centerY, mouseX - centerX);
                 } else if(isFiring) {
                     t.gunAngle = Math.atan2(joystickVector.y, joystickVector.x);
                 }
 
-                // 2. 이동 (WASD)
+                // 이동 (WASD)
                 if(keys.w) moveY = -1;
                 if(keys.s) moveY = 1;
                 if(keys.a) moveX = -1;
@@ -437,7 +436,6 @@
                             if(d < minDist) { minDist = d; closest = other; t.aiState = 'combat'; }
                         }
                     }
-
                     if(!closest) {
                         t.aiState = 'farm';
                         for(let s of entities) {
@@ -454,7 +452,6 @@
                     t.gunAngle = Math.atan2(t.aiTarget.y - t.y, t.aiTarget.x - t.x);
                     moveX = Math.cos(t.gunAngle);
                     moveY = Math.sin(t.gunAngle);
-                    
                     let dist = Math.hypot(t.aiTarget.x - t.x, t.aiTarget.y - t.y);
                     if(dist < 150 && t.aiState === 'combat') { moveX *= -1; moveY *= -1; }
                     else if(dist < 200) { moveX = 0; moveY = 0; }
@@ -475,7 +472,6 @@
                 if(len > 1) len = 1;
                 if(t.isHuman && !joystickActive && len > 0) { moveX /= len; moveY /= len; }
                 
-                // 몸체 회전 (이동 방향)
                 let targetBodyAngle = Math.atan2(moveY, moveX);
                 let diff = targetBodyAngle - t.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
@@ -506,24 +502,20 @@
             ctx.translate(e.x, e.y);
 
             if(e.type === 'tank') {
-                // 포신 (Gun Angle)
                 ctx.save();
                 ctx.rotate(e.gunAngle);
                 ctx.fillStyle = '#999'; ctx.fillRect(0, -e.r/2, e.r*2.2, e.r); 
                 ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.strokeRect(0, -e.r/2, e.r*2.2, e.r);
                 ctx.restore();
 
-                // 몸체 (Body Angle)
                 ctx.rotate(e.angle);
                 ctx.beginPath(); ctx.arc(0, 0, e.r, 0, Math.PI*2);
                 ctx.fillStyle = e.color; ctx.fill(); ctx.stroke();
                 
-                // 궤도 장식
                 ctx.fillStyle = 'rgba(0,0,0,0.2)';
                 ctx.fillRect(-e.r, -e.r, e.r*2, 6);
                 ctx.fillRect(-e.r, e.r-6, e.r*2, 6);
 
-                // 정보 (회전 X)
                 ctx.rotate(-e.angle);
                 ctx.fillStyle = 'black'; ctx.fillRect(-20, e.r + 10, 40, 6);
                 ctx.fillStyle = '#00b894'; ctx.fillRect(-19, e.r + 11, 38 * (e.hp/e.maxHp), 4);
