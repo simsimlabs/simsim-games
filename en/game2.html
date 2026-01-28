@@ -83,6 +83,7 @@
         <p>
             Draw lines to expand land.<br>
             Don't get hit on the tail!<br>
+            <span style="color:#ff7675; font-size:0.9rem;">(Camera follows you now!)</span>
         </p>
         <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
              <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
@@ -105,8 +106,8 @@
         const joystickStick = document.getElementById('joystick-stick');
 
         const GRID_SIZE = 25; 
-        const MAP_WIDTH = 100;
-        const MAP_HEIGHT = 100;
+        const MAP_WIDTH = 150;
+        const MAP_HEIGHT = 150;
         
         let map = []; 
         let players = [];
@@ -145,7 +146,7 @@
 
             players = [];
             spawnPlayer(1, true);
-            for(let i=2; i<=15; i++) spawnPlayer(i, false);
+            for(let i=2; i<=20; i++) spawnPlayer(i, false);
 
             gameRunning = true;
             ui.style.display = 'none';
@@ -200,9 +201,7 @@
                 let t = e.touches[0];
                 let dx = t.clientX - startX; let dy = t.clientY - startY;
                 let dist = Math.min(30, Math.sqrt(dx*dx + dy*dy));
-                let angle = Math.atan2(dy, dx);
-                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-
+                
                 if(dist > 10) {
                     const p = players.find(p => p.isHuman);
                     if(p && !p.dead) {
@@ -215,6 +214,8 @@
                         }
                     }
                 }
+                let angle = Math.atan2(dy, dx);
+                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
             }, {passive:false});
 
             zone.addEventListener('touchend', e => {
@@ -226,7 +227,7 @@
         function loop() {
             if(!gameRunning) return;
             frameCount++;
-            if(frameCount % 6 === 0) {
+            if(frameCount % 8 === 0) {
                 update();
             }
             draw();
