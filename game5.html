@@ -46,7 +46,6 @@
         #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
         .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
 
-        /* Joystick */
         #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
         #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.1); border-radius: 50%; position: relative; border: 2px solid rgba(0,0,0,0.2); }
         #joystick-stick { width: 50px; height: 50px; background: rgba(0, 0, 0, 0.3); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
@@ -132,9 +131,8 @@
             window.addEventListener('mouseup', () => { isFiring = false; });
             
             window.addEventListener('touchstart', e => {
-                // 오른쪽 화면 터치 시 발사
                 if(e.touches[0].clientX > window.innerWidth/2) isFiring = true;
-            }, {passive:false});
+            });
             window.addEventListener('touchend', () => isFiring = false);
         });
 
@@ -146,8 +144,8 @@
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             
-            // 초기화
-            ctx.setTransform(1,0,0,1,0,0);
+            // 초기화 (이게 없으면 이전 좌표계가 남아서 꼬임)
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             gameRunning = true;
@@ -177,7 +175,7 @@
                 score: 0, level: 1,
                 name: isHuman ? '나 (Player)' : getName(),
                 reload: 0, reloadTime: 30,
-                damage: 10, speed: 2.5, // 속도 하향
+                damage: 10, speed: 2.5,
                 aiTarget: null, aiTimer: 0, aiState: 'idle'
             };
             entities.push(t);
@@ -186,7 +184,7 @@
 
         function spawnShape() {
             let rand = Math.random();
-            let shapeType = 0; // 0:Square, 1:Triangle, 2:Pentagon
+            let shapeType = 0; 
             if(rand < 0.6) shapeType = 0;
             else if(rand < 0.9) shapeType = 1;
             else shapeType = 2;
@@ -208,7 +206,6 @@
         }
 
         function spawnBullet(owner) {
-            // 반동
             owner.x -= Math.cos(owner.angle) * 2;
             owner.y -= Math.sin(owner.angle) * 2;
 
@@ -275,7 +272,7 @@
         function loop() {
             if(!gameRunning) return;
 
-            // [중요] 매 프레임마다 변형 초기화 -> 화면 지우기 -> 다시 변형 적용
+            // [핵심] 여기서 좌표계 초기화 -> 지우기 -> 그리기 순서가 중요함
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = '#b4b4b4';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -283,6 +280,7 @@
             let zoom = 1;
             if(player && player.hp > 0) zoom = Math.max(0.6, 25 / (player.r + 10));
 
+            ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
             
@@ -291,7 +289,6 @@
 
             // 격자 그리기
             ctx.strokeStyle = '#a4a4a4'; ctx.lineWidth = 2; ctx.beginPath();
-            // 화면 밖은 그리지 않게 최적화 가능하지만, 간단히 500 단위로 그림
             for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
@@ -302,7 +299,6 @@
             for(let i=entities.length-1; i>=0; i--) {
                 let e = entities[i];
                 
-                // 화면 밖 Culling
                 if(player && Math.abs(e.x - player.x) > (canvas.width/zoom + 200)) {
                     if(e.type !== 'tank') continue; 
                 }
@@ -327,6 +323,7 @@
 
             if(entities.filter(e=>e.type==='shape').length < 200) spawnShape();
 
+            ctx.restore();
             updateLeaderboard();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -473,7 +470,7 @@
 
             if(e.type === 'tank') {
                 ctx.fillStyle = '#999';
-                ctx.fillRect(0, -e.r/2, e.r*2.5, e.r); 
+                ctx.fillRect(0, -e.r/2, e.r*2.5, e.r);
                 ctx.strokeStyle = '#555';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(0, -e.r/2, e.r*2.5, e.r);
@@ -484,7 +481,7 @@
                 ctx.fill();
                 ctx.stroke();
 
-                ctx.rotate(-e.angle); // 이름/체력바는 회전 안함
+                ctx.rotate(-e.angle);
                 ctx.fillStyle = 'black';
                 ctx.fillRect(-20, e.r + 10, 40, 6);
                 ctx.fillStyle = '#00b894';
