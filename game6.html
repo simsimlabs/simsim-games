@@ -50,7 +50,7 @@
 
     <div id="game-ui">
         <div id="score-box">점수: 0</div>
-        <div style="font-size: 1rem; color: #636e72;">다음 과일: <span id="next-fruit">🍒</span></div>
+        <div style="font-size: 1rem; color: #636e72;">다음 과일: <span id="next-fruit" style="font-size: 1.5rem;">🍒</span></div>
     </div>
 
     <a href="index.html" class="back-link">🏠 나가기</a>
@@ -80,12 +80,12 @@
         const finalScoreEl = document.getElementById('final-score');
         const restartBtn = document.getElementById('restart-btn');
 
-        // 과일 단계 (색상, 크기)
+        // 과일 단계 (이모지 사용, color는 파티클용)
         const FRUITS = [
             { r: 15, color: '#ff7675', name: '🍒' }, // 체리
             { r: 25, color: '#fd79a8', name: '🍓' }, // 딸기
             { r: 35, color: '#6c5ce7', name: '🍇' }, // 포도
-            { r: 45, color: '#fab1a0', name: '🍊' }, // 한라봉
+            { r: 45, color: '#fab1a0', name: '🍊' }, // 귤(오렌지)
             { r: 58, color: '#e17055', name: '🍎' }, // 사과
             { r: 72, color: '#ffeaa7', name: '🍐' }, // 배
             { r: 88, color: '#fdcb6e', name: '🍑' }, // 복숭아
@@ -95,13 +95,13 @@
         ];
 
         let balls = [];
+        let particles = [];
         let score = 0;
         let gameOver = false;
         let nextFruitIdx = 0;
-        let dropping = false; // 드랍 쿨타임
+        let dropping = false;
         let mouseX = 0;
 
-        // 화면 설정 (모바일 대응)
         let GAME_WIDTH = 450; 
         let GAME_HEIGHT = 800;
 
@@ -109,21 +109,19 @@
             if(window.innerWidth < 500) {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
-                GAME_WIDTH = window.innerWidth;
-                GAME_HEIGHT = window.innerHeight;
             } else {
                 canvas.width = 450;
                 canvas.height = 800;
-                GAME_WIDTH = 450;
-                GAME_HEIGHT = 800;
             }
+            GAME_WIDTH = canvas.width;
+            GAME_HEIGHT = canvas.height;
         }
         window.addEventListener('resize', resize);
         resize();
 
-        // 초기화
         function init() {
             balls = [];
+            particles = [];
             score = 0;
             gameOver = false;
             gameOverEl.style.display = 'none';
@@ -133,7 +131,6 @@
             requestAnimationFrame(loop);
         }
 
-        // 입력 처리
         canvas.addEventListener('mousemove', e => {
             const rect = canvas.getBoundingClientRect();
             mouseX = e.clientX - rect.left;
@@ -148,15 +145,12 @@
             if(gameOver || dropping) return;
             dropping = true;
             
-            // 과일 생성
             let x = Math.max(FRUITS[nextFruitIdx].r, Math.min(GAME_WIDTH - FRUITS[nextFruitIdx].r, mouseX));
             addBall(x, 50, nextFruitIdx);
 
-            // 다음 과일 준비
-            nextFruitIdx = Math.floor(Math.random() * 4); // 작은 과일 중 랜덤
+            nextFruitIdx = Math.floor(Math.random() * 4);
             updateNextFruit();
 
-            // 쿨타임
             setTimeout(() => { dropping = false; }, 600);
         }
 
@@ -174,57 +168,56 @@
                 vx: 0, vy: 0,
                 level: level,
                 r: FRUITS[level].r,
-                color: FRUITS[level].color,
-                mass: FRUITS[level].r, // 무거울수록 덜 밀림
+                mass: FRUITS[level].r,
+                angle: 0, // 회전을 위한 각도
                 merged: false
             });
         }
 
-        // 물리 엔진 루프
+        function createParticles(x, y, color) {
+            for(let i=0; i<10; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5,
+                    life: 20 + Math.random()*10, color: color, r: Math.random()*3 + 2
+                });
+            }
+        }
+
         function loop() {
             if(gameOver) return;
 
-            // 1. 업데이트 (중력, 이동, 벽 충돌)
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 가이드라인 (드랍 위치)
+            // 가이드라인 및 미리보기
             if(!dropping) {
                 ctx.beginPath();
-                ctx.moveTo(mouseX, 20);
-                ctx.lineTo(mouseX, GAME_HEIGHT);
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                ctx.moveTo(mouseX, 20); ctx.lineTo(mouseX, GAME_HEIGHT);
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2; ctx.stroke();
                 
-                // 미리보기
                 ctx.globalAlpha = 0.5;
-                ctx.fillStyle = FRUITS[nextFruitIdx].color;
-                ctx.beginPath();
                 let previewX = Math.max(FRUITS[nextFruitIdx].r, Math.min(GAME_WIDTH - FRUITS[nextFruitIdx].r, mouseX));
-                ctx.arc(previewX, 50, FRUITS[nextFruitIdx].r, 0, Math.PI*2);
-                ctx.fill();
+                ctx.font = `${FRUITS[nextFruitIdx].r * 1.9}px Arial`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(FRUITS[nextFruitIdx].name, previewX, 50);
                 ctx.globalAlpha = 1.0;
             }
 
-            // 상단 데드라인
+            // 데드라인
             ctx.beginPath();
-            ctx.moveTo(0, 100);
-            ctx.lineTo(GAME_WIDTH, 100);
-            ctx.strokeStyle = '#fab1a0';
-            ctx.setLineDash([5, 5]);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.moveTo(0, 100); ctx.lineTo(GAME_WIDTH, 100);
+            ctx.strokeStyle = '#fab1a0'; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
 
-            // 물리 계산 (여러 번 반복하여 안정성 확보)
-            for(let step=0; step<8; step++) {
+            // --- 물리 엔진 속도 조절 ---
+            // 기존 8번 반복에서 4번 반복으로 줄여 전체 속도를 절반으로 낮춤
+            for(let step=0; step<4; step++) {
                 balls.forEach(b => {
                     b.vy += 0.08; // 중력
-                    b.x += b.vx;
-                    b.y += b.vy;
-                    
-                    // 마찰
-                    b.vx *= 0.99;
-                    b.vy *= 0.99;
+                    b.x += b.vx; b.y += b.vy;
+                    b.vx *= 0.99; b.vy *= 0.99; // 마찰
+
+                    // 굴러가는 효과 (x축 속도에 따라 회전)
+                    b.angle += b.vx * 0.02; 
 
                     // 벽 충돌
                     if(b.x < b.r) { b.x = b.r; b.vx *= -0.5; }
@@ -232,87 +225,74 @@
                     if(b.y > GAME_HEIGHT - b.r) { b.y = GAME_HEIGHT - b.r; b.vy *= -0.5; }
                 });
 
-                // 공끼리 충돌
+                // 충돌 및 합치기
                 for(let i=0; i<balls.length; i++) {
                     for(let j=i+1; j<balls.length; j++) {
-                        let b1 = balls[i];
-                        let b2 = balls[j];
+                        let b1 = balls[i], b2 = balls[j];
                         if(b1.merged || b2.merged) continue;
-
-                        let dx = b2.x - b1.x;
-                        let dy = b2.y - b1.y;
-                        let distSq = dx*dx + dy*dy;
-                        let radSum = b1.r + b2.r;
+                        let dx = b2.x - b1.x, dy = b2.y - b1.y;
+                        let distSq = dx*dx + dy*dy, radSum = b1.r + b2.r;
 
                         if(distSq < radSum * radSum) {
                             let dist = Math.sqrt(distSq);
                             
-                            // 합치기 로직
+                            // 합치기
                             if(b1.level === b2.level && b1.level < FRUITS.length-1) {
-                                b1.merged = true; 
-                                b2.merged = true;
-                                let newX = (b1.x + b2.x) / 2;
-                                let newY = (b1.y + b2.y) / 2;
+                                b1.merged = true; b2.merged = true;
+                                let newX = (b1.x + b2.x) / 2, newY = (b1.y + b2.y) / 2;
                                 addBall(newX, newY, b1.level + 1);
+                                createParticles(newX, newY, FRUITS[b1.level].color); // 파티클 효과
                                 score += (b1.level + 1) * 10;
                                 scoreEl.innerText = `점수: ${score}`;
                                 continue;
                             }
 
-                            // 밀어내기 (위치 보정)
-                            let overlap = radSum - dist;
-                            let nx = dx / dist;
-                            let ny = dy / dist;
-
-                            let moveX = nx * overlap * 0.5;
-                            let moveY = ny * overlap * 0.5;
-
-                            b1.x -= moveX; b1.y -= moveY;
-                            b2.x += moveX; b2.y += moveY;
-
-                            // 충격량 (속도 교환 + 탄성)
-                            let dvx = b2.vx - b1.vx;
-                            let dvy = b2.vy - b1.vy;
+                            // 물리 충돌 계산
+                            let overlap = radSum - dist, nx = dx / dist, ny = dy / dist;
+                            b1.x -= nx * overlap * 0.5; b1.y -= ny * overlap * 0.5;
+                            b2.x += nx * overlap * 0.5; b2.y += ny * overlap * 0.5;
+                            
+                            let dvx = b2.vx - b1.vx, dvy = b2.vy - b1.vy;
                             let velAlongNormal = dvx * nx + dvy * ny;
-
                             if(velAlongNormal > 0) continue;
-
-                            let restitution = 0.3; // 탄성 계수
-                            let impulse = -(1 + restitution) * velAlongNormal;
-                            // 질량 고려 (간단히 반지름으로)
-                            impulse /= (1/b1.mass + 1/b2.mass);
-
-                            let impulseX = impulse * nx;
-                            let impulseY = impulse * ny;
-
-                            b1.vx -= (1/b1.mass) * impulseX;
-                            b1.vy -= (1/b1.mass) * impulseY;
-                            b2.vx += (1/b2.mass) * impulseX;
-                            b2.vy += (1/b2.mass) * impulseY;
+                            let impulse = -(1.3) * velAlongNormal / (1/b1.mass + 1/b2.mass);
+                            b1.vx -= (1/b1.mass) * impulse * nx; b1.vy -= (1/b1.mass) * impulse * ny;
+                            b2.vx += (1/b2.mass) * impulse * nx; b2.vy += (1/b2.mass) * impulse * ny;
                         }
                     }
                 }
             }
 
-            // 삭제된 공 정리
             balls = balls.filter(b => !b.merged);
 
-            // 그리기
+            // 과일 그리기 (이모지)
             balls.forEach(b => {
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-                ctx.fillStyle = b.color;
-                ctx.fill();
-                ctx.lineWidth = 3;
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-                ctx.stroke();
+                ctx.save();
+                ctx.translate(b.x, b.y);
+                ctx.rotate(b.angle); // 회전 적용
                 
-                // 표정 (귀여움 추가)
-                ctx.fillStyle = 'rgba(255,255,255,0.8)';
-                ctx.beginPath(); ctx.arc(b.x - b.r/3, b.y - b.r/4, b.r/5, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(b.x + b.r/3, b.y - b.r/4, b.r/5, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(b.x, b.y + b.r/5, b.r/8, 0, Math.PI, false); ctx.stroke();
+                // 이모지 그리기 (반지름에 비례한 크기)
+                ctx.font = `${b.r * 1.9}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(FRUITS[b.level].name, 0, 0); // (0,0)에 그리기
+
+                // 디버그용 원 (주석 처리됨)
+                // ctx.beginPath(); ctx.arc(0, 0, b.r, 0, Math.PI*2); ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.stroke();
+
+                ctx.restore();
             });
+
+             // 파티클 그리기
+             for(let i=particles.length-1; i>=0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life--;
+                if(p.life <= 0) { particles.splice(i,1); continue; }
+                ctx.globalAlpha = p.life / 30;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
 
             // 게임 오버 체크
             for(let b of balls) {
