@@ -2,11 +2,607 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>게임 준비중</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>탱크 배틀 - 심심풀이 게임 연구소</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; background-color: #b4b4b4; 
+            font-family: 'Noto Sans KR', sans-serif; user-select: none; touch-action: none;
+        }
+
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
+
+        #game-ui { 
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 9999; background: rgba(255, 255, 255, 0.98);
+            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
+            pointer-events: auto;
+        }
+
+        #game-ui h1 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #2d3436; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #bdc3c7; }
+        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+
+        #start-btn {
+            background: #0984e3; color: white; border: none; padding: 15px 0;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 6px 0 #0769b5; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+        }
+        #start-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .back-link { display: inline-block; margin-top: 10px; color: #636e72; text-decoration: none; cursor: pointer; }
+        .back-link:hover { color: #2d3436; text-decoration: underline; }
+
+        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Jua', sans-serif; min-width: 160px; }
+        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+
+        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(45, 52, 54, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+
+        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
+        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+
+        /* Joystick */
+        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
+        #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.1); border-radius: 50%; position: relative; border: 2px solid rgba(0,0,0,0.2); }
+        #joystick-stick { width: 50px; height: 50px; background: rgba(0, 0, 0, 0.3); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        @media (max-width: 600px) {
+            #game-ui { width: 85%; }
+            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
+            #joystick-zone { display: block; }
+        }
+    </style>
 </head>
-<body style="background-color: #2c3e50; color: white; text-align: center; padding-top: 100px;">
-    <h1>🚧 열심히 게임을 개발 중입니다! 🚧</h1>
-    <p>곧 재미있는 게임으로 찾아올게요.</p>
-    <a href="index.html" style="color: yellow; font-size: 20px;">[메인으로 돌아가기]</a>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="leaderboard" class="game-overlay">
+        <h3>🏆 점수 랭킹</h3>
+        <ul id="rank-list"><li>로딩 중...</li></ul>
+    </div>
+
+    <div id="kill-log" class="game-overlay"></div>
+
+    <div id="joystick-zone">
+        <div id="joystick-bg"><div id="joystick-stick"></div></div>
+    </div>
+
+    <div id="ingame-ad">
+        <span class="ad-label">Sponsored</span>
+        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div id="game-ui">
+        <h1>🛡️ 탱크 배틀</h1>
+        <p>도형을 부수고 레벨업하세요!<br>마우스 클릭 / 터치로 발사!</p>
+        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
+             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <button id="start-btn">게임 시작 ▶</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 메인으로 나가기</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('game-ui');
+        const rankList = document.getElementById('rank-list');
+        const killLog = document.getElementById('kill-log');
+        const ingameAd = document.getElementById('ingame-ad');
+        const startBtn = document.getElementById('start-btn');
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickStick = document.getElementById('joystick-stick');
+
+        const MAP_SIZE = 4000;
+        
+        let entities = []; // 탱크, 총알, 도형 통합 관리
+        let particles = [];
+        let gameRunning = false;
+        let animationFrameId;
+        
+        let player = null;
+        let inputType = 'mouse';
+        let mouseX = 0, mouseY = 0;
+        let joystickVector = { x: 0, y: 0 };
+        let isFiring = false;
+
+        const adjectives = ["강철", "빠른", "무거운", "성난", "용감한", "미친", "조용한", "전설의"];
+        const nouns = ["탱크", "전차", "대포", "수호자", "파괴자", "저격수", "사령관", "파일럿"];
+        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            resize();
+            window.addEventListener('resize', resize);
+            if(startBtn) startBtn.addEventListener('click', startGame);
+            initJoystick();
+            
+            // Mouse/Touch Aiming & Firing
+            window.addEventListener('mousemove', e => { 
+                if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } 
+            });
+            window.addEventListener('mousedown', () => { isFiring = true; inputType='mouse'; });
+            window.addEventListener('mouseup', () => { isFiring = false; });
+            
+            // Mobile Tap to Fire (Right side)
+            window.addEventListener('touchstart', e => {
+                if(e.touches[0].clientX > window.innerWidth/2) isFiring = true;
+            });
+            window.addEventListener('touchend', () => isFiring = false);
+        });
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function startGame() {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            ctx.setTransform(1,0,0,1,0,0);
+            
+            gameRunning = true;
+            entities = [];
+            particles = [];
+
+            // 도형 생성
+            for(let i=0; i<300; i++) spawnShape();
+
+            // 플레이어
+            player = spawnTank(true);
+            
+            // 봇
+            for(let i=0; i<15; i++) spawnTank(false);
+
+            ui.style.display = 'none';
+            ingameAd.style.display = 'block';
+            loop();
+        }
+
+        function spawnTank(isHuman) {
+            let t = {
+                type: 'tank',
+                id: Math.random(),
+                isHuman: isHuman,
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                r: 20,
+                color: isHuman ? '#00b894' : '#d63031', // 초록(나), 빨강(적)
+                angle: 0,
+                hp: 100, maxHp: 100,
+                score: 0, level: 1,
+                name: isHuman ? '나 (Player)' : getName(),
+                reload: 0, reloadTime: 30,
+                damage: 10, speed: 3,
+                aiTarget: null, aiTimer: 0, aiState: 'idle'
+            };
+            entities.push(t);
+            return t;
+        }
+
+        function spawnShape() {
+            let rand = Math.random();
+            let shapeType = 0; // 0:Square, 1:Triangle, 2:Pentagon
+            if(rand < 0.6) shapeType = 0;
+            else if(rand < 0.9) shapeType = 1;
+            else shapeType = 2;
+
+            let s = {
+                type: 'shape',
+                shapeType: shapeType,
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                r: 15 + shapeType * 5,
+                angle: Math.random() * Math.PI,
+                rotationSpeed: (Math.random()-0.5) * 0.05,
+                hp: 10 + shapeType * 20,
+                maxHp: 10 + shapeType * 20,
+                score: 10 + shapeType * 20,
+                color: shapeType===0 ? '#ffeaa7' : (shapeType===1 ? '#ff7675' : '#74b9ff')
+            };
+            entities.push(s);
+        }
+
+        function spawnBullet(owner) {
+            // 반동 효과
+            owner.x -= Math.cos(owner.angle) * 2;
+            owner.y -= Math.sin(owner.angle) * 2;
+
+            entities.push({
+                type: 'bullet',
+                ownerId: owner.id,
+                x: owner.x + Math.cos(owner.angle) * (owner.r + 5),
+                y: owner.y + Math.sin(owner.angle) * (owner.r + 5),
+                vx: Math.cos(owner.angle) * 10,
+                vy: Math.sin(owner.angle) * 10,
+                r: 8,
+                damage: owner.damage,
+                life: 100,
+                color: owner.color
+            });
+        }
+
+        function createParticles(x, y, color, count) {
+            for(let i=0; i<count; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random()-0.5)*5,
+                    vy: (Math.random()-0.5)*5,
+                    life: 30,
+                    color: color,
+                    r: Math.random()*3 + 1
+                });
+            }
+        }
+
+        // 조이스틱
+        function initJoystick() {
+            let active = false; let startX, startY;
+            const zone = joystickZone; const stick = joystickStick;
+            const maxDist = 35;
+
+            zone.addEventListener('touchstart', e => {
+                e.preventDefault(); active=true; inputType='joystick';
+                let t = e.touches[0]; startX = t.clientX; startY = t.clientY;
+                stick.style.transition = 'none';
+            }, {passive:false});
+
+            zone.addEventListener('touchmove', e => {
+                if(!active) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let dx = t.clientX - startX; let dy = t.clientY - startY;
+                let dist = Math.min(maxDist, Math.sqrt(dx*dx + dy*dy));
+                let angle = Math.atan2(dy, dx);
+                stick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+                
+                // 벡터 저장
+                joystickVector = { 
+                    x: Math.cos(angle) * (dist/maxDist), 
+                    y: Math.sin(angle) * (dist/maxDist) 
+                };
+            }, {passive:false});
+
+            zone.addEventListener('touchend', e => {
+                e.preventDefault(); active=false;
+                stick.style.transform = `translate(-50%, -50%)`;
+                joystickVector = {x:0, y:0};
+            });
+        }
+
+        function loop() {
+            if(!gameRunning) return;
+
+            // 배경
+            ctx.fillStyle = '#b4b4b4';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 카메라
+            let zoom = 1;
+            if(player && player.hp > 0) zoom = Math.max(0.6, 25 / (player.r + 10)); // 줌아웃
+
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(zoom, zoom);
+            if(player && player.hp > 0) ctx.translate(-player.x, -player.y);
+            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
+
+            // 격자
+            ctx.strokeStyle = '#a4a4a4'; ctx.lineWidth = 2; ctx.beginPath();
+            for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+            for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
+            ctx.stroke();
+            ctx.strokeStyle = '#636e72'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
+
+            // 업데이트 & 그리기
+            for(let i=entities.length-1; i>=0; i--) {
+                let e = entities[i];
+                
+                // Culling (화면 밖 안그리기)
+                if(player && Math.abs(e.x - player.x) > canvas.width/zoom + 100) {
+                    if(e.type !== 'tank') continue; // 탱크는 AI때문에 멀어도 로직은 돌아야 함
+                }
+
+                if(e.type === 'tank') updateTank(e);
+                else if(e.type === 'bullet') updateBullet(e, i);
+                else if(e.type === 'shape') updateShape(e);
+
+                // 그리기
+                drawEntity(e);
+            }
+
+            // 파티클
+            for(let i=particles.length-1; i>=0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life--;
+                if(p.life <= 0) { particles.splice(i,1); continue; }
+                ctx.globalAlpha = p.life / 30;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+
+            // 도형 리필
+            if(entities.filter(e=>e.type==='shape').length < 200) spawnShape();
+
+            ctx.restore();
+            updateLeaderboard();
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function updateTank(t) {
+            if(t.hp <= 0) return;
+
+            // 이동
+            let dx = 0, dy = 0;
+            
+            if(t.isHuman) {
+                // 조준 (마우스)
+                if(inputType === 'mouse') {
+                    t.angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
+                } else if(isFiring) { // 모바일 조준 (가장 가까운 적 자동 조준)
+                    // (간단히: 이동 방향으로 쏨)
+                    t.angle = Math.atan2(joystickVector.y, joystickVector.x);
+                }
+
+                // 이동 (조이스틱 or 키보드)
+                if(inputType === 'joystick') { dx = joystickVector.x; dy = joystickVector.y; }
+                else {
+                    // 키보드 입력은 여기에 추가 (WASD) - 현재는 마우스모드일때 키보드 미구현, 조이스틱/마우스만
+                    // PC에서 WASD 추가하려면 이벤트 리스너 필요. 여기선 간단히 마우스 거리로 이동하게 함
+                    let dist = Math.hypot(mouseX - canvas.width/2, mouseY - canvas.height/2);
+                    if(dist > 50) { 
+                        let ang = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
+                        dx = Math.cos(ang); dy = Math.sin(ang);
+                    }
+                }
+                
+                // 발사
+                if(isFiring && t.reload <= 0) {
+                    spawnBullet(t);
+                    t.reload = t.reloadTime;
+                }
+
+            } else {
+                // --- 봇 AI ---
+                t.aiTimer--;
+                if(t.aiTimer <= 0) {
+                    t.aiTimer = 10;
+                    
+                    // 1. 타겟 찾기 (도형 or 플레이어)
+                    let closest = null;
+                    let minDist = 600; // 시야
+                    
+                    // 적 탱크 우선
+                    entities.forEach(other => {
+                        if(other.type === 'tank' && other !== t && other.hp > 0) {
+                            let d = Math.hypot(t.x-other.x, t.y-other.y);
+                            if(d < minDist) { minDist = d; closest = other; t.aiState = 'combat'; }
+                        }
+                    });
+
+                    // 없으면 도형
+                    if(!closest) {
+                        t.aiState = 'farm';
+                        entities.forEach(s => {
+                            if(s.type === 'shape') {
+                                let d = Math.hypot(t.x-s.x, t.y-s.y);
+                                if(d < minDist) { minDist = d; closest = s; }
+                            }
+                        });
+                    }
+                    t.aiTarget = closest;
+                }
+
+                if(t.aiTarget) {
+                    // 조준
+                    t.angle = Math.atan2(t.aiTarget.y - t.y, t.aiTarget.x - t.x);
+                    
+                    // 거리
+                    let dist = Math.hypot(t.aiTarget.x - t.x, t.aiTarget.y - t.y);
+                    
+                    if(dist > 150) { // 너무 가까우면 멈춤
+                        dx = Math.cos(t.angle);
+                        dy = Math.sin(t.angle);
+                    } else if(dist < 100 && t.aiState === 'combat') { // 너무 가까우면 후진
+                        dx = -Math.cos(t.angle);
+                        dy = -Math.sin(t.angle);
+                    }
+
+                    // 발사
+                    if(dist < 400 && t.reload <= 0) {
+                        spawnBullet(t);
+                        t.reload = t.reloadTime;
+                    }
+                } else {
+                    // 랜덤 배회
+                    dx = Math.cos(t.angle); dy = Math.sin(t.angle);
+                    if(Math.random() < 0.05) t.angle += Math.random() - 0.5;
+                }
+            }
+
+            t.reload--;
+            t.x += dx * t.speed;
+            t.y += dy * t.speed;
+            t.x = Math.max(0, Math.min(MAP_SIZE, t.x));
+            t.y = Math.max(0, Math.min(MAP_SIZE, t.y));
+        }
+
+        function updateBullet(b, idx) {
+            b.x += b.vx;
+            b.y += b.vy;
+            b.life--;
+            
+            if(b.life <= 0 || b.x<0 || b.x>MAP_SIZE || b.y<0 || b.y>MAP_SIZE) {
+                entities.splice(idx, 1);
+                return;
+            }
+
+            // 충돌 검사
+            for(let i=entities.length-1; i>=0; i--) {
+                let e = entities[i];
+                if(e === b || e.id === b.ownerId) continue; // 자기 자신/주인 제외
+                if(e.type === 'bullet') continue; // 총알끼리 통과
+
+                let dist = Math.hypot(b.x - e.x, b.y - e.y);
+                if(dist < b.r + e.r) {
+                    // 명중!
+                    e.hp -= b.damage;
+                    createParticles(e.x, e.y, e.color, 3);
+                    
+                    // 총알 제거
+                    entities.splice(idx, 1);
+
+                    // 사망 처리
+                    if(e.hp <= 0) {
+                        // 점수 획득
+                        let owner = entities.find(ent => ent.id === b.ownerId);
+                        if(owner) {
+                            owner.score += e.score || 100;
+                            // 레벨업 (간단)
+                            if(owner.score > owner.level * 100) {
+                                owner.level++;
+                                owner.damage += 2;
+                                owner.maxHp += 10;
+                                owner.hp = owner.maxHp;
+                                owner.r += 1;
+                            }
+                        }
+
+                        if(e.type === 'tank') {
+                            killTank(e, owner ? owner.name : 'Unknown');
+                        } else {
+                            // 도형 제거
+                            createParticles(e.x, e.y, e.color, 5);
+                            entities.splice(i, 1);
+                        }
+                    }
+                    return; // 총알 하나당 1번만 충돌
+                }
+            }
+        }
+
+        function updateShape(s) {
+            s.angle += s.rotationSpeed;
+        }
+
+        function drawEntity(e) {
+            ctx.save();
+            ctx.translate(e.x, e.y);
+            ctx.rotate(e.angle);
+
+            if(e.type === 'tank') {
+                // 포신
+                ctx.fillStyle = '#999';
+                ctx.fillRect(0, -e.r/2, e.r*2.5, e.r); // 길이, 두께
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(0, -e.r/2, e.r*2.5, e.r);
+
+                // 몸체
+                ctx.beginPath();
+                ctx.arc(0, 0, e.r, 0, Math.PI*2);
+                ctx.fillStyle = e.color;
+                ctx.fill();
+                ctx.stroke();
+
+                // 체력바 (회전 취소)
+                ctx.rotate(-e.angle);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(-20, e.r + 10, 40, 6);
+                ctx.fillStyle = '#00b894';
+                ctx.fillRect(-19, e.r + 11, 38 * (e.hp/e.maxHp), 4);
+                
+                // 이름
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 12px Noto Sans KR';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${e.name} [Lv.${e.level}]`, 0, -e.r - 10);
+
+            } else if(e.type === 'bullet') {
+                ctx.beginPath();
+                ctx.arc(0, 0, e.r, 0, Math.PI*2);
+                ctx.fillStyle = e.color; // 주인 색깔
+                ctx.fill();
+                ctx.stroke();
+            } else if(e.type === 'shape') {
+                ctx.fillStyle = e.color;
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                
+                // 다각형 그리기
+                let sides = e.shapeType === 0 ? 4 : (e.shapeType === 1 ? 3 : 5);
+                ctx.beginPath();
+                for (let i = 0; i < sides; i++) {
+                    ctx.lineTo(e.r * Math.cos(i * 2 * Math.PI / sides), e.r * Math.sin(i * 2 * Math.PI / sides));
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                // 체력바 (도형도 체력바 표시)
+                if(e.hp < e.maxHp) {
+                    ctx.rotate(-e.angle);
+                    ctx.fillStyle = 'black'; ctx.fillRect(-10, 5, 20, 4);
+                    ctx.fillStyle = '#00b894'; ctx.fillRect(-9, 6, 18 * (e.hp/e.maxHp), 2);
+                }
+            }
+            ctx.restore();
+        }
+
+        function killTank(t, killerName) {
+            // 죽은 자리에서 파티클 펑
+            createParticles(t.x, t.y, t.color, 10);
+            
+            if(t.isHuman) {
+                gameOver(killerName);
+                t.hp = 0; // 즉사 처리
+            } else {
+                // 봇은 배열에서 제거 후 리스폰
+                let idx = entities.indexOf(t);
+                if(idx > -1) entities.splice(idx, 1);
+                showKillLog(`${killerName}님이 ${t.name}을 처치!`);
+                setTimeout(() => { if(gameRunning) spawnTank(false); }, 3000);
+            }
+        }
+
+        function showKillLog(msg) {
+            killLog.innerText = msg; killLog.style.opacity = 1;
+            setTimeout(() => { killLog.style.opacity = 0; }, 2000);
+        }
+
+        function updateLeaderboard() {
+            let list = entities.filter(e => e.type === 'tank').sort((a,b) => b.score - a.score);
+            let html = '';
+            for(let i=0; i<Math.min(5, list.length); i++) {
+                let t = list[i];
+                let name = t.isHuman ? `<span style="color:#0984e3">${t.name}</span>` : t.name;
+                html += `<li>${i+1}. ${name} <small>(${t.score})</small></li>`;
+            }
+            rankList.innerHTML = html;
+        }
+
+        function gameOver(killer) {
+            gameRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            ingameAd.style.display = 'none';
+            ui.style.display = 'block';
+            
+            const btn = document.getElementById('start-btn');
+            btn.innerText = "복수하러 가기! (재시작)";
+            ui.querySelector('h1').innerText = "💀 격파됨";
+            ui.querySelector('p').innerHTML = `
+                <b>${killer}</b>에게 당했습니다...<br>
+                최종 점수: <span style="color:#0984e3; font-weight:bold;">${player.score}</span>
+            `;
+        }
+    </script>
 </body>
 </html>
