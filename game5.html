@@ -104,7 +104,7 @@
 
         const MAP_SIZE = 4000;
         
-        let entities = []; // 탱크, 총알, 도형 통합 관리
+        let entities = [];
         let particles = [];
         let gameRunning = false;
         let animationFrameId;
@@ -125,17 +125,16 @@
             if(startBtn) startBtn.addEventListener('click', startGame);
             initJoystick();
             
-            // Mouse/Touch Aiming & Firing
             window.addEventListener('mousemove', e => { 
                 if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } 
             });
             window.addEventListener('mousedown', () => { isFiring = true; inputType='mouse'; });
             window.addEventListener('mouseup', () => { isFiring = false; });
             
-            // Mobile Tap to Fire (Right side)
             window.addEventListener('touchstart', e => {
+                // 오른쪽 화면 터치 시 발사
                 if(e.touches[0].clientX > window.innerWidth/2) isFiring = true;
-            });
+            }, {passive:false});
             window.addEventListener('touchend', () => isFiring = false);
         });
 
@@ -146,19 +145,17 @@
 
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            
+            // 초기화
             ctx.setTransform(1,0,0,1,0,0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             gameRunning = true;
             entities = [];
             particles = [];
 
-            // 도형 생성
             for(let i=0; i<300; i++) spawnShape();
-
-            // 플레이어
             player = spawnTank(true);
-            
-            // 봇
             for(let i=0; i<15; i++) spawnTank(false);
 
             ui.style.display = 'none';
@@ -174,13 +171,13 @@
                 x: Math.random() * MAP_SIZE,
                 y: Math.random() * MAP_SIZE,
                 r: 20,
-                color: isHuman ? '#00b894' : '#d63031', // 초록(나), 빨강(적)
+                color: isHuman ? '#00b894' : '#d63031',
                 angle: 0,
                 hp: 100, maxHp: 100,
                 score: 0, level: 1,
                 name: isHuman ? '나 (Player)' : getName(),
                 reload: 0, reloadTime: 30,
-                damage: 10, speed: 3,
+                damage: 10, speed: 2.5, // 속도 하향
                 aiTarget: null, aiTimer: 0, aiState: 'idle'
             };
             entities.push(t);
@@ -211,7 +208,7 @@
         }
 
         function spawnBullet(owner) {
-            // 반동 효과
+            // 반동
             owner.x -= Math.cos(owner.angle) * 2;
             owner.y -= Math.sin(owner.angle) * 2;
 
@@ -242,7 +239,6 @@
             }
         }
 
-        // 조이스틱
         function initJoystick() {
             let active = false; let startX, startY;
             const zone = joystickZone; const stick = joystickStick;
@@ -263,7 +259,6 @@
                 let angle = Math.atan2(dy, dx);
                 stick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
                 
-                // 벡터 저장
                 joystickVector = { 
                     x: Math.cos(angle) * (dist/maxDist), 
                     y: Math.sin(angle) * (dist/maxDist) 
@@ -280,41 +275,42 @@
         function loop() {
             if(!gameRunning) return;
 
-            // 배경
+            // [중요] 매 프레임마다 변형 초기화 -> 화면 지우기 -> 다시 변형 적용
+            ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = '#b4b4b4';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 카메라
             let zoom = 1;
-            if(player && player.hp > 0) zoom = Math.max(0.6, 25 / (player.r + 10)); // 줌아웃
+            if(player && player.hp > 0) zoom = Math.max(0.6, 25 / (player.r + 10));
 
-            ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
+            
             if(player && player.hp > 0) ctx.translate(-player.x, -player.y);
             else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
 
-            // 격자
+            // 격자 그리기
             ctx.strokeStyle = '#a4a4a4'; ctx.lineWidth = 2; ctx.beginPath();
+            // 화면 밖은 그리지 않게 최적화 가능하지만, 간단히 500 단위로 그림
             for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
+            
             ctx.strokeStyle = '#636e72'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
 
-            // 업데이트 & 그리기
+            // 엔티티 업데이트 및 그리기
             for(let i=entities.length-1; i>=0; i--) {
                 let e = entities[i];
                 
-                // Culling (화면 밖 안그리기)
-                if(player && Math.abs(e.x - player.x) > canvas.width/zoom + 100) {
-                    if(e.type !== 'tank') continue; // 탱크는 AI때문에 멀어도 로직은 돌아야 함
+                // 화면 밖 Culling
+                if(player && Math.abs(e.x - player.x) > (canvas.width/zoom + 200)) {
+                    if(e.type !== 'tank') continue; 
                 }
 
                 if(e.type === 'tank') updateTank(e);
                 else if(e.type === 'bullet') updateBullet(e, i);
                 else if(e.type === 'shape') updateShape(e);
 
-                // 그리기
                 drawEntity(e);
             }
 
@@ -329,10 +325,8 @@
                 ctx.globalAlpha = 1.0;
             }
 
-            // 도형 리필
             if(entities.filter(e=>e.type==='shape').length < 200) spawnShape();
 
-            ctx.restore();
             updateLeaderboard();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -340,23 +334,21 @@
         function updateTank(t) {
             if(t.hp <= 0) return;
 
-            // 이동
             let dx = 0, dy = 0;
             
             if(t.isHuman) {
-                // 조준 (마우스)
                 if(inputType === 'mouse') {
-                    t.angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-                } else if(isFiring) { // 모바일 조준 (가장 가까운 적 자동 조준)
-                    // (간단히: 이동 방향으로 쏨)
+                    // 마우스 좌표는 스크린 좌표이므로, 현재 변환된 좌표계에 맞춰 계산 필요
+                    // 하지만 간단히 중심점 기준으로 각도 계산해도 됨 (항상 중앙에 있으므로)
+                    let centerX = canvas.width / 2;
+                    let centerY = canvas.height / 2;
+                    t.angle = Math.atan2(mouseY - centerY, mouseX - centerX);
+                } else if(isFiring) {
                     t.angle = Math.atan2(joystickVector.y, joystickVector.x);
                 }
 
-                // 이동 (조이스틱 or 키보드)
                 if(inputType === 'joystick') { dx = joystickVector.x; dy = joystickVector.y; }
                 else {
-                    // 키보드 입력은 여기에 추가 (WASD) - 현재는 마우스모드일때 키보드 미구현, 조이스틱/마우스만
-                    // PC에서 WASD 추가하려면 이벤트 리스너 필요. 여기선 간단히 마우스 거리로 이동하게 함
                     let dist = Math.hypot(mouseX - canvas.width/2, mouseY - canvas.height/2);
                     if(dist > 50) { 
                         let ang = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
@@ -364,23 +356,18 @@
                     }
                 }
                 
-                // 발사
                 if(isFiring && t.reload <= 0) {
                     spawnBullet(t);
                     t.reload = t.reloadTime;
                 }
 
             } else {
-                // --- 봇 AI ---
                 t.aiTimer--;
                 if(t.aiTimer <= 0) {
                     t.aiTimer = 10;
-                    
-                    // 1. 타겟 찾기 (도형 or 플레이어)
                     let closest = null;
-                    let minDist = 600; // 시야
+                    let minDist = 600;
                     
-                    // 적 탱크 우선
                     entities.forEach(other => {
                         if(other.type === 'tank' && other !== t && other.hp > 0) {
                             let d = Math.hypot(t.x-other.x, t.y-other.y);
@@ -388,7 +375,6 @@
                         }
                     });
 
-                    // 없으면 도형
                     if(!closest) {
                         t.aiState = 'farm';
                         entities.forEach(s => {
@@ -402,27 +388,22 @@
                 }
 
                 if(t.aiTarget) {
-                    // 조준
                     t.angle = Math.atan2(t.aiTarget.y - t.y, t.aiTarget.x - t.x);
-                    
-                    // 거리
                     let dist = Math.hypot(t.aiTarget.x - t.x, t.aiTarget.y - t.y);
                     
-                    if(dist > 150) { // 너무 가까우면 멈춤
+                    if(dist > 150) {
                         dx = Math.cos(t.angle);
                         dy = Math.sin(t.angle);
-                    } else if(dist < 100 && t.aiState === 'combat') { // 너무 가까우면 후진
+                    } else if(dist < 100 && t.aiState === 'combat') {
                         dx = -Math.cos(t.angle);
                         dy = -Math.sin(t.angle);
                     }
 
-                    // 발사
                     if(dist < 400 && t.reload <= 0) {
                         spawnBullet(t);
                         t.reload = t.reloadTime;
                     }
                 } else {
-                    // 랜덤 배회
                     dx = Math.cos(t.angle); dy = Math.sin(t.angle);
                     if(Math.random() < 0.05) t.angle += Math.random() - 0.5;
                 }
@@ -445,28 +426,21 @@
                 return;
             }
 
-            // 충돌 검사
             for(let i=entities.length-1; i>=0; i--) {
                 let e = entities[i];
-                if(e === b || e.id === b.ownerId) continue; // 자기 자신/주인 제외
-                if(e.type === 'bullet') continue; // 총알끼리 통과
+                if(e === b || e.id === b.ownerId) continue;
+                if(e.type === 'bullet') continue;
 
                 let dist = Math.hypot(b.x - e.x, b.y - e.y);
                 if(dist < b.r + e.r) {
-                    // 명중!
                     e.hp -= b.damage;
                     createParticles(e.x, e.y, e.color, 3);
-                    
-                    // 총알 제거
                     entities.splice(idx, 1);
 
-                    // 사망 처리
                     if(e.hp <= 0) {
-                        // 점수 획득
                         let owner = entities.find(ent => ent.id === b.ownerId);
                         if(owner) {
                             owner.score += e.score || 100;
-                            // 레벨업 (간단)
                             if(owner.score > owner.level * 100) {
                                 owner.level++;
                                 owner.damage += 2;
@@ -479,12 +453,11 @@
                         if(e.type === 'tank') {
                             killTank(e, owner ? owner.name : 'Unknown');
                         } else {
-                            // 도형 제거
                             createParticles(e.x, e.y, e.color, 5);
                             entities.splice(i, 1);
                         }
                     }
-                    return; // 총알 하나당 1번만 충돌
+                    return;
                 }
             }
         }
@@ -499,28 +472,24 @@
             ctx.rotate(e.angle);
 
             if(e.type === 'tank') {
-                // 포신
                 ctx.fillStyle = '#999';
-                ctx.fillRect(0, -e.r/2, e.r*2.5, e.r); // 길이, 두께
+                ctx.fillRect(0, -e.r/2, e.r*2.5, e.r); 
                 ctx.strokeStyle = '#555';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(0, -e.r/2, e.r*2.5, e.r);
 
-                // 몸체
                 ctx.beginPath();
                 ctx.arc(0, 0, e.r, 0, Math.PI*2);
                 ctx.fillStyle = e.color;
                 ctx.fill();
                 ctx.stroke();
 
-                // 체력바 (회전 취소)
-                ctx.rotate(-e.angle);
+                ctx.rotate(-e.angle); // 이름/체력바는 회전 안함
                 ctx.fillStyle = 'black';
                 ctx.fillRect(-20, e.r + 10, 40, 6);
                 ctx.fillStyle = '#00b894';
                 ctx.fillRect(-19, e.r + 11, 38 * (e.hp/e.maxHp), 4);
                 
-                // 이름
                 ctx.fillStyle = '#333';
                 ctx.font = 'bold 12px Noto Sans KR';
                 ctx.textAlign = 'center';
@@ -529,7 +498,7 @@
             } else if(e.type === 'bullet') {
                 ctx.beginPath();
                 ctx.arc(0, 0, e.r, 0, Math.PI*2);
-                ctx.fillStyle = e.color; // 주인 색깔
+                ctx.fillStyle = e.color;
                 ctx.fill();
                 ctx.stroke();
             } else if(e.type === 'shape') {
@@ -537,7 +506,6 @@
                 ctx.strokeStyle = '#555';
                 ctx.lineWidth = 2;
                 
-                // 다각형 그리기
                 let sides = e.shapeType === 0 ? 4 : (e.shapeType === 1 ? 3 : 5);
                 ctx.beginPath();
                 for (let i = 0; i < sides; i++) {
@@ -547,7 +515,6 @@
                 ctx.fill();
                 ctx.stroke();
                 
-                // 체력바 (도형도 체력바 표시)
                 if(e.hp < e.maxHp) {
                     ctx.rotate(-e.angle);
                     ctx.fillStyle = 'black'; ctx.fillRect(-10, 5, 20, 4);
@@ -558,14 +525,12 @@
         }
 
         function killTank(t, killerName) {
-            // 죽은 자리에서 파티클 펑
             createParticles(t.x, t.y, t.color, 10);
             
             if(t.isHuman) {
                 gameOver(killerName);
-                t.hp = 0; // 즉사 처리
+                t.hp = 0;
             } else {
-                // 봇은 배열에서 제거 후 리스폰
                 let idx = entities.indexOf(t);
                 if(idx > -1) entities.splice(idx, 1);
                 showKillLog(`${killerName}님이 ${t.name}을 처치!`);
