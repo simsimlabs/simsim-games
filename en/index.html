@@ -100,5 +100,128 @@
         <p>© 2024 SimSim Game Labs. All rights reserved.</p>
     </footer>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    .index-share-wrapper {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(20, 20, 30, 0.9);
+        padding: 12px 30px;
+        border-radius: 50px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        z-index: 9999;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .share-label-main {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: bold;
+        margin-right: 5px;
+        white-space: nowrap;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .share-btn-group { display: flex; gap: 12px; }
+
+    .share-icon-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .share-icon-btn:hover { transform: translateY(-3px) scale(1.1); }
+    
+    .bg-twitter { background-color: #1DA1F2; box-shadow: 0 4px 10px rgba(29, 161, 242, 0.3); }
+    .bg-facebook { background-color: #1877F2; box-shadow: 0 4px 10px rgba(24, 119, 242, 0.3); }
+    .bg-link { background-color: #6c5ce7; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3); }
+
+    /* Toast Message */
+    #main-toast {
+        visibility: hidden;
+        min-width: 280px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 8px;
+        padding: 16px;
+        position: fixed;
+        z-index: 10000;
+        left: 50%;
+        bottom: 100px;
+        transform: translateX(-50%);
+        font-size: 0.95rem;
+        opacity: 0;
+        transition: opacity 0.5s, bottom 0.5s;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    #main-toast.show { visibility: visible; opacity: 1; bottom: 110px; }
+    
+    @media (max-width: 600px) {
+        .share-label-main { display: none; }
+        .index-share-wrapper { padding: 10px 20px; bottom: 20px; }
+    }
+</style>
+
+<div class="index-share-wrapper">
+    <span class="share-label-main">📢 Share Game Labs</span>
+    <div class="share-btn-group">
+        <button onclick="shareMain('twitter')" class="share-icon-btn bg-twitter" title="Twitter">
+            <i class="fa-brands fa-twitter"></i>
+        </button>
+        <button onclick="shareMain('facebook')" class="share-icon-btn bg-facebook" title="Facebook">
+            <i class="fa-brands fa-facebook-f"></i>
+        </button>
+        <button onclick="copyMainLink()" class="share-icon-btn bg-link" title="Copy Link">
+            <i class="fa-solid fa-link"></i>
+        </button>
+    </div>
+</div>
+
+<div id="main-toast">📋 Link copied!</div>
+
+<script>
+    function shareMain(sns) {
+        const url = encodeURIComponent(window.location.href);
+        const title = encodeURIComponent(document.title);
+        let link = "";
+
+        if (sns === 'twitter') {
+            link = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+        } else if (sns === 'facebook') {
+            link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        }
+        
+        if(link) window.open(link, '_blank', 'width=600,height=400');
+    }
+
+    function copyMainLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            const toast = document.getElementById("main-toast");
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        }).catch(err => {
+            alert("Copy failed: " + err);
+        });
+    }
+</script>
+    
 </body>
 </html>
