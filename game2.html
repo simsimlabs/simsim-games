@@ -423,17 +423,6 @@
             `;
         }
     </script>
-
-<div style="max-width: 800px; margin: 40px auto; padding: 25px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); color: #ecf0f1; text-align: left; line-height: 1.6;">
-    <h3 style="color: #fab1a0; margin-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px;">💡 땅따먹기 게임 방법</h3>
-    <p>자신의 영토를 벗어나 선을 그리고, 다시 자신의 영토로 돌아오면 그만큼 땅이 넓어집니다. 맵 전체를 내 색깔로 채워보세요!</p>
-    <ul style="margin: 15px 0; padding-left: 20px; color: #dfe6e9;">
-        <li><strong>조작:</strong> 키보드 방향키로 캐릭터를 움직입니다.</li>
-        <li><strong>공격:</strong> 다른 플레이어가 영토 밖으로 나왔을 때, 그들의 꼬리(선)를 밟으면 제거할 수 있습니다.</li>
-        <li><strong>사망 조건:</strong> 내 꼬리를 밟히거나, 벽에 부딪히거나, 내 꼬리를 내가 밟으면 게임 오버됩니다.</li>
-    </ul>
-    <p style="font-size: 0.9rem; color: #74b9ff; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">✨ 꿀팁: 욕심을 부려 너무 멀리 나가면 공격받기 쉽습니다. 조금씩 야금야금 땅을 넓히는 것이 생존의 비결입니다.</p>
-</div>
     
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -565,9 +554,47 @@
         });
     }
 </script>
+
+<style>
+    #game-desc-box {
+        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
+        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
+        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
+    }
+    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
+    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
+    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
+    .desc-list li { margin-bottom: 8px; }
+    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
+    @media (max-width: 1100px) {
+        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
+    }
+</style>
+
+<div id="game-desc-box">
+    <h3 class="desc-title">💡 땅따먹기 공략 <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
+    <p style="font-size: 0.9rem; margin-bottom: 15px;">선을 그려 내 영토를 넓히세요.</p>
+    <ul class="desc-list">
+        <li><strong>조작:</strong> 방향키</li>
+        <li><strong>공격:</strong> 적의 꼬리(선)를 밟으세요.</li>
+        <li><strong>주의:</strong> 내 꼬리를 밟히면 사망합니다.</li>
+    </ul>
+    <div class="desc-tip">✨ <strong>Tip:</strong> 욕심부려 멀리 나가지 말고, 조금씩 야금야금 땅을 넓히세요.</div>
+</div>
+
+<script>
+    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
+    document.addEventListener('click', function(e) {
+        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
+        if (e.target.tagName === 'CANVAS') hideGameDesc();
+    });
+</script>
     
 </body>
 </html>
+
 
 
 
