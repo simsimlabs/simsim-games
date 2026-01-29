@@ -455,16 +455,6 @@
         }
     </script>
 
-<div style="max-width: 800px; margin: 40px auto; padding: 25px; background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); color: #ecf0f1; text-align: left; line-height: 1.6;">
-    <h3 style="color: #fab1a0; margin-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px;">💡 지렁이 키우기 게임 방법</h3>
-    <p>빛나는 먹이를 먹고 몸길이를 늘리세요. 아무리 작은 지렁이라도 거대한 지렁이를 쓰러뜨릴 수 있는 반전 매력의 게임입니다.</p>
-    <ul style="margin: 15px 0; padding-left: 20px; color: #dfe6e9;">
-        <li><strong>규칙:</strong> 다른 지렁이의 몸통에 머리가 부딪히면 게임 오버됩니다.</li>
-        <li><strong>전략:</strong> 적의 진행 경로를 내 몸통으로 막아서 부딪히게 유도하세요.</li>
-    </ul>
-    <p style="font-size: 0.9rem; color: #74b9ff; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">✨ 꿀팁: 적을 몸으로 동그랗게 포위해서 가두면 도망갈 곳이 없어진 적을 쉽게 잡아먹을 수 있습니다.</p>
-</div>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -595,9 +585,45 @@
         });
     }
 </script>
+
+<style>
+    #game-desc-box {
+        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
+        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
+        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
+    }
+    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
+    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
+    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
+    .desc-list li { margin-bottom: 8px; }
+    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
+    @media (max-width: 1100px) {
+        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
+    }
+</style>
+
+<div id="game-desc-box">
+    <h3 class="desc-title">💡 지렁이 키우기 공략 <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
+    <p style="font-size: 0.9rem; margin-bottom: 15px;">빛을 먹고 몸길이를 늘리세요.</p>
+    <ul class="desc-list">
+        <li><strong>이동:</strong> 마우스 커서 방향</li>
+    </ul>
+    <div class="desc-tip">✨ <strong>Tip:</strong> 적을 둥글게 포위해서 가두면 쉽게 잡아먹을 수 있습니다.</div>
+</div>
+
+<script>
+    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
+    document.addEventListener('click', function(e) {
+        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
+        if (e.target.tagName === 'CANVAS') hideGameDesc();
+    });
+</script>
     
 </body>
 </html>
+
 
 
 
