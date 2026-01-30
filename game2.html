@@ -555,45 +555,32 @@
     }
 </script>
 
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
+<article style="max-width: 900px; margin: 50px auto; padding: 30px; background: #2d3436; border-radius: 12px; color: #dfe6e9; text-align: left; line-height: 1.8; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+    <h1 style="color: #fab1a0; border-bottom: 1px solid #636e72; padding-bottom: 15px; margin-bottom: 20px;">땅따먹기 (Land Conquer) 게임 가이드</h1>
+    
+    <p>
+        추억의 땅따먹기 놀이를 현대적인 웹 게임으로 재해석했습니다. 
+        자신의 영토 밖으로 나가 선을 그리고, 다시 본진으로 안전하게 돌아오면 그 영역만큼 자신의 땅이 됩니다.
+        맵 전체를 자신의 색깔로 덮는 것이 최종 목표입니다.
+    </p>
 
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 땅따먹기 공략 <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">선을 그려 내 영토를 넓히세요.</p>
-    <ul class="desc-list">
-        <li><strong>조작:</strong> 방향키</li>
-        <li><strong>공격:</strong> 적의 꼬리(선)를 밟으세요.</li>
-        <li><strong>주의:</strong> 내 꼬리를 밟히면 사망합니다.</li>
+    <h3 style="color: #74b9ff; margin-top: 30px;">🎮 승리 전략</h3>
+    <ul style="margin-left: 20px; margin-bottom: 20px;">
+        <li><strong>공격:</strong> 다른 플레이어가 영토 밖으로 나와 선을 그리고 있을 때, 그 선(꼬리)을 밟으면 상대를 제거할 수 있습니다.</li>
+        <li><strong>방어:</strong> 자신의 영토 안에서는 무적 상태입니다. 위험할 때는 본진으로 빠르게 복귀하세요.</li>
+        <li><strong>자멸 주의:</strong> 자신의 꼬리를 스스로 밟거나 벽에 부딪히면 게임 오버됩니다.</li>
     </ul>
-    <div class="desc-tip">✨ <strong>Tip:</strong> 욕심부려 멀리 나가지 말고, 조금씩 야금야금 땅을 넓히세요.</div>
-</div>
 
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
+    <h3 style="color: #74b9ff;">💡 꿀팁</h3>
+    <p>
+        욕심을 부려 한 번에 넓은 땅을 차지하려고 멀리 나가면 공격받기 쉽습니다. 
+        <strong>조금씩 야금야금</strong> 영토를 넓히며 생존율을 높이는 것이 고수의 비결입니다.
+    </p>
+</article>
     
 </body>
 </html>
+
 
 
 
