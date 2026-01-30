@@ -570,42 +570,28 @@
     }
 </script>
 
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
+<article style="max-width: 900px; margin: 50px auto; padding: 30px; background: #2d3436; border-radius: 12px; color: #dfe6e9; text-align: left; line-height: 1.8; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
+    <h1 style="color: #fab1a0; border-bottom: 1px solid #636e72; padding-bottom: 15px; margin-bottom: 20px;">세포 키우기 (Cell Eaters) 게임 가이드</h1>
+    
+    <p>
+        세포 키우기는 전 세계적으로 인기 있는 'Agar.io' 스타일의 <strong>실시간 서바이벌 IO 게임</strong>입니다.
+        플레이어는 하나의 작은 세포로 시작하여, 맵에 흩어진 먹이를 섭취하고 다른 플레이어를 잡아먹으며 크기를 키워나가야 합니다.
+    </p>
 
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 세포 키우기 공략 <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">나보다 작은 세포를 먹고 거대해지세요!</p>
-    <ul class="desc-list">
-        <li><strong>이동:</strong> 마우스 커서 방향</li>
+    <h3 style="color: #74b9ff; margin-top: 30px;">🎮 조작 방법 및 규칙</h3>
+    <ul style="margin-left: 20px; margin-bottom: 20px;">
+        <li><strong>이동:</strong> 마우스 커서가 가리키는 방향으로 세포가 이동합니다.</li>
     </ul>
-</div>
 
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
-
+    <h3 style="color: #74b9ff;">💡 고득점 공략 팁</h3>
+    <p>
+        처음엔 작은 세포를 먹으면서 성장하세요!
+    </p>
+</article>
+    
 </body>
 </html>
+
 
 
 
