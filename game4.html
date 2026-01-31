@@ -282,7 +282,7 @@
 
         // 게임 설정
         const MAP_SIZE = 4000;
-        const PROP_COUNT = 300; // [수정] 600 -> 300 (더 줄임)
+        const PROP_COUNT = 300; 
         const BOT_COUNT = 15;
         const MAP_COLOR = '#ecf0f1';
         
@@ -302,7 +302,7 @@
         const nouns = ["블랙홀", "싱크홀", "청소기", "괴물", "포식자", "보이드", "구멍", "태풍", "심장", "그림자"];
         function generateName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
-        // 사물 데이터
+        // 사물 데이터 (2.5D 효과를 위한 색상 세트)
         const PROP_TYPES = [
             { id: 0, r: 6, h: 4, score: 1, color: '#e67e22', side: '#d35400', name: '꼬깔' },
             { id: 1, r: 8, h: 10, score: 2, color: '#2ecc71', side: '#27ae60', name: '사람' },
@@ -315,6 +315,7 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
+            // 모바일 감지
             if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                 joystickZone.style.display = 'block';
                 inputType = 'joystick';
@@ -386,37 +387,39 @@
             holes = [];
             props = [];
 
+            // 사물 생성
+            for(let i=0; i<PROP_COUNT; i++) addProp();
+
             // 플레이어 먼저 생성
             playerIndex = addHole(true);
             
             // 봇 생성
             for(let i=0; i<BOT_COUNT; i++) addHole(false);
 
-            // 사물 생성 (블랙홀 피해서)
-            for(let i=0; i<PROP_COUNT; i++) addProp();
-
             loop();
         }
 
-        // [수정] 블랙홀 주변에 사물 생성 방지 (안전 거리 100px)
         function addProp() {
             let rand = Math.random();
             let typeIdx = 0;
-            if (rand < 0.6) typeIdx = 0;      
-            else if (rand < 0.85) typeIdx = 1; 
-            else if (rand < 0.95) typeIdx = 2; 
-            else if (rand < 0.99) typeIdx = 3; 
-            else typeIdx = 4;                 
+            // [밸런스 수정] 확률 조정: 작은 것이 훨씬 더 많이 나오도록 변경
+            if (rand < 0.6) typeIdx = 0;      // 꼬깔 60%
+            else if (rand < 0.85) typeIdx = 1; // 사람 25%
+            else if (rand < 0.95) typeIdx = 2; // 자동차 10%
+            else if (rand < 0.99) typeIdx = 3; // 집 4%
+            else typeIdx = 4;                 // 빌딩 1%
 
             let type = PROP_TYPES[typeIdx];
             
+            // [핵심 수정] 블랙홀 주변에 생성되지 않게 함 (스폰킬 방지)
             let pX, pY, safe;
             let attempts = 0;
-            // 안전한 위치 찾기
             do {
                 safe = true;
                 pX = Math.random() * MAP_SIZE;
                 pY = Math.random() * MAP_SIZE;
+                
+                // 모든 블랙홀과 거리 체크
                 for(let h of holes) {
                     if (Math.hypot(h.x - pX, h.y - pY) < h.r + 100) {
                         safe = false; break;
@@ -465,9 +468,9 @@
         }
 
         function update() {
-            // [수정] 사물 리필 기준을 30%로 더 낮춤 (50% -> 30%)
+            // [수정] 사물 리필 기준을 30%로 낮춤 (50% -> 30%)
             if(props.filter(p => p.alive).length < PROP_COUNT * 0.3) {
-                for(let i=0; i<5; i++) addProp();
+                for(let i=0; i<10; i++) addProp();
             }
 
             holes.forEach((h, idx) => {
@@ -489,6 +492,7 @@
                         }
                     }
                 } else {
+                    // AI 로직
                     h.aiTimer--;
                     if(h.aiTimer <= 0) {
                         h.aiTimer = Math.random() * 30 + 10;
@@ -565,7 +569,8 @@
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
                     if(dist < h.r && h.r > other.r * 1.1) {
                         other.dead = true;
-                        h.r += other.r * 0.1; 
+                        // [핵심 수정] 킬 보너스 감소 (0.1 -> 0.05)
+                        h.r += other.r * 0.05; 
                         h.score += Math.floor(other.score / 2) + 50;
                         killHole(oIdx);
                     }
@@ -586,8 +591,8 @@
                         p.alive = false;
                         if(!t.dead) {
                             t.score += p.score;
-                            // [핵심 수정] 성장률 대폭 감소 (0.02 유지)
-                            t.r += p.score * 0.02; 
+                            // [핵심 수정] 성장률 극도로 감소 (0.02 -> 0.005)
+                            t.r += p.score * 0.005; 
                         }
                     }
                 }
@@ -631,6 +636,7 @@
             ctx.translate(camX, camY);
             ctx.scale(zoom, zoom);
 
+            // 맵
             ctx.lineWidth = 150; 
             ctx.strokeStyle = '#dcdde1'; 
             ctx.beginPath();
@@ -641,6 +647,7 @@
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 20;
             ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
+            // 렌더링 (레이어)
             let renderList = [];
             holes.forEach(h => { if(!h.dead) renderList.push({type: 'hole', obj: h, y: h.y}); });
             props.forEach(p => {
@@ -650,16 +657,18 @@
                 }
             });
 
+            // Layer 1: Falling
             props.forEach(prop => { if(prop.alive && prop.falling) drawProp25D(ctx, prop); });
+            // Layer 2: Holes
             holes.forEach(h => { if(!h.dead) drawHole(ctx, h); });
-            
+            // Layer 3: Ground Props
             let groundProps = props.filter(p => p.alive && !p.falling);
             groundProps.sort((a,b) => a.y - b.y);
             groundProps.forEach(prop => {
                 if(Math.abs(prop.x - (p?p.x:0)) > (canvas.width/zoom + 200)) return;
                 drawProp25D(ctx, prop);
             });
-            
+            // Layer 4: Text
             holes.forEach(h => {
                 if(!h.dead) {
                     ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
