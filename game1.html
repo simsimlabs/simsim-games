@@ -48,12 +48,12 @@
             border-radius: 8px; overflow: hidden;
         }
 
-        /* 3. 게임 컨테이너 (화면 크기 대폭 확대) */
+        /* 3. 게임 컨테이너 */
         #game-container-box {
             position: relative;
             width: 100%; 
-            max-width: 1280px; /* PC: 1280px (기존 900px에서 확대) */
-            height: 720px;     /* PC: 720px (기존 600px에서 확대) */
+            max-width: 1280px; 
+            height: 720px;     
             margin: 0 auto;
             background-color: #000; border-radius: 12px;
             overflow: hidden;
@@ -152,7 +152,7 @@
         @media (max-width: 800px) {
             #game-container-box {
                 width: 100%;
-                height: 90vh; /* 모바일: 더 높게 설정 (80% -> 90%) */
+                height: 90vh; /* 모바일: 높이 더 확보 (80% -> 90%) */
                 border-radius: 0;
             }
             #ui-layer h2 { font-size: 2.2rem; }
@@ -361,7 +361,7 @@
             });
         }
 
-        // 봇 생성 (안전거리 확보)
+        // 봇 생성
         function addBot() {
             let bX, bY, dist;
             let safeDistance = 800; 
@@ -433,10 +433,11 @@
             }
         }
 
-        // 스마트 봇 AI (공격/도망/배회)
+        // 스마트 봇 AI (공격/도망/배회 + 벽 피하기 최우선)
         function updateBotAI(b) {
             b.changeDirTimer--;
 
+            // 1. 상태 결정 (추격, 도망, 배회)
             let closestThreat = null;
             let closestPrey = null;
             let minDistThreat = Infinity;
@@ -448,10 +449,10 @@
                 let d = Math.hypot(b.x - target.x, b.y - target.y);
                 
                 if (d < viewRange) {
-                    if (target.r > b.r * 1.05) { // 5% 크면 위협
+                    if (target.r > b.r * 1.05) { 
                         if (d < minDistThreat) { closestThreat = target; minDistThreat = d; }
                     } 
-                    else if (target.r < b.r * 0.95) { // 5% 작으면 먹이
+                    else if (target.r < b.r * 0.95) { 
                         if (d < minDistPrey) { closestPrey = target; minDistPrey = d; }
                     }
                 }
@@ -473,10 +474,17 @@
                 if (b.changeDirTimer <= 0) {
                     b.changeDirTimer = Math.random() * 60 + 30;
                     b.angle += (Math.random() - 0.5) * 1.5;
-                    if (b.x < 200 || b.x > MAP_SIZE - 200 || b.y < 200 || b.y > MAP_SIZE - 200) {
-                        b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
-                    }
                 }
+            }
+
+            // 2. [수정됨] 벽 회피 로직 (최우선 순위 - 덮어쓰기)
+            // 맵 가장자리 300px 이내에 들어오면 강제로 중앙 쪽을 보게 함
+            const margin = 300;
+            if (b.x < margin || b.x > MAP_SIZE - margin || b.y < margin || b.y > MAP_SIZE - margin) {
+                // 맵 중앙 방향 각도 계산
+                let centerAngle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
+                // 약간의 랜덤성을 더해 로봇처럼 보이지 않게 함
+                b.angle = centerAngle + (Math.random() - 0.5) * 1.0;
             }
         }
 
@@ -513,7 +521,7 @@
                 }
             }
 
-            // 5. [중요] 봇 충돌 로직 (먹기 or 밀어내기)
+            // 5. 봇 충돌 로직
             for (let i = bots.length - 1; i >= 0; i--) {
                 let b = bots[i];
                 updateBotAI(b); 
@@ -537,7 +545,6 @@
                 // 5-1. 봇 vs 플레이어
                 let distP = Math.hypot(player.x - b.x, player.y - b.y);
                 if (distP < player.r + b.r) { 
-                    // [수정] 먹기 판정 완화: 조금이라도 크고(>1.0), 중심 거리 조건도 완화
                     if (player.r > b.r && distP < player.r - b.r * 0.2) { 
                         player.r += b.r * 0.4;
                         bots.splice(i, 1); addBot();
@@ -547,11 +554,9 @@
                     else if (b.r > player.r && distP < b.r - player.r * 0.2) {
                         gameOver(b.name);
                     }
-                    // [수정] 물리 효과 (밀어내기) - 못 먹으면 서로 밀쳐냄
                     else {
                         let angle = Math.atan2(b.y - player.y, b.x - player.x);
                         let overlap = (player.r + b.r) - distP;
-                        // 봇을 밀어냄 (플레이어는 직접 조종하므로 봇을 밀어내는게 자연스러움)
                         b.x += Math.cos(angle) * (overlap * 0.1); 
                         b.y += Math.sin(angle) * (overlap * 0.1);
                     }
@@ -565,24 +570,20 @@
                     let dist = Math.hypot(b.x - other.x, b.y - other.y);
 
                     if (dist < b.r + other.r) {
-                        // b가 other를 먹음
                         if (b.r > other.r && dist < b.r - other.r * 0.2) {
                             b.r += other.r * 0.4;
                             bots.splice(j, 1); addBot();
                             if (j < i) i--; 
                         }
-                        // other가 b를 먹음
                         else if (other.r > b.r && dist < other.r - b.r * 0.2) {
                             other.r += b.r * 0.4;
                             bots.splice(i, 1); addBot();
                             eaten = true;
                             break; 
                         }
-                        // 서로 밀어내기 (Repulsion)
                         else {
                             let angle = Math.atan2(b.y - other.y, b.x - other.x);
                             let overlap = (b.r + other.r) - dist;
-                            // 서로 반대로 조금씩 밀림
                             let push = overlap * 0.05;
                             b.x += Math.cos(angle) * push;
                             b.y += Math.sin(angle) * push;
