@@ -283,7 +283,7 @@
         // 게임 설정
         const MAP_SIZE = 4000;
         const PROP_COUNT = 300; 
-        const BOT_COUNT = 15;
+        const BOT_COUNT = 7; // [수정] 봇 수 감소 (15 -> 7)
         const MAP_COLOR = '#ecf0f1';
         
         let holes = [];
@@ -402,16 +402,16 @@
         function addProp() {
             let rand = Math.random();
             let typeIdx = 0;
-            // [밸런스 수정] 확률 조정: 작은 것이 훨씬 더 많이 나오도록 변경
-            if (rand < 0.6) typeIdx = 0;      // 꼬깔 60%
-            else if (rand < 0.85) typeIdx = 1; // 사람 25%
-            else if (rand < 0.95) typeIdx = 2; // 자동차 10%
-            else if (rand < 0.99) typeIdx = 3; // 집 4%
-            else typeIdx = 4;                 // 빌딩 1%
+            // [밸런스 수정] 확률 조정
+            if (rand < 0.6) typeIdx = 0;      
+            else if (rand < 0.85) typeIdx = 1; 
+            else if (rand < 0.95) typeIdx = 2; 
+            else if (rand < 0.99) typeIdx = 3; 
+            else typeIdx = 4;                 
 
             let type = PROP_TYPES[typeIdx];
             
-            // [핵심 수정] 블랙홀 주변에 생성되지 않게 함 (스폰킬 방지)
+            // 블랙홀 주변에 생성되지 않게 함 (스폰킬 방지)
             let pX, pY, safe;
             let attempts = 0;
             do {
@@ -538,6 +538,7 @@
                             }
                         }
                     }
+                    // 목표 이동
                     let angle = Math.atan2(h.aiTargetY - h.y, h.aiTargetX - h.x);
                     dx = Math.cos(angle);
                     dy = Math.sin(angle);
@@ -569,8 +570,7 @@
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
                     if(dist < h.r && h.r > other.r * 1.1) {
                         other.dead = true;
-                        // [핵심 수정] 킬 보너스 감소 (0.1 -> 0.05)
-                        h.r += other.r * 0.05; 
+                        h.r += other.r * 0.05; // 킬 보너스 감소
                         h.score += Math.floor(other.score / 2) + 50;
                         killHole(oIdx);
                     }
@@ -591,7 +591,7 @@
                         p.alive = false;
                         if(!t.dead) {
                             t.score += p.score;
-                            // [핵심 수정] 성장률 극도로 감소 (0.02 -> 0.005)
+                            // [핵심 수정] 성장률 극도로 감소 (0.005)
                             t.r += p.score * 0.005; 
                         }
                     }
