@@ -52,8 +52,8 @@
         #game-container-box {
             position: relative;
             width: 100%; 
-            max-width: 1280px; 
-            height: 720px;     
+            max-width: 1280px; /* PC 넓게 */
+            height: 720px;     /* PC 높게 */
             margin: 0 auto;
             background-color: #34495e; border-radius: 12px;
             overflow: hidden;
@@ -152,7 +152,7 @@
         @media (max-width: 800px) {
             #game-container-box {
                 width: 100%;
-                height: 85vh; 
+                height: 85vh; /* 모바일 높이 최적화 */
                 border-radius: 0;
             }
             #ui-layer h2 { font-size: 2.2rem; }
@@ -203,7 +203,7 @@
         <div id="ui-layer">
             <h2 id="ui-title">Land Conquer</h2>
             <p id="ui-desc">
-                자신의 영토 밖으로 나가 선을 그리세요.<br>
+                [WASD]로 이동하여 선을 그리세요.<br>
                 집으로 돌아오면 내 땅이 됩니다! (꼬리 조심)
             </p>
             <button id="start-btn">게임 시작 ▶</button>
@@ -236,18 +236,18 @@
             맵 전체를 자신의 색깔로 덮는 것이 최종 목표입니다.
         </p>
 
-        <h3>🕹️ 승리 전략</h3>
+        <h3>🕹️ 조작 방법</h3>
+        <ul>
+            <li><strong>PC:</strong> W, A, S, D 키를 사용하여 이동합니다.</li>
+            <li><strong>모바일:</strong> 화면 좌측 하단의 가상 조이스틱을 드래그하여 이동합니다.</li>
+        </ul>
+
+        <h3>🏆 승리 전략</h3>
         <ul>
             <li><strong>공격:</strong> 다른 플레이어가 영토 밖으로 나와 선을 그리고 있을 때, 그 선(꼬리)을 밟으면 상대를 제거할 수 있습니다.</li>
             <li><strong>방어:</strong> 자신의 영토 안에서는 무적 상태입니다. 위험할 때는 본진으로 빠르게 복귀하세요.</li>
             <li><strong>자멸 주의:</strong> 자신의 꼬리를 스스로 밟거나 벽에 부딪히면 게임 오버됩니다.</li>
         </ul>
-
-        <h3>🏆 꿀팁</h3>
-        <p>
-            욕심을 부려 한 번에 넓은 땅을 차지하려고 멀리 나가면 공격받기 쉽습니다. 
-            <strong>조금씩 야금야금</strong> 영토를 넓히며 생존율을 높이는 것이 고수의 비결입니다.
-        </p>
     </article>
 
     <footer>
@@ -260,7 +260,7 @@
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('game-container-box');
         
-        const uiLayer = document.getElementById('ui-layer');
+        const uiLayer = document.getElementById('ui-layer'); // ID 수정됨
         const uiTitle = document.getElementById('ui-title');
         const uiDesc = document.getElementById('ui-desc');
         const startBtn = document.getElementById('start-btn');
@@ -323,7 +323,7 @@
 
             players = [];
             spawnPlayer(1, true); // 나
-            for(let i=2; i<=15; i++) spawnPlayer(i, false); // 봇 14명
+            for(let i=2; i<=15; i++) spawnPlayer(i, false); // 봇
 
             loop();
         }
@@ -331,12 +331,13 @@
         function spawnPlayer(id, isHuman) {
             let safe = false;
             let x, y;
+            let attempts = 0;
             // 안전한 스폰 위치 찾기
-            while(!safe) {
+            while(!safe && attempts < 100) {
                 x = Math.floor(Math.random() * (MAP_WIDTH - 20)) + 10;
                 y = Math.floor(Math.random() * (MAP_HEIGHT - 20)) + 10;
-                // 주변이 비어있는지 확인
                 if (map[y][x] === 0) safe = true; 
+                attempts++;
             }
             
             // 초기 땅 할당 (3x3)
@@ -357,21 +358,23 @@
                 trail: [], 
                 score: 9, 
                 dead: false,
-                aiState: 'expand', // expand, return
-                aiTarget: null
+                aiState: 'expand', 
             });
         }
 
+        // [수정] WASD 키 조작 추가
         function handleKey(e) {
             if(!gameRunning) return;
             const p = players.find(p => p.isHuman);
             if(!p || p.dead) return;
 
-            // 역방향 이동 방지
-            if(e.key === 'ArrowUp' && p.dy !== 1) { p.nextDx = 0; p.nextDy = -1; }
-            else if(e.key === 'ArrowDown' && p.dy !== -1) { p.nextDx = 0; p.nextDy = 1; }
-            else if(e.key === 'ArrowLeft' && p.dx !== 1) { p.nextDx = -1; p.nextDy = 0; }
-            else if(e.key === 'ArrowRight' && p.dx !== -1) { p.nextDx = 1; p.nextDy = 0; }
+            const k = e.key.toLowerCase();
+
+            // 역방향 이동 방지 (위로 가는데 아래로 못감)
+            if((k === 'w' || k === 'arrowup') && p.dy !== 1) { p.nextDx = 0; p.nextDy = -1; }
+            else if((k === 's' || k === 'arrowdown') && p.dy !== -1) { p.nextDx = 0; p.nextDy = 1; }
+            else if((k === 'a' || k === 'arrowleft') && p.dx !== 1) { p.nextDx = -1; p.nextDy = 0; }
+            else if((k === 'd' || k === 'arrowright') && p.dx !== -1) { p.nextDx = 1; p.nextDy = 0; }
         }
 
         function initJoystick() {
@@ -414,9 +417,9 @@
             });
         }
 
-        // 🤖 개선된 봇 AI 로직
+        // [수정] 봇 AI 개선 (자살 방지 및 복귀 본능)
         function updateBotAI(p) {
-            // 1. 죽음 방지 (벽/자기꼬리 회피)
+            // 1. 가능한 이동 방향 찾기 (벽/꼬리/역방향 제외)
             let safeMoves = [];
             const moves = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
             
@@ -436,24 +439,24 @@
                 safeMoves.push(m);
             });
 
-            if (safeMoves.length === 0) return; // 죽을 운명...
+            if (safeMoves.length === 0) return; // 갈 곳 없음 (죽음)
 
-            // 2. 상태 결정 (확장 vs 복귀)
-            // 꼬리가 너무 길어지면(10칸 이상) 집으로 복귀 시도
-            if (p.trail.length > 10 || Math.random() < 0.02) {
+            // 2. 상태 결정
+            // 꼬리가 길어지면(5칸 이상) 집으로 복귀 확률 증가
+            if (p.trail.length > 5) {
                 p.aiState = 'return';
             } else if (p.trail.length === 0) {
                 p.aiState = 'expand';
             }
 
-            // 3. 목표 방향 설정
-            let bestMove = safeMoves[Math.floor(Math.random() * safeMoves.length)]; // 기본 랜덤
+            // 3. 이동 결정
+            let bestMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
 
-            if (p.aiState === 'return' && p.trail.length > 0) {
-                // 내 땅 중 가장 가까운 곳 찾기 (단순화: 현재 위치에서 가장 가까운 내 땅 좌표)
-                // 성능상 전체 검색은 무리이므로, 현재 방향 유지 + 약간의 랜덤성
-                // 여기서는 "내 꼬리가 아닌 내 땅"으로 이동해야 함.
-                // *간단한 로직:* 랜덤하게 움직이되, map[y][x] == p.id 인 곳을 발견하면 그쪽 선호
+            if (p.aiState === 'return') {
+                // 내 땅 중 가장 가까운 곳으로 이동하려는 경향 (단순화: 현재 위치에서 랜덤하게 움직이되 내 땅이면 좋음)
+                // 복잡한 길찾기 대신, safeMoves 중 내 땅인 곳이 있다면 그곳을 우선
+                const homeMove = safeMoves.find(m => map[p.y + m.dy][p.x + m.dx] === p.id);
+                if (homeMove) bestMove = homeMove;
             }
 
             // 방향 전환 (너무 자주 바꾸지 않게)
@@ -466,9 +469,9 @@
         function loop() {
             if(!gameRunning) return;
             
-            // 속도 조절 (프레임 스킵)
+            // 속도 조절 (60fps 기준 4프레임마다 업데이트 = 초당 15번 이동)
             frameCount++;
-            if(frameCount % 4 === 0) { // 60fps / 4 = 15 updates per sec
+            if(frameCount % 4 === 0) { 
                 update();
             }
             
@@ -484,102 +487,84 @@
                     updateBotAI(p);
                 }
 
-                // 현재 이동 방향 적용
+                // 이동 방향 적용
                 p.dx = p.nextDx; 
                 p.dy = p.nextDy;
 
-                // 정지 상태면 처리 안함
                 if(p.dx === 0 && p.dy === 0) return;
 
                 let nx = p.x + p.dx; 
                 let ny = p.y + p.dy;
 
-                // 1. 벽 충돌 체크
+                // 1. 벽 충돌
                 if(nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT) { 
-                    killPlayer(p, "벽 충돌"); return; 
+                    killPlayer(p, "벽에 부딪힘"); return; 
                 }
 
-                // 2. 자기 꼬리 충돌 체크
+                // 2. 자기 꼬리 충돌
                 if(p.trail.some(t => t.x === nx && t.y === ny)) { 
                     killPlayer(p, "자기 꼬리 밟음"); return; 
                 }
 
-                // 3. 다른 플레이어와의 충돌 체크
+                // 3. 다른 플레이어 충돌
                 players.forEach(other => {
                     if(p === other || other.dead) return;
                     
-                    // 내가 남의 꼬리를 밟음 -> 상대 사망
+                    // 꼬리 밟기
                     if(other.trail.some(t => t.x === nx && t.y === ny)) {
                         killPlayer(other, `${p.name}에게 꼬리 밟힘`);
                         if(p.isHuman) showKillLog(`${other.name} 제거!`);
                     }
                     
-                    // 머리끼리 충돌 -> 둘 다 사망
+                    // 머리 충돌
                     if(other.x === nx && other.y === ny) {
-                        killPlayer(p, "정면 충돌");
-                        killPlayer(other, "정면 충돌");
+                        killPlayer(p, "충돌");
+                        killPlayer(other, "충돌");
                     }
                 });
 
                 if(p.dead) return;
 
-                // 위치 업데이트
-                p.x = nx; 
-                p.y = ny;
+                p.x = nx; p.y = ny;
 
-                // 4. 땅 채우기 로직
-                // 내 땅에 도착했는가?
+                // 4. 땅 따먹기 로직
                 if(map[ny][nx] === p.id) {
                     if(p.trail.length > 0) {
-                        // 꼬리를 내 땅으로 변경
                         p.trail.forEach(t => map[t.y][t.x] = p.id);
                         
-                        // [간단한 채우기 알고리즘]
-                        // 꼬리의 최소/최대 좌표를 구해 그 사각형 안을 훑으면서
-                        // 꼬리 내부라고 판단되는 곳을 내 땅으로 만듦.
-                        // *완벽한 Flood Fill은 아니지만 웹게임용으로 충분히 빠름*
+                        // 사각형 범위 채우기 (간이 Flood Fill)
                         let minX = p.x, maxX = p.x, minY = p.y, maxY = p.y;
                         p.trail.forEach(t => {
                             minX = Math.min(minX, t.x); maxX = Math.max(maxX, t.x);
                             minY = Math.min(minY, t.y); maxY = Math.max(maxY, t.y);
                         });
 
-                        // 사각형 내부 채우기 (단순화: 트레일로 둘러싸인 빈 공간도 내 땅)
-                        // 정교한 폴리곤 필은 복잡하므로, 여기선 '꼬리 궤적 + 그 사이'를 대략적으로 채움
                         for(let cy = minY; cy <= maxY; cy++) {
                             for(let cx = minX; cx <= maxX; cx++) {
-                                // 이미 누구 땅이면 패스하거나 뺏음 (여기선 뺏기 가능)
                                 if (map[cy][cx] !== p.id) {
-                                    // 빈 땅이거나 남의 땅이면 내 땅으로 (단순 사각 채우기)
-                                    // 실제로는 외곽선 내부인지 판별해야 하지만, 캐주얼하게 사각범위로 처리
-                                    // 좀 더 게임성을 위해: 꼬리 궤적 내부만 채우도록 개선 필요하지만
-                                    // 성능상 이정도로 타협
                                     map[cy][cx] = p.id; 
                                 }
                             }
                         }
-
-                        p.trail = []; // 꼬리 초기화
-                        p.score = countScore(p.id); // 점수 갱신
+                        p.trail = [];
+                        p.score = countScore(p.id);
                     }
                 } else {
-                    // 내 땅이 아니면 꼬리 늘리기
                     p.trail.push({x: nx, y: ny});
                 }
             });
             updateLeaderboard();
         }
 
+        // [수정] 플레이어 사망 시 확실한 Game Over UI 호출
         function killPlayer(p, reason) {
             p.dead = true;
-            // 맵에서 땅 지우기 (선택사항: 죽으면 땅이 사라지게 할지, 남길지. 보통 남김)
-            // p.trail(꼬리)은 즉시 사라져야 함
             p.trail = [];
             
             if(p.isHuman) {
-                gameOver(reason);
+                gameOver(reason); // 내 캐릭터면 즉시 게임오버
             } else {
-                // 봇은 2초 후 부활
+                // 봇은 2초 뒤 부활
                 setTimeout(() => { 
                     if(gameRunning) spawnPlayer(p.id, false); 
                 }, 2000);
@@ -588,9 +573,8 @@
 
         function countScore(id) {
             let s = 0;
-            // 전체 맵 스캔 (최적화를 위해 가끔만 하거나 방식 변경 가능)
-            // 여기선 정확도를 위해 매번 계산하지만, 맵이 크면 느려질 수 있음.
-            // 4000칸 정도는 괜찮음.
+            // 맵 크기가 작지 않으므로 매 프레임 계산은 무리일 수 있으나
+            // 150x150은 요즘 브라우저에서 충분히 빠름
             for(let y=0; y<MAP_HEIGHT; y++) {
                 for(let x=0; x<MAP_WIDTH; x++) {
                     if(map[y][x] === id) s++;
@@ -600,36 +584,32 @@
         }
 
         function draw() {
-            // 카메라 설정 (플레이어 따라가기)
             const p = players.find(pl => pl.isHuman);
-            if(!p) return; // 플레이어 죽었으면 마지막 위치 or 정지
+            if(!p) return;
 
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = '#2c3e50';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 카메라 위치 계산
+            // 카메라
             let camX = p.x * GRID_SIZE - canvas.width / 2;
             let camY = p.y * GRID_SIZE - canvas.height / 2;
-            
-            // 맵 밖을 보여주지 않도록 클램핑
             camX = Math.max(0, Math.min(camX, MAP_WIDTH * GRID_SIZE - canvas.width));
             camY = Math.max(0, Math.min(camY, MAP_HEIGHT * GRID_SIZE - canvas.height));
 
             ctx.translate(-camX, -camY);
 
-            // 맵 경계선
+            // 경계선
             ctx.strokeStyle = '#7f8c8d';
             ctx.lineWidth = 5;
             ctx.strokeRect(0, 0, MAP_WIDTH * GRID_SIZE, MAP_HEIGHT * GRID_SIZE);
 
-            // 화면에 보이는 영역만 그리기 (Culling)
+            // Culling (화면만 그리기)
             let startCol = Math.floor(camX / GRID_SIZE);
             let endCol = startCol + (canvas.width / GRID_SIZE) + 1;
             let startRow = Math.floor(camY / GRID_SIZE);
             let endRow = startRow + (canvas.height / GRID_SIZE) + 1;
 
-            // 땅 그리기
             for(let y = Math.max(0, startRow); y < Math.min(MAP_HEIGHT, endRow); y++) {
                 for(let x = Math.max(0, startCol); x < Math.min(MAP_WIDTH, endCol); x++) {
                     let id = map[y][x];
@@ -637,7 +617,7 @@
                         let owner = players.find(pl => pl.id === id);
                         if(owner) {
                             ctx.fillStyle = owner.color;
-                            ctx.globalAlpha = 0.5; // 땅은 반투명
+                            ctx.globalAlpha = 0.5;
                             ctx.fillRect(x*GRID_SIZE, y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                             ctx.globalAlpha = 1.0;
                         }
@@ -645,10 +625,8 @@
                 }
             }
 
-            // 플레이어 & 꼬리 그리기
             players.forEach(pl => {
                 if(pl.dead) return;
-
                 // 꼬리
                 ctx.fillStyle = pl.color;
                 ctx.globalAlpha = 0.8;
@@ -656,18 +634,13 @@
                     ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                 });
                 ctx.globalAlpha = 1.0;
-
-                // 본체 (머리)
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = 'black';
+                // 머리
+                ctx.shadowBlur = 10; ctx.shadowColor = 'black';
                 ctx.fillStyle = pl.color;
                 ctx.fillRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                 ctx.shadowBlur = 0;
-
                 // 이름
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 12px Noto Sans KR';
-                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Noto Sans KR'; ctx.textAlign = 'center';
                 ctx.fillText(pl.name, pl.x*GRID_SIZE + GRID_SIZE/2, pl.y*GRID_SIZE - 5);
             });
         }
@@ -682,7 +655,7 @@
             let html = '';
             for(let i=0; i<Math.min(5, list.length); i++) {
                 let p = list[i];
-                let name = p.isHuman ? `<span style="color:#fd79a8">${p.name}</span>` : p.name;
+                let name = p.isHuman ? `<span style="color:#e74c3c">${p.name}</span>` : p.name;
                 html += `<li>${i+1}. ${name} <small>(${p.score})</small></li>`;
             }
             rankList.innerHTML = html;
@@ -692,7 +665,7 @@
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
             ingameAd.style.display = 'none';
-            uiLayer.style.display = 'flex';
+            uiLayer.style.display = 'flex'; // UI 표시 확실하게
             
             const btn = document.getElementById('start-btn');
             btn.innerText = "다시 도전하기 ↺";
