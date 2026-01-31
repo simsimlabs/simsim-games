@@ -498,9 +498,12 @@
                             if (Math.random() < 0.7) { 
                                 for(let p of props) {
                                     if(!p.alive || p.falling) continue;
+                                    
+                                    // [핵심 수정] 봇이 먹이를 "볼 수 있는가" 체크
+                                    // 1. 내가 먹을 수 있는 크기인가?
                                     if(h.r > p.r) {
                                         let d = Math.hypot(h.x - p.x, h.y - p.y);
-                                        // [수정] 거리 < 시야(150) && 거리 < 현재최소거리
+                                        // 2. 화면 안(시야 150)에 있는가? (Culling된 먹이는 무시)
                                         if(d < 150 && d < minTargetDist) { 
                                             minTargetDist = d; 
                                             bestTarget = {x: p.x, y: p.y}; 
@@ -528,20 +531,27 @@
                 h.y = Math.max(h.r, Math.min(MAP_SIZE - h.r, h.y));
                 h.angle += 0.05;
 
+                // 충돌 처리 (사물)
                 props.forEach(p => {
                     if(!p.alive) return;
                     let dist = Math.hypot(h.x - p.x, h.y - p.y);
-                    if(dist < h.r + p.r && h.r > p.r) { 
-                        if(!p.falling) {
-                            // [수정] 충돌 판정: 중심이 덮쳐져야 함 (거리 < 반지름 - 사물반지름/2)
-                            if(dist < h.r - p.r/2) {
-                                p.falling = true;
-                                p.fallTarget = h;
+                    
+                    // [핵심 수정] 거리 체크를 먼저 하고, 그 다음에 크기 비교
+                    // 이전 코드에서는 거리 체크 없이 크기만 크면 먹는 경우가 있었음
+                    if(dist < h.r + p.r) { 
+                        if(h.r > p.r) { // 내가 더 커야 함
+                             if(!p.falling) {
+                                // 완전히 안쪽으로 들어와야 먹힘
+                                if(dist < h.r - p.r/2) {
+                                    p.falling = true;
+                                    p.fallTarget = h;
+                                }
                             }
                         }
                     }
                 });
 
+                // 충돌 처리 (블랙홀)
                 holes.forEach((other, oIdx) => {
                     if(h === other || other.dead) return;
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
@@ -554,6 +564,7 @@
                 });
             });
 
+            // Falling Props
             props.forEach(p => {
                 if(p.falling && p.fallTarget) {
                     let t = p.fallTarget;
@@ -567,6 +578,7 @@
                         p.alive = false;
                         if(!t.dead) {
                             t.score += p.score;
+                            // [수정] 성장률 대폭 감소
                             t.r += p.score * 0.005; 
                         }
                     }
