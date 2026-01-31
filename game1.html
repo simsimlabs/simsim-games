@@ -287,7 +287,7 @@
         let mouseX = 0, mouseY = 0;
         let joystickVector = { x: 0, y: 0 };
 
-        // 봇 이름 생성기 (다양화)
+        // 봇 이름 생성기
         const adjectives = ["배고픈", "졸린", "행복한", "화난", "빠른", "느린", "강력한", "귀여운", "무서운", "심심한", "즐거운", "용감한", "소심한", "미친", "숨은", "전설의", "게으른", "부지런한", "더러운", "깨끗한", "거대한", "수상한", "천재", "바보"];
         const nouns = ["사람", "고양이", "강아지", "개발자", "학생", "직장인", "지렁이", "세포", "호랑이", "사자", "토끼", "다람쥐", "곰", "치킨", "피자", "햄버거", "라면", "김치", "게이머", "공룡", "슬라임", "외계인", "히어로", "로봇"];
 
@@ -310,7 +310,6 @@
             container.addEventListener('mousemove', e => {
                 if(inputType !== 'joystick') {
                     const rect = canvas.getBoundingClientRect();
-                    // 캔버스 스케일링 비율 계산 (반응형 대응)
                     const scaleX = canvas.width / rect.width;
                     const scaleY = canvas.height / rect.height;
                     mouseX = (e.clientX - rect.left) * scaleX;
@@ -327,7 +326,6 @@
         }
 
         function resizeCanvas() {
-            // 캔버스 해상도 최적화 (레티나 디스플레이 고려 등은 성능상 1:1로 설정)
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
         }
@@ -362,21 +360,38 @@
             });
         }
 
+        // ▼▼▼ [수정 1] 봇 생성 시 안전거리 확보 로직 추가 ▼▼▼
         function addBot() {
+            let bX, bY, dist;
+            let safeDistance = 800; // 플레이어로부터 최소 800px 떨어져서 생성
+            
+            // 안전한 위치를 찾을 때까지 반복 (최대 100번 시도)
+            let attempts = 0;
+            do {
+                bX = Math.random() * MAP_SIZE;
+                bY = Math.random() * MAP_SIZE;
+                // 플레이어가 존재할 때만 거리 계산 (게임 시작 전 등 고려)
+                if (player) {
+                    dist = Math.hypot(bX - player.x, bY - player.y);
+                } else {
+                    dist = safeDistance + 1; // 플레이어 없으면 통과
+                }
+                attempts++;
+            } while (dist < safeDistance && attempts < 100);
+
             bots.push({
-                x: Math.random() * MAP_SIZE,
-                y: Math.random() * MAP_SIZE,
+                x: bX,
+                y: bY,
                 r: Math.random() * 40 + 20,
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 name: generateBotName(),
-                state: 'wander', // wander, chase, flee
+                state: 'wander',
                 target: null,
                 changeDirTimer: 0,
                 angle: Math.random() * Math.PI * 2
             });
         }
 
-        // 조이스틱 로직
         function initJoystick() {
             let stick = joystickStick;
             let zone = joystickZone;
@@ -420,47 +435,69 @@
             }
         }
 
-        // 🤖 스마트 봇 AI 로직
+        // ▼▼▼ [수정 2] 스마트 봇 AI (플레이어뿐만 아니라 다른 봇도 타겟팅) ▼▼▼
         function updateBotAI(b) {
             b.changeDirTimer--;
 
-            // 1. 주변 탐색 (나보다 크거나 작은 애 찾기)
-            let threat = null; // 나보다 커서 피해야 할 대상
-            let prey = null;   // 나보다 작아서 먹을 대상
-            let minDistPrey = Infinity;
+            // 주변 탐색 설정
+            let closestThreat = null; // 피해야 할 대상
+            let closestPrey = null;   // 먹을 대상
             let minDistThreat = Infinity;
-            const viewRange = 500 + b.r * 2; // 시야 범위
+            let minDistPrey = Infinity;
+            const viewRange = 600 + b.r * 2; // 시야 범위
 
-            // 플레이어 확인
-            let dToPlayer = Math.hypot(b.x - player.x, b.y - player.y);
-            if (dToPlayer < viewRange) {
-                if (player.r > b.r * 1.1) {
-                    threat = player;
-                    minDistThreat = dToPlayer;
-                } else if (player.r < b.r * 0.9) {
-                    prey = player;
-                    minDistPrey = dToPlayer;
+            // 거리 및 타겟 확인 함수
+            const checkTarget = (target) => {
+                if (target === b) return; // 나 자신은 패스
+                let d = Math.hypot(b.x - target.x, b.y - target.y);
+                
+                if (d < viewRange) {
+                    // 나보다 크면 위협 (10% 이상 커야 위협으로 간주)
+                    if (target.r > b.r * 1.1) {
+                        if (d < minDistThreat) {
+                            closestThreat = target;
+                            minDistThreat = d;
+                        }
+                    } 
+                    // 나보다 작으면 먹이 (10% 이상 작아야 먹이로 간주)
+                    else if (target.r < b.r * 0.9) {
+                        if (d < minDistPrey) {
+                            closestPrey = target;
+                            minDistPrey = d;
+                        }
+                    }
                 }
+            };
+
+            // 1. 플레이어 확인 (게임 중일 때만)
+            if (gameRunning) checkTarget(player);
+
+            // 2. 다른 봇들 확인 (전체 봇을 다 돌면 렉 걸릴 수 있으므로, 거리 가까운 순으로 일부만 보거나 전체 루프)
+            // 봇 개수가 적으므로(60개) 전체 루프도 괜찮음
+            for (let i = 0; i < bots.length; i++) {
+                checkTarget(bots[i]);
             }
 
-            // 2. 상태 결정
-            if (threat) {
+            // 행동 결정
+            if (closestThreat) {
                 // 도망가기 (Flee)
                 b.state = 'flee';
-                b.angle = Math.atan2(b.y - threat.y, b.x - threat.x); // 반대 방향
-            } else if (prey) {
+                b.angle = Math.atan2(b.y - closestThreat.y, b.x - closestThreat.x);
+                b.changeDirTimer = 10; // 10프레임 동안 도망 유지
+            } else if (closestPrey) {
                 // 쫓아가기 (Chase)
                 b.state = 'chase';
-                b.angle = Math.atan2(prey.y - b.y, prey.x - b.x);
+                b.angle = Math.atan2(closestPrey.y - b.y, closestPrey.x - b.x);
+                b.changeDirTimer = 20; // 20프레임 동안 추격 유지
             } else {
-                // 배회하기 (Wander)
+                // 배회하기 (Wander) - 타겟이 없으면 랜덤 이동
                 b.state = 'wander';
                 if (b.changeDirTimer <= 0) {
-                    b.changeDirTimer = Math.random() * 50 + 20;
-                    b.angle += (Math.random() - 0.5) * 2; // 약간씩 방향 틀기
+                    b.changeDirTimer = Math.random() * 60 + 30; // 방향 전환 주기
+                    b.angle += (Math.random() - 0.5) * 1.5; // 부드럽게 방향 꺾기
                     
-                    // 맵 중앙으로 돌아오려는 경향 추가 (벽에 박혀있지 않게)
-                    if (b.x < 100 || b.x > MAP_SIZE - 100 || b.y < 100 || b.y > MAP_SIZE - 100) {
+                    // 맵 밖으로 안 나가게 중앙으로 유도
+                    if (b.x < 200 || b.x > MAP_SIZE - 200 || b.y < 200 || b.y > MAP_SIZE - 200) {
                         b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
                     }
                 }
@@ -475,8 +512,8 @@
             ctx.fillStyle = '#f0f2f5';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 카메라 이동 (플레이어가 화면 중앙에 오도록)
-            let zoom = Math.max(0.4, 50 / (player.r + 50)); // 부드러운 줌
+            // 카메라 이동
+            let zoom = Math.max(0.4, 50 / (player.r + 50)); 
             
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
@@ -495,7 +532,6 @@
             // 먹이 그리기 및 충돌 처리
             for(let i = foods.length - 1; i >= 0; i--) {
                 let f = foods[i];
-                // 화면 밖 먹이는 그리지 않음 (최적화)
                 if(Math.abs(f.x - player.x) > (canvas.width/zoom + 50) || Math.abs(f.y - player.y) > (canvas.height/zoom + 50)) continue;
                 
                 drawCircle(f.x, f.y, f.r, f.color);
@@ -506,8 +542,7 @@
                 }
             }
 
-            // [중요] 봇 로직 (역방향 루프로 안전하게 삭제)
-            // 기존 forEach 대신 for loop 사용
+            // 봇 로직 (역방향 루프)
             for (let i = bots.length - 1; i >= 0; i--) {
                 let b = bots[i];
 
@@ -526,7 +561,6 @@
                     
                     drawCircle(b.x, b.y, b.r, b.color);
                     
-                    // 봇 이름
                     ctx.fillStyle = 'white'; 
                     ctx.font = `bold ${Math.max(10, b.r * 0.4)}px Noto Sans KR`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
@@ -541,13 +575,13 @@
                         bots.splice(i, 1); 
                         addBot(); 
                         showKillLog(`냠냠! ${b.name} 처치!`);
-                        continue; // 봇이 삭제되었으므로 다음 루프로
+                        continue; 
                     } else if (b.r > player.r * 1.1) { // 봇이 플레이어를 먹음
                         gameOver(b.name);
                     }
                 }
 
-                // 2. 봇 vs 봇 충돌 (내가 먹히는지 확인)
+                // 2. 봇 vs 봇 충돌
                 let eaten = false;
                 for(let j = 0; j < bots.length; j++) {
                     if(i === j) continue;
@@ -555,26 +589,24 @@
                     let distSq = (b.x - other.x)**2 + (b.y - other.y)**2;
                     
                     if (distSq < (b.r + other.r)**2) {
-                        // 내가 상대보다 작으면 먹힘
                         if (other.r > b.r * 1.1) {
-                            other.r += b.r * 0.4; // 상대방 성장
-                            bots.splice(i, 1);    // 나 삭제
-                            addBot();             // 새 봇 추가
+                            other.r += b.r * 0.4; 
+                            bots.splice(i, 1);    
+                            addBot();             
                             eaten = true;
-                            break; // 죽었으니 더 확인할 필요 없음
+                            break; 
                         }
                     }
                 }
-                if(eaten) continue; // 먹혔으면 다음 루프로
+                if(eaten) continue; 
             }
 
-            // 플레이어 이동 로직
+            // 플레이어 이동
             let moveX = 0, moveY = 0;
             if (inputType === 'joystick') {
                 moveX = joystickVector.x; 
                 moveY = joystickVector.y;
             } else {
-                // 마우스 좌표는 화면 중앙(캔버스 w/2, h/2) 기준
                 let dx = mouseX - canvas.width / 2;
                 let dy = mouseY - canvas.height / 2;
                 let angle = Math.atan2(dy, dx);
@@ -595,7 +627,7 @@
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
             ctx.fillText("나", player.x, player.y);
 
-            ctx.restore(); // 줌/이동 복구
+            ctx.restore(); 
 
             updateLeaderboard();
             animationFrameId = requestAnimationFrame(loop);
