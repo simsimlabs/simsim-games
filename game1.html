@@ -21,13 +21,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* 1. 기본 레이아웃 (애드센스 친화적 구조) */
+        /* 1. 기본 레이아웃 */
         body { 
             margin: 0; padding: 0; 
             background-color: #f0f2f5; 
             font-family: 'Noto Sans KR', sans-serif;
             color: #333;
-            overflow-x: hidden; /* 가로 스크롤 방지 */
+            overflow-x: hidden; 
         }
 
         header {
@@ -35,36 +35,37 @@
         }
 
         .header-top {
-            display: flex; justify-content: space-between; max-width: 1000px; margin: 0 auto 10px; font-size: 0.9rem;
+            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
         }
         .header-top a { color: #dfe6e9; text-decoration: none; }
 
         h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
 
-        /* 2. 광고 영역 (오클릭 방지 여백) */
+        /* 2. 광고 영역 */
         .ad-banner {
-            width: 100%; max-width: 1000px; margin: 20px auto;
+            width: 100%; max-width: 1200px; margin: 20px auto;
             text-align: center; background: #fff; padding: 10px 0;
             border-radius: 8px; overflow: hidden;
         }
 
-        /* 3. 게임 컨테이너 (반응형 박스) */
+        /* 3. 게임 컨테이너 (화면 크기 확대) */
         #game-container-box {
             position: relative;
-            width: 100%; max-width: 900px; /* PC 최대 너비 */
-            height: 600px; /* PC 기본 높이 */
+            width: 100%; 
+            max-width: 1280px; /* PC: 1280px로 확대 (기존 900px) */
+            height: 720px;     /* PC: 720px로 확대 (기존 600px) */
             margin: 0 auto;
             background-color: #000; border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            touch-action: none; /* 게임 내 터치 시 페이지 스크롤 방지 */
+            touch-action: none;
             user-select: none;
             -webkit-user-select: none;
         }
 
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
-        /* 4. UI 레이어 (시작 화면, 게임오버) */
+        /* 4. UI 레이어 */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85);
@@ -72,12 +73,12 @@
             z-index: 100; color: white; text-align: center;
         }
 
-        #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #6c5ce7; margin-bottom: 10px; text-shadow: 2px 2px 0 #fff; }
-        #ui-layer p { font-size: 1.1rem; color: #dfe6e9; margin-bottom: 30px; line-height: 1.6; }
+        #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #6c5ce7; margin-bottom: 10px; text-shadow: 3px 3px 0 #fff; }
+        #ui-layer p { font-size: 1.2rem; color: #dfe6e9; margin-bottom: 30px; line-height: 1.6; }
         
         #start-btn {
-            background: #ff7675; color: white; border: none; padding: 15px 50px;
-            font-size: 1.5rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            background: #ff7675; color: white; border: none; padding: 15px 60px;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
             cursor: pointer; box-shadow: 0 5px 0 #d63031; transition: transform 0.1s;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
@@ -86,40 +87,40 @@
         /* 5. 인게임 HUD */
         #leaderboard {
             position: absolute; top: 15px; right: 15px;
-            background: rgba(0,0,0,0.5); color: white; padding: 12px;
-            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 0.95rem;
-            min-width: 140px; pointer-events: none; z-index: 50;
+            background: rgba(0,0,0,0.5); color: white; padding: 15px;
+            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 1rem;
+            min-width: 160px; pointer-events: none; z-index: 50;
         }
         #rank-list { list-style: none; padding: 0; margin: 0; }
-        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        #rank-list li { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 
         #kill-log {
             position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
             background: rgba(214, 48, 49, 0.9); color: white;
-            padding: 8px 25px; border-radius: 20px; font-weight: bold;
+            padding: 10px 30px; border-radius: 30px; font-weight: bold;
             opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
-            white-space: nowrap;
+            white-space: nowrap; font-size: 1.1rem;
         }
 
         /* 6. 모바일 조이스틱 */
         #joystick-zone {
-            position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px;
-            z-index: 90; display: none; /* JS로 모바일에서만 켜짐 */
+            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px;
+            z-index: 90; display: none; 
         }
         #joystick-bg {
             width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15);
             border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
         }
         #joystick-stick {
-            width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8);
+            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.8);
             border-radius: 50%; position: absolute;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
 
-        /* 7. 콘텐츠 설명글 (애드센스용 블로그 스타일) */
+        /* 7. 콘텐츠 설명글 */
         .content-article {
-            max-width: 900px; margin: 40px auto; padding: 30px;
+            max-width: 1200px; margin: 40px auto; padding: 40px;
             background: #fff; border-radius: 12px; line-height: 1.8;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
@@ -130,7 +131,7 @@
         /* 8. 공유 버튼 & 토스트 */
         .share-bar { text-align: center; margin: 30px 0; }
         .share-btn {
-            background: #333; color: white; border: none; padding: 10px 20px;
+            background: #333; color: white; border: none; padding: 12px 25px;
             border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
             transition: 0.2s;
         }
@@ -151,7 +152,7 @@
         @media (max-width: 800px) {
             #game-container-box {
                 width: 100%;
-                height: 80vh; /* 화면 높이의 80%를 꽉 채움 */
+                height: 85vh; /* 모바일: 높이 더 확보 (80% -> 85%) */
                 border-radius: 0;
             }
             #ui-layer h2 { font-size: 2.2rem; }
@@ -208,6 +209,7 @@
             <button id="start-btn">게임 시작 ▶</button>
         </div>
     </div>
+
     <div class="ad-banner">
         <span style="font-size:10px; color:#ccc;">Sponsored</span>
         <ins class="adsbygoogle"
@@ -255,7 +257,7 @@
     </footer>
 
     <script>
-        // DOM 요소 가져오기
+        // DOM 요소
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('game-container-box');
@@ -271,7 +273,7 @@
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
-        // 게임 설정 변수
+        // 게임 변수
         const MAP_SIZE = 4000; 
         const BOT_COUNT = 60;
         const FOOD_COUNT = 1500;
@@ -287,7 +289,7 @@
         let mouseX = 0, mouseY = 0;
         let joystickVector = { x: 0, y: 0 };
 
-        // 봇 이름 생성기
+        // 봇 이름 생성
         const adjectives = ["배고픈", "졸린", "행복한", "화난", "빠른", "느린", "강력한", "귀여운", "무서운", "심심한", "즐거운", "용감한", "소심한", "미친", "숨은", "전설의", "게으른", "부지런한", "더러운", "깨끗한", "거대한", "수상한", "천재", "바보"];
         const nouns = ["사람", "고양이", "강아지", "개발자", "학생", "직장인", "지렁이", "세포", "호랑이", "사자", "토끼", "다람쥐", "곰", "치킨", "피자", "햄버거", "라면", "김치", "게이머", "공룡", "슬라임", "외계인", "히어로", "로봇"];
 
@@ -300,13 +302,13 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
             
-            // 모바일 감지하여 조이스틱 표시
+            // 모바일 감지
             if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
                 joystickZone.style.display = 'block';
                 inputType = 'joystick';
             }
 
-            // 마우스 이벤트 (컨테이너 기준 좌표 계산)
+            // 마우스 이벤트
             container.addEventListener('mousemove', e => {
                 if(inputType !== 'joystick') {
                     const rect = canvas.getBoundingClientRect();
@@ -334,7 +336,7 @@
             uiLayer.style.display = 'none';
             gameRunning = true;
             
-            // 게임 데이터 초기화
+            // 초기화
             player = { x: MAP_SIZE/2, y: MAP_SIZE/2, r: 30, color: '#6c5ce7', name: '나 (Player)' };
             foods = [];
             bots = [];
@@ -342,7 +344,6 @@
             for(let i=0; i<FOOD_COUNT; i++) addFood();
             for(let i=0; i<BOT_COUNT; i++) addBot();
             
-            // 입력 초기화
             mouseX = canvas.width / 2;
             mouseY = canvas.height / 2;
             joystickVector = { x: 0, y: 0 };
@@ -360,28 +361,25 @@
             });
         }
 
-        // ▼▼▼ [수정 1] 봇 생성 시 안전거리 확보 로직 추가 ▼▼▼
+        // 봇 생성 (안전거리 확보)
         function addBot() {
             let bX, bY, dist;
-            let safeDistance = 800; // 플레이어로부터 최소 800px 떨어져서 생성
+            let safeDistance = 800; 
             
-            // 안전한 위치를 찾을 때까지 반복 (최대 100번 시도)
             let attempts = 0;
             do {
                 bX = Math.random() * MAP_SIZE;
                 bY = Math.random() * MAP_SIZE;
-                // 플레이어가 존재할 때만 거리 계산 (게임 시작 전 등 고려)
                 if (player) {
                     dist = Math.hypot(bX - player.x, bY - player.y);
                 } else {
-                    dist = safeDistance + 1; // 플레이어 없으면 통과
+                    dist = safeDistance + 1;
                 }
                 attempts++;
             } while (dist < safeDistance && attempts < 100);
 
             bots.push({
-                x: bX,
-                y: bY,
+                x: bX, y: bY,
                 r: Math.random() * 40 + 20,
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 name: generateBotName(),
@@ -435,68 +433,46 @@
             }
         }
 
-        // ▼▼▼ [수정 2] 스마트 봇 AI (플레이어뿐만 아니라 다른 봇도 타겟팅) ▼▼▼
+        // 스마트 봇 AI (공격/도망/배회)
         function updateBotAI(b) {
             b.changeDirTimer--;
 
-            // 주변 탐색 설정
-            let closestThreat = null; // 피해야 할 대상
-            let closestPrey = null;   // 먹을 대상
+            let closestThreat = null;
+            let closestPrey = null;
             let minDistThreat = Infinity;
             let minDistPrey = Infinity;
-            const viewRange = 600 + b.r * 2; // 시야 범위
+            const viewRange = 600 + b.r * 2;
 
-            // 거리 및 타겟 확인 함수
             const checkTarget = (target) => {
-                if (target === b) return; // 나 자신은 패스
+                if (target === b) return;
                 let d = Math.hypot(b.x - target.x, b.y - target.y);
                 
                 if (d < viewRange) {
-                    // 나보다 크면 위협 (10% 이상 커야 위협으로 간주)
                     if (target.r > b.r * 1.1) {
-                        if (d < minDistThreat) {
-                            closestThreat = target;
-                            minDistThreat = d;
-                        }
+                        if (d < minDistThreat) { closestThreat = target; minDistThreat = d; }
                     } 
-                    // 나보다 작으면 먹이 (10% 이상 작아야 먹이로 간주)
                     else if (target.r < b.r * 0.9) {
-                        if (d < minDistPrey) {
-                            closestPrey = target;
-                            minDistPrey = d;
-                        }
+                        if (d < minDistPrey) { closestPrey = target; minDistPrey = d; }
                     }
                 }
             };
 
-            // 1. 플레이어 확인 (게임 중일 때만)
             if (gameRunning) checkTarget(player);
+            for (let i = 0; i < bots.length; i++) { checkTarget(bots[i]); }
 
-            // 2. 다른 봇들 확인 (전체 봇을 다 돌면 렉 걸릴 수 있으므로, 거리 가까운 순으로 일부만 보거나 전체 루프)
-            // 봇 개수가 적으므로(60개) 전체 루프도 괜찮음
-            for (let i = 0; i < bots.length; i++) {
-                checkTarget(bots[i]);
-            }
-
-            // 행동 결정
             if (closestThreat) {
-                // 도망가기 (Flee)
                 b.state = 'flee';
                 b.angle = Math.atan2(b.y - closestThreat.y, b.x - closestThreat.x);
-                b.changeDirTimer = 10; // 10프레임 동안 도망 유지
+                b.changeDirTimer = 10;
             } else if (closestPrey) {
-                // 쫓아가기 (Chase)
                 b.state = 'chase';
                 b.angle = Math.atan2(closestPrey.y - b.y, closestPrey.x - b.x);
-                b.changeDirTimer = 20; // 20프레임 동안 추격 유지
+                b.changeDirTimer = 20;
             } else {
-                // 배회하기 (Wander) - 타겟이 없으면 랜덤 이동
                 b.state = 'wander';
                 if (b.changeDirTimer <= 0) {
-                    b.changeDirTimer = Math.random() * 60 + 30; // 방향 전환 주기
-                    b.angle += (Math.random() - 0.5) * 1.5; // 부드럽게 방향 꺾기
-                    
-                    // 맵 밖으로 안 나가게 중앙으로 유도
+                    b.changeDirTimer = Math.random() * 60 + 30;
+                    b.angle += (Math.random() - 0.5) * 1.5;
                     if (b.x < 200 || b.x > MAP_SIZE - 200 || b.y < 200 || b.y > MAP_SIZE - 200) {
                         b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
                     }
@@ -504,50 +480,43 @@
             }
         }
 
-        // 메인 게임 루프
+        // 메인 루프
         function loop() {
             if(!gameRunning) return;
 
-            // 배경 지우기
+            // 1. 화면 클리어
             ctx.fillStyle = '#f0f2f5';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 카메라 이동
+            // 2. 카메라 설정
             let zoom = Math.max(0.4, 50 / (player.r + 50)); 
-            
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
             ctx.translate(-player.x, -player.y);
 
-            // 격자 그리기
+            // 3. 배경(격자)
             ctx.strokeStyle = '#dfe6e9'; ctx.lineWidth = 2; ctx.beginPath();
             for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
             for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
             ctx.stroke();
-            
-            // 맵 경계선
             ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-            // 먹이 그리기 및 충돌 처리
+            // 4. 먹이 처리
             for(let i = foods.length - 1; i >= 0; i--) {
                 let f = foods[i];
                 if(Math.abs(f.x - player.x) > (canvas.width/zoom + 50) || Math.abs(f.y - player.y) > (canvas.height/zoom + 50)) continue;
-                
                 drawCircle(f.x, f.y, f.r, f.color);
                 
-                let distSq = (player.x-f.x)**2 + (player.y-f.y)**2;
-                if(distSq < (player.r - f.r/2)**2) { 
+                if((player.x-f.x)**2 + (player.y-f.y)**2 < (player.r - f.r/2)**2) { 
                     player.r += 0.2; foods.splice(i, 1); addFood();
                 }
             }
 
-            // 봇 로직 (역방향 루프)
+            // 5. [중요] 봇 충돌 로직 (역순 루프로 안전하게 삭제)
             for (let i = bots.length - 1; i >= 0; i--) {
                 let b = bots[i];
-
-                // AI 업데이트
-                updateBotAI(b);
+                updateBotAI(b); // AI 이동 계산
                 
                 let bSpeed = 2 + (50 / b.r);
                 b.x += Math.cos(b.angle) * bSpeed;
@@ -555,57 +524,65 @@
                 b.x = Math.max(0, Math.min(MAP_SIZE, b.x)); 
                 b.y = Math.max(0, Math.min(MAP_SIZE, b.y));
 
-                // 화면 안에 들어오면 그리기
+                // 화면 안이면 그리기
                 if(Math.abs(b.x - player.x) < (canvas.width/zoom + b.r + 50) && 
                    Math.abs(b.y - player.y) < (canvas.height/zoom + b.r + 50)) {
-                    
                     drawCircle(b.x, b.y, b.r, b.color);
-                    
                     ctx.fillStyle = 'white'; 
                     ctx.font = `bold ${Math.max(10, b.r * 0.4)}px Noto Sans KR`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
                     ctx.fillText(b.name, b.x, b.y);
                 }
 
-                // 1. 봇 vs 플레이어 충돌
-                let distSqPlayer = (player.x-b.x)**2 + (player.y-b.y)**2;
-                if(distSqPlayer < (player.r + b.r)**2) {
-                    if(player.r > b.r * 1.1) { // 플레이어가 봇을 먹음
-                        player.r += b.r * 0.4; 
-                        bots.splice(i, 1); 
-                        addBot(); 
+                // 5-1. 봇 vs 플레이어 충돌
+                let distP = Math.hypot(player.x - b.x, player.y - b.y);
+                // 겹침 판정: 거리 < 두 반지름의 합
+                if (distP < player.r + b.r) {
+                    // 먹힘 판정: 중심이 상대방 안쪽으로 30% 정도 들어와야 함
+                    if (player.r > b.r * 1.1 && distP < player.r - b.r * 0.3) {
+                        player.r += b.r * 0.4;
+                        bots.splice(i, 1); addBot();
                         showKillLog(`냠냠! ${b.name} 처치!`);
-                        continue; 
-                    } else if (b.r > player.r * 1.1) { // 봇이 플레이어를 먹음
+                        continue; // 봇 삭제됐으니 다음으로
+                    } 
+                    else if (b.r > player.r * 1.1 && distP < b.r - player.r * 0.3) {
                         gameOver(b.name);
                     }
                 }
 
-                // 2. 봇 vs 봇 충돌
+                // 5-2. 봇 vs 봇 충돌 (중요: 내부 루프도 역순으로 안전하게)
                 let eaten = false;
-                for(let j = 0; j < bots.length; j++) {
-                    if(i === j) continue;
+                for (let j = bots.length - 1; j >= 0; j--) {
+                    if (i === j) continue;
                     let other = bots[j];
-                    let distSq = (b.x - other.x)**2 + (b.y - other.y)**2;
-                    
-                    if (distSq < (b.r + other.r)**2) {
-                        if (other.r > b.r * 1.1) {
-                            other.r += b.r * 0.4; 
-                            bots.splice(i, 1);    
-                            addBot();             
+                    let dist = Math.hypot(b.x - other.x, b.y - other.y);
+
+                    if (dist < b.r + other.r) { // 접촉함
+                        // 'b'가 'other'를 먹는 경우
+                        if (b.r > other.r * 1.1 && dist < b.r - other.r * 0.3) {
+                            b.r += other.r * 0.4;
+                            bots.splice(j, 1);
+                            addBot();
+                            // 만약 삭제된 j가 현재 i보다 앞쪽 인덱스라면 i도 당겨짐
+                            if (j < i) i--; 
+                        }
+                        // 'other'가 'b'를 먹는 경우
+                        else if (other.r > b.r * 1.1 && dist < other.r - b.r * 0.3) {
+                            other.r += b.r * 0.4;
+                            bots.splice(i, 1);
+                            addBot();
                             eaten = true;
-                            break; 
+                            break; // 'b'가 죽었으므로 더 이상 체크 안함
                         }
                     }
                 }
-                if(eaten) continue; 
+                if (eaten) continue;
             }
 
-            // 플레이어 이동
+            // 6. 플레이어 이동 및 그리기
             let moveX = 0, moveY = 0;
             if (inputType === 'joystick') {
-                moveX = joystickVector.x; 
-                moveY = joystickVector.y;
+                moveX = joystickVector.x; moveY = joystickVector.y;
             } else {
                 let dx = mouseX - canvas.width / 2;
                 let dy = mouseY - canvas.height / 2;
@@ -620,7 +597,6 @@
             player.x = Math.max(0, Math.min(MAP_SIZE, player.x)); 
             player.y = Math.max(0, Math.min(MAP_SIZE, player.y));
 
-            // 플레이어 그리기
             drawCircle(player.x, player.y, player.r, player.color);
             ctx.fillStyle = 'white'; 
             ctx.font = `bold ${Math.max(12, player.r * 0.4)}px Noto Sans KR`;
@@ -628,7 +604,6 @@
             ctx.fillText("나", player.x, player.y);
 
             ctx.restore(); 
-
             updateLeaderboard();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -672,9 +647,7 @@
             });
         }
 
-        // 실행
         init();
-
     </script>
 </body>
 </html>
