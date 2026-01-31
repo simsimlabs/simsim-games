@@ -481,15 +481,13 @@
                         }
                     }
                 } else {
-                    // [수정] AI 멍청하게 만들기 (반응 느림, 시야 좁음, 랜덤성)
                     h.aiTimer--;
                     if(h.aiTimer <= 0) {
-                        h.aiTimer = Math.random() * 50 + 20; // 판단 주기 느리게
+                        h.aiTimer = Math.random() * 50 + 20; 
                         
                         let bestTarget = null; 
                         let minTargetDist = 400;
 
-                        // 1. 위협 감지 (시야 150으로 대폭 축소)
                         let threat = holes.find(other => other !== h && !other.dead && other.r > h.r && Math.hypot(h.x-other.x, h.y-other.y) < 150);
                         
                         if (threat) {
@@ -497,12 +495,12 @@
                             h.aiTargetX = h.x + Math.cos(angle) * 500;
                             h.aiTargetY = h.y + Math.sin(angle) * 500;
                         } else {
-                            // 2. 먹이 탐색 (시야 150, 30% 확률로 못봄)
                             if (Math.random() < 0.7) { 
                                 for(let p of props) {
                                     if(!p.alive || p.falling) continue;
                                     if(h.r > p.r) {
                                         let d = Math.hypot(h.x - p.x, h.y - p.y);
+                                        // [수정] 거리 < 시야(150) && 거리 < 현재최소거리
                                         if(d < 150 && d < minTargetDist) { 
                                             minTargetDist = d; 
                                             bestTarget = {x: p.x, y: p.y}; 
@@ -510,12 +508,10 @@
                                     }
                                 }
                             }
-
                             if(bestTarget) {
                                 h.aiTargetX = bestTarget.x;
                                 h.aiTargetY = bestTarget.y;
                             } else {
-                                // 랜덤 배회
                                 h.aiTargetX = Math.random() * MAP_SIZE;
                                 h.aiTargetY = Math.random() * MAP_SIZE;
                             }
@@ -532,12 +528,12 @@
                 h.y = Math.max(h.r, Math.min(MAP_SIZE - h.r, h.y));
                 h.angle += 0.05;
 
-                // 충돌 처리 (사물)
                 props.forEach(p => {
                     if(!p.alive) return;
                     let dist = Math.hypot(h.x - p.x, h.y - p.y);
                     if(dist < h.r + p.r && h.r > p.r) { 
                         if(!p.falling) {
+                            // [수정] 충돌 판정: 중심이 덮쳐져야 함 (거리 < 반지름 - 사물반지름/2)
                             if(dist < h.r - p.r/2) {
                                 p.falling = true;
                                 p.fallTarget = h;
@@ -546,7 +542,6 @@
                     }
                 });
 
-                // 충돌 처리 (블랙홀)
                 holes.forEach((other, oIdx) => {
                     if(h === other || other.dead) return;
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
@@ -559,7 +554,6 @@
                 });
             });
 
-            // Falling Props
             props.forEach(p => {
                 if(p.falling && p.fallTarget) {
                     let t = p.fallTarget;
@@ -573,7 +567,6 @@
                         p.alive = false;
                         if(!t.dead) {
                             t.score += p.score;
-                            // [수정] 성장률 대폭 감소 (0.005)
                             t.r += p.score * 0.005; 
                         }
                     }
