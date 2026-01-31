@@ -6,11 +6,9 @@
     <title>세포 키우기 - 심심풀이 게임 연구소</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
-    
     <link rel="canonical" href="https://simsimlabs.com/simsim-games/game1.html">
 
     <meta name="description" content="세포 키우기(Cell Eaters) 웹게임. 작은 세포로 시작해 적을 피하고 먹이를 먹어 거대하게 성장하세요. 설치 없는 무료 서바이벌 게임.">
-    
     <meta property="og:type" content="website">
     <meta property="og:title" content="🦠 세포 키우기 - 심심풀이 게임 연구소">
     <meta property="og:description" content="나보다 작은 세포를 먹고 거대해지세요! 적을 피하고 최후의 생존자가 되는 실시간 서바이벌 게임.">
@@ -21,61 +19,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* 1. 기본 레이아웃 */
-        body { 
-            margin: 0; padding: 0; 
-            background-color: #f0f2f5; 
-            font-family: 'Noto Sans KR', sans-serif;
-            color: #333;
-            overflow-x: hidden; 
-        }
-
-        header {
-            background: #2d3436; color: white; padding: 15px 20px; text-align: center;
-        }
-
-        .header-top {
-            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
-        }
+        body { margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Noto Sans KR', sans-serif; color: #333; overflow-x: hidden; }
+        header { background: #2d3436; color: white; padding: 15px 20px; text-align: center; }
+        .header-top { display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem; }
         .header-top a { color: #dfe6e9; text-decoration: none; }
-
         h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
-
-        /* 2. 광고 영역 */
-        .ad-banner {
-            width: 100%; max-width: 1200px; margin: 20px auto;
-            text-align: center; background: #fff; padding: 10px 0;
-            border-radius: 8px; overflow: hidden;
-        }
-
-        /* 3. 게임 컨테이너 */
+        .ad-banner { width: 100%; max-width: 1200px; margin: 20px auto; text-align: center; background: #fff; padding: 10px 0; border-radius: 8px; overflow: hidden; }
+        
         #game-container-box {
-            position: relative;
-            width: 100%; 
-            max-width: 1280px; 
-            height: 720px;     
-            margin: 0 auto;
-            background-color: #000; border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
+            position: relative; width: 100%; max-width: 1280px; height: 720px;
+            margin: 0 auto; background-color: #000; border-radius: 12px;
+            overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            touch-action: none; user-select: none; -webkit-user-select: none;
         }
-
         canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
-        /* 4. UI 레이어 */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; color: white; text-align: center;
+            background: rgba(0, 0, 0, 0.85); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100; color: white; text-align: center;
         }
-
         #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #6c5ce7; margin-bottom: 10px; text-shadow: 3px 3px 0 #fff; }
         #ui-layer p { font-size: 1.2rem; color: #dfe6e9; margin-bottom: 30px; line-height: 1.6; }
-        
         #start-btn {
             background: #ff7675; color: white; border: none; padding: 15px 60px;
             font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
@@ -84,7 +49,6 @@
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
         #start-btn:hover { background: #ff6b6b; }
 
-        /* 5. 인게임 HUD */
         #leaderboard {
             position: absolute; top: 15px; right: 15px;
             background: rgba(0,0,0,0.5); color: white; padding: 15px;
@@ -102,59 +66,27 @@
             white-space: nowrap; font-size: 1.1rem;
         }
 
-        /* 6. 모바일 조이스틱 */
-        #joystick-zone {
-            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px;
-            z-index: 90; display: none; 
-        }
-        #joystick-bg {
-            width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15);
-            border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
-        }
-        #joystick-stick {
-            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.8);
-            border-radius: 50%; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
+        #joystick-zone { position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px; z-index: 90; display: none; }
+        #joystick-bg { width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3); }
+        #joystick-stick { width: 60px; height: 60px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.3); }
 
-        /* 7. 콘텐츠 설명글 */
-        .content-article {
-            max-width: 1200px; margin: 40px auto; padding: 40px;
-            background: #fff; border-radius: 12px; line-height: 1.8;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
+        .content-article { max-width: 1200px; margin: 40px auto; padding: 40px; background: #fff; border-radius: 12px; line-height: 1.8; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .content-article h2 { color: #ff7675; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; margin-top: 30px; }
         .content-article h3 { color: #74b9ff; margin-top: 25px; }
         .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
 
-        /* 8. 공유 버튼 & 토스트 */
         .share-bar { text-align: center; margin: 30px 0; }
-        .share-btn {
-            background: #333; color: white; border: none; padding: 12px 25px;
-            border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
-            transition: 0.2s;
-        }
+        .share-btn { background: #333; color: white; border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px; transition: 0.2s; }
         .share-btn:hover { transform: translateY(-2px); }
         .share-btn.copy { background: #6c5ce7; }
         
-        #toast {
-            visibility: hidden; min-width: 250px; margin-left: -125px;
-            background-color: #333; color: #fff; text-align: center;
-            border-radius: 2px; padding: 16px; position: fixed; z-index: 1000;
-            left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s;
-        }
+        #toast { visibility: hidden; min-width: 250px; margin-left: -125px; background-color: #333; color: #fff; text-align: center; border-radius: 2px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
         footer { text-align: center; padding: 30px; color: #b2bec3; font-size: 0.9rem; }
 
-        /* 모바일 최적화 미디어 쿼리 */
         @media (max-width: 800px) {
-            #game-container-box {
-                width: 100%;
-                height: 90vh; 
-                border-radius: 0;
-            }
+            #game-container-box { width: 100%; height: 90vh; border-radius: 0; }
             #ui-layer h2 { font-size: 2.2rem; }
             .content-article { margin: 20px 10px; padding: 20px; }
             h1 { font-size: 1.4rem; }
@@ -173,54 +105,26 @@
 
     <div class="ad-banner">
         <span style="font-size:10px; color:#ccc;">Sponsored</span>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2261846676525942"
-             data-ad-slot="4380369066"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
     <div id="game-container-box">
         <canvas id="gameCanvas"></canvas>
-
-        <div id="leaderboard">
-            <h3>🏆 TOP 5</h3>
-            <ul id="rank-list"><li>Loading...</li></ul>
-        </div>
-
+        <div id="leaderboard"><h3>🏆 TOP 5</h3><ul id="rank-list"><li>Loading...</li></ul></div>
         <div id="kill-log"></div>
-
-        <div id="joystick-zone">
-            <div id="joystick-bg">
-                <div id="joystick-stick"></div>
-            </div>
-        </div>
-
+        <div id="joystick-zone"><div id="joystick-bg"><div id="joystick-stick"></div></div></div>
         <div id="ui-layer">
             <h2 id="ui-title">Cell Eaters</h2>
-            <p id="ui-desc">
-                마우스 또는 터치로 이동하여 먹이를 먹으세요.<br>
-                나보다 큰 세포는 피해야 합니다!
-            </p>
+            <p id="ui-desc">마우스 또는 터치로 이동하여 먹이를 먹으세요.<br>나보다 큰 세포는 피해야 합니다!</p>
             <button id="start-btn">게임 시작 ▶</button>
         </div>
     </div>
 
     <div class="ad-banner">
         <span style="font-size:10px; color:#ccc;">Sponsored</span>
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-client="ca-pub-2261846676525942"
-             data-ad-slot="4380369066"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
 
     <div class="share-bar">
@@ -230,25 +134,15 @@
 
     <article class="content-article">
         <h2>🎮 세포 키우기 (Cell Eaters) 공략 가이드</h2>
-        <p>
-            세포 키우기는 전 세계적으로 사랑받는 'Agar.io' 스타일의 <strong>실시간 서바이벌 IO 게임</strong>입니다.
-            플레이어는 하나의 작은 세포로 시작하여, 맵에 흩어진 먹이를 섭취하고 다른 플레이어를 잡아먹으며 크기를 키워나가야 합니다.
-            설치 없이 웹에서 바로 즐길 수 있으며, 단순한 규칙 속에 고도의 심리전이 숨어 있습니다.
-        </p>
-
+        <p>세포 키우기는 전 세계적으로 사랑받는 'Agar.io' 스타일의 <strong>실시간 서바이벌 IO 게임</strong>입니다. 플레이어는 하나의 작은 세포로 시작하여, 맵에 흩어진 먹이를 섭취하고 다른 플레이어를 잡아먹으며 크기를 키워나가야 합니다.</p>
         <h3>🕹️ 조작 방법</h3>
         <ul>
             <li><strong>PC:</strong> 마우스 커서가 가리키는 방향으로 이동합니다.</li>
             <li><strong>모바일:</strong> 화면 좌측 하단의 가상 조이스틱을 드래그하여 이동합니다.</li>
             <li><strong>규칙:</strong> 나보다 작은 세포는 먹을 수 있지만, 큰 세포에게는 잡아먹힙니다.</li>
         </ul>
-
         <h3>🏆 고득점 비법</h3>
-        <p>
-            1. <strong>초반 생존:</strong> 게임 시작 직후에는 무리하게 사냥하지 마세요. 맵에 흩어진 작은 먹이(점)를 먹으며 안전하게 사이즈를 100 이상으로 키우는 것이 우선입니다.<br><br>
-            2. <strong>구석 활용:</strong> 맵의 가장자리는 위험할 수도 있지만, 등을 벽에 대고 싸우면 적이 공격할 수 있는 각도를 줄일 수 있습니다.<br><br>
-            3. <strong>무리한 추격 금지:</strong> 자신보다 아주 조금 작은 적을 쫓아가면 속도가 비슷해 잡기 힘듭니다. 확실하게 작은 적이나 부주의한 적을 노리세요.
-        </p>
+        <p>1. <strong>초반 생존:</strong> 게임 시작 직후에는 무리하게 사냥하지 마세요. 맵에 흩어진 작은 먹이(점)를 먹으며 안전하게 사이즈를 100 이상으로 키우는 것이 우선입니다.<br><br>2. <strong>구석 활용:</strong> 맵의 가장자리는 위험할 수도 있지만, 등을 벽에 대고 싸우면 적이 공격할 수 있는 각도를 줄일 수 있습니다.<br><br>3. <strong>무리한 추격 금지:</strong> 자신보다 아주 조금 작은 적을 쫓아가면 속도가 비슷해 잡기 힘듭니다. 확실하게 작은 적이나 부주의한 적을 노리세요.</p>
     </article>
 
     <footer>
@@ -260,15 +154,12 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('game-container-box');
-        
         const uiLayer = document.getElementById('ui-layer');
         const uiTitle = document.getElementById('ui-title');
         const uiDesc = document.getElementById('ui-desc');
         const startBtn = document.getElementById('start-btn');
-        
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
-        
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
@@ -353,6 +244,7 @@
             });
         }
 
+        // ▼▼▼ [수정됨] 봇 생성 시 3가지 성격(Aggressive, Defensive, Balanced) 부여 ▼▼▼
         function addBot() {
             let bX, bY, dist;
             let safeDistance = 800; 
@@ -365,11 +257,16 @@
                 attempts++;
             } while (dist < safeDistance && attempts < 100);
 
+            // 성격 랜덤 배정
+            const types = ['aggressive', 'balanced', 'defensive'];
+            const randType = types[Math.floor(Math.random() * types.length)];
+
             bots.push({
                 x: bX, y: bY,
                 r: Math.random() * 40 + 20,
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 name: generateBotName(),
+                type: randType, // 성격 추가
                 state: 'wander',
                 target: null,
                 changeDirTimer: 0,
@@ -418,23 +315,47 @@
             }
         }
 
+        // ▼▼▼ [수정됨] 성격에 따른 AI 행동 로직 차별화 ▼▼▼
         function updateBotAI(b) {
             b.changeDirTimer--;
 
+            // 성격별 스탯 설정
+            let viewMult = 1;   // 시야 범위
+            let bravery = 1.1;  // 용감함 (도망가는 적 크기 비율: 높을수록 큰 적에게만 도망)
+            let greed = 0.9;    // 욕심 (쫓아가는 적 크기 비율: 높을수록 나랑 비슷한 크기도 쫓음)
+
+            if (b.type === 'aggressive') { // 공격형: 시야 넓음, 비슷한 크기도 쫓음, 엄청 큰거 아니면 안 도망
+                viewMult = 1.5; 
+                bravery = 1.25; 
+                greed = 0.99;   
+            } else if (b.type === 'defensive') { // 수비형: 아주 조금만 커도 도망, 확실히 작은 것만 사냥
+                viewMult = 1.1;
+                bravery = 1.01; 
+                greed = 0.70;   
+            } else { // 밸런스형
+                viewMult = 1.2;
+                bravery = 1.15;
+                greed = 0.90;
+            }
+
+            const viewRange = (600 + b.r * 2) * viewMult;
+            
             let closestThreat = null;
             let closestPrey = null;
             let minDistThreat = Infinity;
             let minDistPrey = Infinity;
-            const viewRange = 600 + b.r * 2;
 
             const checkTarget = (target) => {
                 if (target === b) return;
                 let d = Math.hypot(b.x - target.x, b.y - target.y);
+                
                 if (d < viewRange) {
-                    if (target.r > b.r * 1.01) { // 1%만 커도 위협
+                    // 나보다 bravery 비율만큼 크면 위협
+                    if (target.r > b.r * bravery) { 
                         if (d < minDistThreat) { closestThreat = target; minDistThreat = d; }
                     } 
-                    else if (target.r < b.r * 0.99) { // 1%만 작으면 먹이
+                    // 나보다 greed 비율만큼 작으면 먹이
+                    else if (target.r < b.r * greed) { 
                         if (d < minDistPrey) { closestPrey = target; minDistPrey = d; }
                     }
                 }
@@ -443,46 +364,36 @@
             if (gameRunning) checkTarget(player);
             for (let i = 0; i < bots.length; i++) checkTarget(bots[i]);
 
-            // [수정된 부분 1] 타겟이 있으면 바로 각도 설정
+            // 행동 결정
+            let targetAngle = b.angle;
+
             if (closestThreat) {
                 b.state = 'flee';
-                b.angle = Math.atan2(b.y - closestThreat.y, b.x - closestThreat.x);
+                targetAngle = Math.atan2(b.y - closestThreat.y, b.x - closestThreat.x);
                 b.changeDirTimer = 10;
             } else if (closestPrey) {
                 b.state = 'chase';
-                b.angle = Math.atan2(closestPrey.y - b.y, closestPrey.x - b.x);
+                targetAngle = Math.atan2(closestPrey.y - b.y, closestPrey.x - b.x);
                 b.changeDirTimer = 20;
             } else {
                 b.state = 'wander';
                 if (b.changeDirTimer <= 0) {
                     b.changeDirTimer = Math.random() * 100 + 50; 
-                    b.angle += (Math.random() - 0.5) * 1.5; 
+                    b.angle += (Math.random() - 0.5) * 1.0; 
                 }
+                targetAngle = b.angle;
             }
 
-            // [수정된 부분 2] 벽 회피: 중앙으로 모이지 않고 해당 벽에서만 튕겨나감
+            // 벽 회피 (Soft Steering)
             const margin = 300;
-            let wallAdjust = false;
-            let targetWallAngle = b.angle;
-
-            if (b.x < margin) { targetWallAngle = 0; wallAdjust = true; } // 왼쪽 벽 -> 오른쪽으로
-            else if (b.x > MAP_SIZE - margin) { targetWallAngle = Math.PI; wallAdjust = true; } // 오른쪽 벽 -> 왼쪽으로
-            
-            if (b.y < margin) { 
-                if(wallAdjust) targetWallAngle = (targetWallAngle + Math.PI/2) / 2; // 코너면 각도 섞기
-                else { targetWallAngle = Math.PI/2; wallAdjust = true; } // 위쪽 벽 -> 아래로
-            } 
-            else if (b.y > MAP_SIZE - margin) {
-                if(wallAdjust) targetWallAngle = (targetWallAngle - Math.PI/2) / 2;
-                else { targetWallAngle = -Math.PI/2; wallAdjust = true; } // 아래쪽 벽 -> 위로
-            }
-
-            if (wallAdjust) {
-                // 부드럽게 벽에서 멀어지는 방향으로 회전
-                let diff = targetWallAngle - b.angle;
+            if (b.x < margin || b.x > MAP_SIZE - margin || b.y < margin || b.y > MAP_SIZE - margin) {
+                let centerAngle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
+                let diff = centerAngle - b.angle;
                 while (diff <= -Math.PI) diff += Math.PI * 2;
                 while (diff > Math.PI) diff -= Math.PI * 2;
-                b.angle += diff * 0.1; // 10%씩 회전
+                b.angle += diff * 0.05; 
+            } else {
+                b.angle = targetAngle;
             }
         }
 
@@ -535,7 +446,6 @@
 
                 let distP = Math.hypot(player.x - b.x, player.y - b.y);
                 if (distP < player.r + b.r) { 
-                    // [수정된 부분 3] 1%만 커도 먹을 수 있음
                     if (player.r > b.r * 1.01 && distP < player.r - b.r * 0.1) { 
                         player.r += b.r * 0.4;
                         bots.splice(i, 1); addBot();
@@ -560,7 +470,6 @@
                     let dist = Math.hypot(b.x - other.x, b.y - other.y);
 
                     if (dist < b.r + other.r) {
-                        // [수정된 부분 3] 봇끼리도 1% 차이로 먹힘
                         if (b.r > other.r * 1.01 && dist < b.r - other.r * 0.1) {
                             b.r += other.r * 0.4;
                             bots.splice(j, 1); addBot();
