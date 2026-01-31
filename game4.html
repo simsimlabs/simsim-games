@@ -283,7 +283,7 @@
         // 게임 설정
         const MAP_SIZE = 4000;
         const PROP_COUNT = 300; 
-        const BOT_COUNT = 15;
+        const BOT_COUNT = 7;
         const MAP_COLOR = '#ecf0f1';
         
         let holes = [];
@@ -297,10 +297,12 @@
         let joystickVector = { x: 0, y: 0 };
         let joystickActive = false;
 
+        // 이름 데이터
         const adjectives = ["배고픈", "거대한", "무서운", "강력한", "심연의", "우주", "어둠의", "신비한", "탐욕의", "폭주하는"];
         const nouns = ["블랙홀", "싱크홀", "청소기", "괴물", "포식자", "보이드", "구멍", "태풍", "심장", "그림자"];
         function generateName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
+        // 사물 데이터
         const PROP_TYPES = [
             { id: 0, r: 6, h: 4, score: 1, color: '#e67e22', side: '#d35400', name: '꼬깔' },
             { id: 1, r: 8, h: 10, score: 2, color: '#2ecc71', side: '#27ae60', name: '사람' },
@@ -479,7 +481,7 @@
                         }
                     }
                 } else {
-                    // [수정] 봇 AI 너프: 반응 느리게, 시야 좁게, 랜덤 행동
+                    // [수정] AI 멍청하게 만들기 (반응 느림, 시야 좁음, 랜덤성)
                     h.aiTimer--;
                     if(h.aiTimer <= 0) {
                         h.aiTimer = Math.random() * 50 + 20; // 판단 주기 느리게
@@ -495,8 +497,8 @@
                             h.aiTargetX = h.x + Math.cos(angle) * 500;
                             h.aiTargetY = h.y + Math.sin(angle) * 500;
                         } else {
-                            // 2. 먹이 탐색 (시야 150, 가끔은 못 봄)
-                            if (Math.random() < 0.7) { // 70% 확률로만 먹이 찾음 (30%는 멍청하게)
+                            // 2. 먹이 탐색 (시야 150, 30% 확률로 못봄)
+                            if (Math.random() < 0.7) { 
                                 for(let p of props) {
                                     if(!p.alive || p.falling) continue;
                                     if(h.r > p.r) {
