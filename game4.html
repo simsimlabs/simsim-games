@@ -282,7 +282,7 @@
 
         // 게임 설정
         const MAP_SIZE = 4000;
-        const PROP_COUNT = 1500;
+        const PROP_COUNT = 600; // [수정] 1500 -> 600 (절반 이하로 감소)
         const BOT_COUNT = 15;
         const MAP_COLOR = '#ecf0f1';
         
@@ -402,7 +402,7 @@
         function addProp() {
             let rand = Math.random();
             let typeIdx = 0;
-            // [밸런스 수정] 확률 조정: 작은 것이 훨씬 더 많이 나오도록 변경
+            // [밸런스 수정] 확률 조정
             if (rand < 0.6) typeIdx = 0;      // 꼬깔 60%
             else if (rand < 0.85) typeIdx = 1; // 사람 25%
             else if (rand < 0.95) typeIdx = 2; // 자동차 10%
@@ -452,8 +452,8 @@
         }
 
         function update() {
-            // 사물 리필
-            if(props.filter(p => p.alive).length < PROP_COUNT * 0.8) {
+            // [수정] 사물 리필 기준을 50%로 낮춤 (80% -> 50%)
+            if(props.filter(p => p.alive).length < PROP_COUNT * 0.5) {
                 for(let i=0; i<10; i++) addProp();
             }
 
@@ -476,12 +476,12 @@
                         }
                     }
                 } else {
-                    // [수정] AI 로직: 타겟 좌표 명확화
+                    // AI 로직
                     h.aiTimer--;
                     if(h.aiTimer <= 0) {
                         h.aiTimer = Math.random() * 30 + 10;
                         
-                        let bestTarget = null; // 좌표 객체 {x, y}로 통일
+                        let bestTarget = null; 
                         let minTargetDist = 400;
 
                         // 1. 위협 회피
@@ -492,15 +492,14 @@
                             h.aiTargetX = h.x + Math.cos(angle) * 500;
                             h.aiTargetY = h.y + Math.sin(angle) * 500;
                         } else {
-                            // 2. 먹이 탐색 (시야 제한: 300px 이내만)
+                            // 2. 먹이 탐색
                             for(let p of props) {
                                 if(!p.alive || p.falling) continue;
                                 if(h.r > p.r) {
                                     let d = Math.hypot(h.x - p.x, h.y - p.y);
-                                    // [밸런스 수정] 봇 시야 줄임 (400 -> 300)
                                     if(d < 300 && d < minTargetDist) { 
                                         minTargetDist = d; 
-                                        bestTarget = {x: p.x, y: p.y}; // 좌표만 저장
+                                        bestTarget = {x: p.x, y: p.y}; 
                                     }
                                 }
                             }
@@ -510,7 +509,7 @@
                                     let d = Math.hypot(h.x - other.x, h.y - other.y);
                                     if(d < 300 && d < minTargetDist) { 
                                         minTargetDist = d; 
-                                        bestTarget = {x: other.x, y: other.y}; // 좌표만 저장
+                                        bestTarget = {x: other.x, y: other.y}; 
                                     }
                                 }
                             }
@@ -519,7 +518,6 @@
                                 h.aiTargetX = bestTarget.x;
                                 h.aiTargetY = bestTarget.y;
                             } else {
-                                // 타겟 없으면 랜덤 이동 (계속 갱신)
                                 h.aiTargetX = Math.random() * MAP_SIZE;
                                 h.aiTargetY = Math.random() * MAP_SIZE;
                             }
@@ -557,7 +555,6 @@
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
                     if(dist < h.r && h.r > other.r * 1.1) {
                         other.dead = true;
-                        // [밸런스 수정] 킬 보너스 감소 (0.2 -> 0.1)
                         h.r += other.r * 0.1; 
                         h.score += Math.floor(other.score / 2) + 50;
                         killHole(oIdx);
