@@ -402,11 +402,12 @@
         function addProp() {
             let rand = Math.random();
             let typeIdx = 0;
-            if (rand < 0.4) typeIdx = 0;
-            else if (rand < 0.7) typeIdx = 1;
-            else if (rand < 0.9) typeIdx = 2;
-            else if (rand < 0.98) typeIdx = 3;
-            else typeIdx = 4;
+            // [밸런스 수정] 확률 조정: 작은 것이 훨씬 더 많이 나오도록 변경
+            if (rand < 0.6) typeIdx = 0;      // 꼬깔 60%
+            else if (rand < 0.85) typeIdx = 1; // 사람 25%
+            else if (rand < 0.95) typeIdx = 2; // 자동차 10%
+            else if (rand < 0.99) typeIdx = 3; // 집 4%
+            else typeIdx = 4;                 // 빌딩 1%
 
             let type = PROP_TYPES[typeIdx];
             
@@ -436,7 +437,7 @@
                 score: 0,
                 dead: false,
                 aiTimer: 0,
-                aiTargetX: Math.random() * MAP_SIZE, // 초기 타겟 설정
+                aiTargetX: Math.random() * MAP_SIZE,
                 aiTargetY: Math.random() * MAP_SIZE,
                 angle: 0
             });
@@ -451,6 +452,7 @@
         }
 
         function update() {
+            // 사물 리필
             if(props.filter(p => p.alive).length < PROP_COUNT * 0.8) {
                 for(let i=0; i<10; i++) addProp();
             }
@@ -474,12 +476,12 @@
                         }
                     }
                 } else {
-                    // [수정] AI 로직: 타겟 유무 확인 및 갱신 보장
+                    // [수정] AI 로직: 타겟 좌표 명확화
                     h.aiTimer--;
                     if(h.aiTimer <= 0) {
                         h.aiTimer = Math.random() * 30 + 10;
                         
-                        let bestTarget = null;
+                        let bestTarget = null; // 좌표 객체 {x, y}로 통일
                         let minTargetDist = 400;
 
                         // 1. 위협 회피
@@ -490,19 +492,26 @@
                             h.aiTargetX = h.x + Math.cos(angle) * 500;
                             h.aiTargetY = h.y + Math.sin(angle) * 500;
                         } else {
-                            // 2. 먹이 탐색
+                            // 2. 먹이 탐색 (시야 제한: 300px 이내만)
                             for(let p of props) {
                                 if(!p.alive || p.falling) continue;
                                 if(h.r > p.r) {
                                     let d = Math.hypot(h.x - p.x, h.y - p.y);
-                                    if(d < minTargetDist) { minTargetDist = d; bestTarget = {x:p.x, y:p.y}; }
+                                    // [밸런스 수정] 봇 시야 줄임 (400 -> 300)
+                                    if(d < 300 && d < minTargetDist) { 
+                                        minTargetDist = d; 
+                                        bestTarget = {x: p.x, y: p.y}; // 좌표만 저장
+                                    }
                                 }
                             }
                             // 3. 작은 블랙홀 탐색
                             for(let other of holes) {
                                 if(other !== h && !other.dead && h.r > other.r * 1.1) {
                                     let d = Math.hypot(h.x - other.x, h.y - other.y);
-                                    if(d < minTargetDist) { minTargetDist = d; bestTarget = {x:other.x, y:other.y}; }
+                                    if(d < 300 && d < minTargetDist) { 
+                                        minTargetDist = d; 
+                                        bestTarget = {x: other.x, y: other.y}; // 좌표만 저장
+                                    }
                                 }
                             }
 
@@ -510,7 +519,7 @@
                                 h.aiTargetX = bestTarget.x;
                                 h.aiTargetY = bestTarget.y;
                             } else {
-                                // 타겟 없으면 랜덤 이동
+                                // 타겟 없으면 랜덤 이동 (계속 갱신)
                                 h.aiTargetX = Math.random() * MAP_SIZE;
                                 h.aiTargetY = Math.random() * MAP_SIZE;
                             }
@@ -548,7 +557,8 @@
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
                     if(dist < h.r && h.r > other.r * 1.1) {
                         other.dead = true;
-                        h.r += other.r * 0.2; 
+                        // [밸런스 수정] 킬 보너스 감소 (0.2 -> 0.1)
+                        h.r += other.r * 0.1; 
                         h.score += Math.floor(other.score / 2) + 50;
                         killHole(oIdx);
                     }
@@ -569,7 +579,8 @@
                         p.alive = false;
                         if(!t.dead) {
                             t.score += p.score;
-                            t.r += p.score * 0.1; 
+                            // [밸런스 수정] 성장 속도 반으로 감소 (0.1 -> 0.05)
+                            t.r += p.score * 0.05; 
                         }
                     }
                 }
@@ -721,7 +732,7 @@
         }
 
         function updateLeaderboard() {
-            let list = [...holes].filter(h => !h.dead).sort((a,b) => b.r - a.r);
+            let list = [...holes].filter(h => !h.dead).sort((a,b) => b.score - a.score);
             let html = '';
             for(let i=0; i<Math.min(5, list.length); i++) {
                 let h = list[i];
@@ -735,12 +746,12 @@
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
             uiLayer.style.display = 'flex';
-            document.getElementById('ui-title').innerText = "💀 소멸됨";
+            document.getElementById('ui-title').innerText = "💀 게임 오버";
             document.getElementById('ui-desc').innerHTML = `
                 <b>${killer}</b>에게 흡수되었습니다.<br>
                 최종 점수: <span style="color:#6c5ce7; font-weight:bold;">${holes[playerIndex].score}</span>
             `;
-            startBtn.innerText = "다시 삼키기 ↺";
+            startBtn.innerText = "다시 도전하기 ↺";
         }
 
         function copyLink() {
