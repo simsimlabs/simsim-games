@@ -152,7 +152,7 @@
         @media (max-width: 800px) {
             #game-container-box {
                 width: 100%;
-                height: 90vh; /* 모바일: 더 높게 설정 */
+                height: 90vh; /* 모바일: 높이 더 확보 */
                 border-radius: 0;
             }
             #ui-layer h2 { font-size: 2.2rem; }
@@ -433,27 +433,45 @@
             }
         }
 
-        // 스마트 봇 AI (자연스러운 움직임 개선)
+        // 스마트 봇 AI (개선된 로직: 뭉침 방지 + 벽 회피)
         function updateBotAI(b) {
             b.changeDirTimer--;
 
-            // 주변 탐색
             let closestThreat = null;
             let closestPrey = null;
             let minDistThreat = Infinity;
             let minDistPrey = Infinity;
+            
+            // [수정] 뭉침 방지를 위한 변수
+            let separationX = 0;
+            let separationY = 0;
+            let separationCount = 0;
+
             const viewRange = 600 + b.r * 2;
 
             const checkTarget = (target) => {
                 if (target === b) return;
-                let d = Math.hypot(b.x - target.x, b.y - target.y);
+                let dx = target.x - b.x;
+                let dy = target.y - b.y;
+                let d = Math.hypot(dx, dy);
                 
                 if (d < viewRange) {
+                    // 위협/먹이 판단
                     if (target.r > b.r * 1.05) { 
                         if (d < minDistThreat) { closestThreat = target; minDistThreat = d; }
                     } 
                     else if (target.r < b.r * 0.95) { 
                         if (d < minDistPrey) { closestPrey = target; minDistPrey = d; }
+                    }
+                    
+                    // [수정] 뭉침 방지 (비슷한 크기일 때 서로 밀어내는 힘 계산)
+                    // 먹지도 먹히지도 않는 관계이고, 너무 가까우면(반지름 합 + 100px) 회피
+                    if (target.r >= b.r * 0.95 && target.r <= b.r * 1.05) {
+                        if (d < b.r + target.r + 200) {
+                            separationX -= dx; // 반대 방향으로 힘
+                            separationY -= dy;
+                            separationCount++;
+                        }
                     }
                 }
             };
@@ -461,7 +479,7 @@
             if (gameRunning) checkTarget(player);
             for (let i = 0; i < bots.length; i++) { checkTarget(bots[i]); }
 
-            // 1. 타겟에 따른 목표 각도 설정
+            // 1. 행동 우선순위 결정
             let targetAngle = b.angle;
 
             if (closestThreat) {
@@ -474,32 +492,37 @@
                 b.changeDirTimer = 20;
             } else {
                 b.state = 'wander';
-                // 배회: 한 방향으로 쭉 가다가 가끔 튼다
-                if (b.changeDirTimer <= 0) {
-                    b.changeDirTimer = Math.random() * 100 + 50; // 좀 더 오래 유지
-                    b.angle += (Math.random() - 0.5) * 1.0; // 랜덤 방향 전환
+                
+                // [수정] 뭉침 방지 적용 (배회 중일 때만)
+                if (separationCount > 0) {
+                    // 주변 친구들로부터 멀어지는 방향
+                    targetAngle = Math.atan2(separationY, separationX);
+                    // 약간의 랜덤성 추가하여 자연스럽게
+                    targetAngle += (Math.random() - 0.5) * 0.5;
+                } else {
+                    // 주변에 아무도 없으면 기존 랜덤 배회
+                    if (b.changeDirTimer <= 0) {
+                        b.changeDirTimer = Math.random() * 100 + 50; 
+                        b.angle += (Math.random() - 0.5) * 1.0; 
+                    }
+                    targetAngle = b.angle;
                 }
-                // 목표 각도는 현재 각도 유지 (아래 벽 회피에서 수정됨)
-                targetAngle = b.angle;
             }
 
-            // 2. 부드러운 벽 회피 (Soft Steering)
-            // 벽 300px 이내면 중앙 쪽 각도로 '부드럽게' 섞임
+            // 2. 벽 회피 (Soft Steering) - 최우선 순위
             const margin = 300;
             if (b.x < margin || b.x > MAP_SIZE - margin || b.y < margin || b.y > MAP_SIZE - margin) {
-                // 맵 중앙을 향하는 각도
                 let centerAngle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
-                
-                // 현재 각도와 중앙 각도의 차이를 구함 (-PI ~ PI 보정)
                 let diff = centerAngle - b.angle;
                 while (diff <= -Math.PI) diff += Math.PI * 2;
                 while (diff > Math.PI) diff -= Math.PI * 2;
-
-                // 중앙 쪽으로 5%씩 부드럽게 회전 (이것이 자연스러운 유턴의 핵심)
                 b.angle += diff * 0.05; 
             } else {
-                // 벽이 아니면 타겟 각도로 설정 (즉시 적용)
-                b.angle = targetAngle;
+                // 벽이 아니면 계산된 타겟 각도로 부드럽게 회전 (더 자연스러운 움직임)
+                let diff = targetAngle - b.angle;
+                while (diff <= -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                b.angle += diff * 0.1; // 10%씩 회전하여 부드럽게 추격/도망
             }
         }
 
@@ -536,7 +559,7 @@
                 }
             }
 
-            // 5. 봇 충돌 로직
+            // 5. 봇 충돌 로직 [수정: 강한 반발력 적용]
             for (let i = bots.length - 1; i >= 0; i--) {
                 let b = bots[i];
                 updateBotAI(b); 
@@ -570,10 +593,12 @@
                         gameOver(b.name);
                     }
                     else {
+                        // [수정] 겹침 방지: 서로 강하게 밀어냄 (0.5 힘)
                         let angle = Math.atan2(b.y - player.y, b.x - player.x);
                         let overlap = (player.r + b.r) - distP;
-                        b.x += Math.cos(angle) * (overlap * 0.1); 
-                        b.y += Math.sin(angle) * (overlap * 0.1);
+                        let force = overlap * 0.5; // 강한 반발력
+                        b.x += Math.cos(angle) * force; 
+                        b.y += Math.sin(angle) * force;
                     }
                 }
 
@@ -597,9 +622,11 @@
                             break; 
                         }
                         else {
+                            // [수정] 겹침 방지: 봇끼리도 강하게 밀어냄 (0.5 힘)
                             let angle = Math.atan2(b.y - other.y, b.x - other.x);
                             let overlap = (b.r + other.r) - dist;
-                            let push = overlap * 0.05;
+                            let push = overlap * 0.5; // 강한 반발력 (0.05 -> 0.5)
+                            
                             b.x += Math.cos(angle) * push;
                             b.y += Math.sin(angle) * push;
                             other.x -= Math.cos(angle) * push;
