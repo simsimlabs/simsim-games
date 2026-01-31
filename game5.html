@@ -269,7 +269,7 @@
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('game-container-box');
         
-        const uiLayer = document.getElementById('ui-layer');
+        const uiLayer = document.getElementById('ui-layer'); // ID 수정됨
         const uiTitle = document.getElementById('ui-title');
         const uiDesc = document.getElementById('ui-desc');
         const startBtn = document.getElementById('start-btn');
@@ -410,7 +410,6 @@
         function spawnTank(isHuman) {
             let tX, tY, safe;
             let attempts = 0;
-            // 스폰 위치 안전 검사 (다른 탱크와 겹치지 않게)
             do {
                 safe = true;
                 tX = Math.random() * (MAP_SIZE - 200) + 100;
@@ -434,8 +433,9 @@
                 hp: 100, maxHp: 100,
                 score: 0, level: 1,
                 name: isHuman ? '나 (Player)' : getName(),
-                reload: 0, reloadTime: 30,
-                damage: 10, speed: 3.5,
+                reload: 0, reloadTime: 30, 
+                // [수정] 봇 밸런스 조정 (속도 3.5 -> 2.5)
+                damage: 10, speed: isHuman ? 3.5 : 2.5,
                 aiTarget: null, aiTimer: 0,
                 aiState: 'farm', // farm, combat
                 remove: false
@@ -475,8 +475,9 @@
                 ownerId: owner.id,
                 x: owner.x + Math.cos(owner.gunAngle) * (owner.r + 5),
                 y: owner.y + Math.sin(owner.gunAngle) * (owner.r + 5),
-                vx: Math.cos(owner.gunAngle) * 12,
-                vy: Math.sin(owner.gunAngle) * 12,
+                // [수정] 탄속 감소 (12 -> 10)
+                vx: Math.cos(owner.gunAngle) * 10,
+                vy: Math.sin(owner.gunAngle) * 10,
                 r: 8, damage: owner.damage, life: 80, 
                 color: owner.color,
                 remove: false
@@ -513,7 +514,7 @@
             ctx.scale(zoom, zoom);
             ctx.translate(-camX, -camY);
 
-            // 격자 그리기 (Culling 적용)
+            // 격자 그리기 (Culling)
             ctx.strokeStyle = '#a4a4a4'; ctx.lineWidth = 2; ctx.beginPath();
             let viewW = canvas.width / zoom;
             let viewH = canvas.height / zoom;
@@ -580,7 +581,7 @@
             // 그리기 (Culling)
             for(let e of entities) {
                 if(Math.abs(e.x - camX) > (viewW/2 + 100) || Math.abs(e.y - camY) > (viewH/2 + 100)) {
-                    if(e.type !== 'tank') continue; // 탱크는 밖에서도 그릴 수 있음 (미니맵 등 확장성 고려)
+                    if(e.type !== 'tank') continue; 
                 }
                 drawEntity(e);
             }
@@ -598,7 +599,6 @@
                 ctx.globalAlpha = 1.0;
             }
 
-            // 도형 리필
             if(entities.filter(e=>e.type==='shape').length < 200) spawnShape();
 
             if(player && !player.remove) scoreBox.innerText = `점수: ${player.score} (Lv.${player.level})`;
@@ -631,25 +631,22 @@
                     t.reload = t.reloadTime;
                 }
             } else {
-                // [수정] 봇 AI: 벽 피하기 추가
+                // [수정] 봇 AI: 벽 피하기 및 반응 속도 너프
                 t.aiTimer--;
                 if(t.aiTimer <= 0) {
-                    t.aiTimer = 20; 
+                    t.aiTimer = 30; // 반응 속도 느리게
                     let closest = null;
                     let minDist = 600; 
                     
-                    // 벽 체크
                     if (t.x < 100 || t.x > MAP_SIZE - 100 || t.y < 100 || t.y > MAP_SIZE - 100) {
-                        t.aiTarget = { x: MAP_SIZE/2, y: MAP_SIZE/2, remove: false }; // 중앙으로 가라
+                        t.aiTarget = { x: MAP_SIZE/2, y: MAP_SIZE/2, remove: false }; 
                     } else {
-                        // 적 찾기
                         for(let other of entities) {
                             if(other.type === 'tank' && other !== t && !other.remove) {
                                 let d = Math.hypot(t.x-other.x, t.y-other.y);
                                 if(d < minDist) { minDist = d; closest = other; t.aiState = 'combat'; }
                             }
                         }
-                        // 도형 찾기
                         if(!closest) {
                             t.aiState = 'farm';
                             for(let s of entities) {
@@ -666,7 +663,7 @@
                 if(t.aiTarget && !t.aiTarget.remove) {
                     t.gunAngle = Math.atan2(t.aiTarget.y - t.y, t.aiTarget.x - t.x);
                     // [수정] 탄 퍼짐 (정확도 하향)
-                    if (t.aiState === 'combat') t.gunAngle += (Math.random() - 0.5) * 0.2;
+                    if (t.aiState === 'combat') t.gunAngle += (Math.random() - 0.5) * 0.3;
 
                     moveX = Math.cos(t.gunAngle);
                     moveY = Math.sin(t.gunAngle);
@@ -694,7 +691,7 @@
                 let diff = targetBodyAngle - t.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
                 while (diff > Math.PI) diff -= Math.PI*2;
-                t.angle += diff * 0.1;
+                t.angle += diff * 0.1; // 회전 속도
 
                 t.x += moveX * t.speed;
                 t.y += moveY * t.speed;
@@ -794,12 +791,22 @@
         function gameOver(killer) {
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
-            ingameAd.style.display = 'none';
-            ui.style.display = 'block';
+            // [중요] UI 표시 보장 (스코프 문제 해결)
+            const ui = document.getElementById('ui-layer');
+            const ingameAd = document.getElementById('ingame-ad');
+            if(ingameAd) ingameAd.style.display = 'none';
+            
+            ui.style.display = 'flex';
             const btn = document.getElementById('start-btn');
             btn.innerText = "복수하러 가기! (재시작)";
-            ui.querySelector('h1').innerText = "💀 격파됨";
-            ui.querySelector('p').innerHTML = `<b>${killer}</b>에게 당했습니다...<br>최종 점수: <span style="color:#0984e3;">${player.score}</span>`;
+            document.getElementById('ui-title').innerText = "💀 격파됨";
+            
+            // 점수 표시 (플레이어 객체 확인)
+            let finalScore = player ? player.score : 0;
+            document.getElementById('ui-desc').innerHTML = `
+                <b>${killer}</b>에게 당했습니다...<br>
+                최종 점수: <span style="color:#0984e3;">${finalScore}</span>
+            `;
         }
 
         function copyLink() {
