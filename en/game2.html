@@ -4,113 +4,276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Land Conquer - SimSim Game Labs</title>
-    <meta property="og:type" content="website">
-<meta property="og:title" content="🚩 Land Conquer - SimSim Game Labs">
-<meta property="og:description" content="Draw lines to expand your territory. Watch out for your tail in this strategic IO game!">
-<meta property="og:image" content="https://simsimlabs.github.io/simsim-games/en/thumbnail.png">
-<meta property="og:url" content="https://simsimlabs.github.io/simsim-games/en/game2.html">
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    
+    <link rel="canonical" href="https://simsimlabs.com/simsim-games/en/game2.html">
+
+    <meta name="description" content="Play Land Conquer for free! Draw lines to expand your territory and eliminate enemies by stepping on their tails. No installation required.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🚩 Land Conquer - SimSim Game Labs">
+    <meta property="og:description" content="Draw lines to expand your territory. A tense strategy game where you die if your tail is stepped on!">
+    <meta property="og:image" content="https://simsimlabs.com/simsim-games/thumbnail.png">
+    <meta property="og:url" content="https://simsimlabs.com/simsim-games/en/game2.html">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
-
+        /* 1. Layout & Background */
         body { 
-            margin: 0; padding: 0; overflow: hidden; background-color: #2c3e50; 
-            font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
+            margin: 0; padding: 0; 
+            background-color: #f0f2f5; 
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #333;
+            overflow-x: hidden; 
         }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
-
-        #game-ui { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; background: rgba(255, 255, 255, 0.98);
-            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
-            pointer-events: auto;
+        header {
+            background: #2c3e50; color: white; padding: 15px 20px; text-align: center;
         }
 
-        #game-ui h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0; text-shadow: 3px 3px 0px #a29bfe; }
-        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+        .header-top {
+            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
+        }
+        .header-top a { color: #bdc3c7; text-decoration: none; }
 
+        h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
+
+        /* 2. Ad Banner */
+        .ad-banner {
+            width: 100%; max-width: 1200px; margin: 20px auto;
+            text-align: center; background: #fff; padding: 10px 0;
+            border-radius: 8px; overflow: hidden;
+        }
+
+        /* 3. Game Container (Responsive) */
+        #game-container-box {
+            position: relative;
+            width: 100%; 
+            max-width: 1280px; 
+            height: 720px;     
+            margin: 0 auto;
+            background-color: #34495e; border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* 4. UI Layer */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; text-align: center;
+        }
+
+        #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #e74c3c; margin-bottom: 10px; text-shadow: 3px 3px 0 #fff; }
+        #ui-layer p { font-size: 1.2rem; color: #ecf0f1; margin-bottom: 30px; line-height: 1.6; }
+        
         #start-btn {
-            background: #ff7675; color: white; border: none; padding: 15px 0;
-            font-size: 1.8rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 6px 0 #d63031; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+            background: #e74c3c; color: white; border: none; padding: 15px 60px;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #c0392b; transition: transform 0.1s;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
+        #start-btn:hover { background: #ff6b6b; }
 
-        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; cursor: pointer; }
-        .back-link:hover { color: #636e72; text-decoration: underline; }
+        /* 5. HUD (Leaderboard, Kill Log) */
+        #leaderboard {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.6); color: white; padding: 15px;
+            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 1rem;
+            min-width: 160px; pointer-events: none; z-index: 50;
+        }
+        #rank-list { list-style: none; padding: 0; margin: 0; }
+        #rank-list li { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 
-        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px; }
-        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
-        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        #kill-log {
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(192, 57, 43, 0.9); color: white;
+            padding: 10px 30px; border-radius: 30px; font-weight: bold;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
+            white-space: nowrap; font-size: 1.1rem;
+        }
 
-        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(231, 76, 60, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+        /* 6. Mobile Joystick */
+        #joystick-zone {
+            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px;
+            z-index: 90; display: none; 
+        }
+        #joystick-bg {
+            width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
+        }
+        #joystick-stick {
+            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
 
-        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
-        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+        /* 7. Content Article */
+        .content-article {
+            max-width: 1200px; margin: 40px auto; padding: 40px;
+            background: #fff; border-radius: 12px; line-height: 1.8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .content-article h2 { color: #e74c3c; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 30px; }
+        .content-article h3 { color: #3498db; margin-top: 25px; }
+        .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
 
-        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
-        #joystick-bg { width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
-        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        /* 8. Share Button */
+        .share-bar { text-align: center; margin: 30px 0; }
+        .share-btn {
+            background: #34495e; color: white; border: none; padding: 12px 25px;
+            border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
+            transition: 0.2s;
+        }
+        .share-btn:hover { transform: translateY(-2px); }
+        .share-btn.copy { background: #9b59b6; }
+        
+        #toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px;
+            background-color: #333; color: #fff; text-align: center;
+            border-radius: 2px; padding: 16px; position: fixed; z-index: 1000;
+            left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
-        @media (max-width: 600px) {
-            #game-ui { width: 85%; }
-            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
-            #joystick-zone { display: block; }
+        footer { text-align: center; padding: 30px; color: #7f8c8d; font-size: 0.9rem; }
+
+        /* Mobile Optimization */
+        @media (max-width: 800px) {
+            #game-container-box {
+                width: 100%;
+                height: 85vh; 
+                border-radius: 0;
+            }
+            #ui-layer h2 { font-size: 2.2rem; }
+            .content-article { margin: 20px 10px; padding: 20px; }
+            h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
-
-    <div id="leaderboard" class="game-overlay">
-        <h3>🏆 Territory</h3>
-        <ul id="rank-list"><li>Loading...</li></ul>
-    </div>
-
-    <div id="kill-log" class="game-overlay"></div>
-
-    <div id="joystick-zone">
-        <div id="joystick-bg"><div id="joystick-stick"></div></div>
-    </div>
-
-    <div id="ingame-ad">
-        <span class="ad-label">Sponsored</span>
-        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
-    <div id="game-ui">
-        <h1>🚩 Land Conquer</h1>
-        <p>
-            Draw lines to expand land.<br>
-            Don't get hit on the tail!<br>
-        </p>
-        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
-             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <header>
+        <div class="header-top">
+            <a href="../game2.html">🇰🇷 Korean</a>
+            <a href="index.html">🏠 Back to List</a>
         </div>
-        <button id="start-btn">Play Now ▶</button>
-        <br>
-        <a href="index.html" class="back-link">🏠 Main Menu</a>
+        <h1>🚩 Land Conquer</h1>
+    </header>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
+
+    <div id="game-container-box">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="leaderboard">
+            <h3>🏆 Territory</h3>
+            <ul id="rank-list"><li>Loading...</li></ul>
+        </div>
+
+        <div id="kill-log"></div>
+
+        <div id="joystick-zone">
+            <div id="joystick-bg">
+                <div id="joystick-stick"></div>
+            </div>
+        </div>
+
+        <div id="ui-layer">
+            <h2 id="ui-title">Land Conquer</h2>
+            <p id="ui-desc">
+                Use [WASD] to move and draw lines.<br>
+                Return to your base to claim the land! (Watch your tail)
+            </p>
+            <button id="start-btn">Play Now ▶</button>
+        </div>
+    </div>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <div class="share-bar">
+        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> Copy Link</button>
+    </div>
+    <div id="toast">📋 Link Copied!</div>
+
+    <article class="content-article">
+        <h2>🎮 Land Conquer Strategy Guide</h2>
+        <p>
+            Land Conquer is a modern take on the classic territory capture game.
+            Move out of your safe zone to draw a line, then return to your base to capture the enclosed area.
+            The ultimate goal is to cover the entire map with your color.
+        </p>
+
+        <h3>🕹️ Controls</h3>
+        <ul>
+            <li><strong>PC:</strong> Use W, A, S, D keys to move.</li>
+            <li><strong>Mobile:</strong> Drag the virtual joystick on the bottom left.</li>
+        </ul>
+
+        <h3>🏆 How to Win</h3>
+        <ul>
+            <li><strong>Attack:</strong> If an opponent leaves their territory, step on their line (tail) to eliminate them.</li>
+            <li><strong>Defense:</strong> You are invincible inside your own territory. Return to base quickly if threatened.</li>
+            <li><strong>Caution:</strong> Do not step on your own tail or hit the walls, or it's Game Over.</li>
+        </ul>
+    </article>
+
+    <footer>
+        <p>© 2024 SimSim Game Labs. All rights reserved.</p>
+        <a href="https://simsimlabs.com/en/privacy.html" style="color:#b2bec3; text-decoration:none;">Privacy Policy</a>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const ui = document.getElementById('game-ui');
+        const container = document.getElementById('game-container-box');
+        
+        // UI Elements
+        const uiLayer = document.getElementById('ui-layer'); 
+        const uiTitle = document.getElementById('ui-title');
+        const uiDesc = document.getElementById('ui-desc');
+        const startBtn = document.getElementById('start-btn');
+        
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
-        const ingameAd = document.getElementById('ingame-ad');
-        const startBtn = document.getElementById('start-btn');
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
+        // Game Settings
         const GRID_SIZE = 25; 
-        const MAP_WIDTH = 150;
+        const MAP_WIDTH = 150; 
         const MAP_HEIGHT = 150;
         
         let map = []; 
@@ -119,28 +282,39 @@
         let animationFrameId;
         let frameCount = 0;
 
-        const adjectives = ["Hungry", "Square", "Fast", "Brave", "Sneaky", "Smart", "Silly", "Happy", "Giant", "Tiny"];
-        const nouns = ["King", "Queen", "Boss", "Box", "Tank", "Ant", "Eagle", "Tiger", "Coder", "Gamer"];
+        // Names (English)
+        const adjectives = ["Hungry", "Square", "Fast", "Brave", "Suspicious", "Genius", "Stupid", "Happy", "Giant", "Timid"];
+        const nouns = ["Landlord", "Owner", "Worm", "Box", "Tank", "Ant", "Eagle", "Tiger", "Dev", "Gamer"];
         function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
+        // Initialization
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Mobile Detection
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                joystickZone.style.display = 'block';
+            }
+
             if(startBtn) startBtn.addEventListener('click', startGame);
             initJoystick();
             window.addEventListener('keydown', handleKey);
-        });
+        }
+
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
 
         function startGame() {
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             
-            ctx.setTransform(1, 0, 0, 1, 0, 0); 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            uiLayer.style.display = 'none';
+            gameRunning = true;
+            frameCount = 0;
 
+            // Initialize Map
             map = [];
             for(let y=0; y<MAP_HEIGHT; y++) {
                 let row = [];
@@ -149,20 +323,25 @@
             }
 
             players = [];
-            spawnPlayer(1, true);
-            for(let i=2; i<=20; i++) spawnPlayer(i, false);
+            spawnPlayer(1, true); // Me
+            for(let i=2; i<=15; i++) spawnPlayer(i, false); // Bots
 
-            gameRunning = true;
-            ui.style.display = 'none';
-            ingameAd.style.display = 'block';
-            frameCount = 0;
             loop();
         }
 
         function spawnPlayer(id, isHuman) {
-            let x = Math.floor(Math.random() * (MAP_WIDTH - 10)) + 5;
-            let y = Math.floor(Math.random() * (MAP_HEIGHT - 10)) + 5;
+            let safe = false;
+            let x, y;
+            let attempts = 0;
+            // Find Safe Spawn
+            while(!safe && attempts < 100) {
+                x = Math.floor(Math.random() * (MAP_WIDTH - 20)) + 10;
+                y = Math.floor(Math.random() * (MAP_HEIGHT - 20)) + 10;
+                if (map[y][x] === 0) safe = true; 
+                attempts++;
+            }
             
+            // Initial Territory (3x3)
             for(let dy=-1; dy<=1; dy++) {
                 for(let dx=-1; dx<=1; dx++) {
                     map[y+dy][x+dx] = id;
@@ -171,22 +350,31 @@
 
             players.push({
                 id: id, isHuman: isHuman,
-                x: x, y: y, dx: 1, dy: 0, nextDx: 1, nextDy: 0,
+                x: x, y: y, 
+                dx: 0, dy: 0, 
+                nextDx: isHuman ? 0 : (Math.random()>0.5 ? 1 : -1), 
+                nextDy: isHuman ? 0 : 0,
                 color: isHuman ? '#e74c3c' : `hsl(${Math.random()*360}, 70%, 50%)`,
-                name: isHuman ? 'Me (You)' : getName(),
-                trail: [], score: 9, dead: false
+                name: isHuman ? 'Me (Player)' : getName(),
+                trail: [], 
+                score: 9, 
+                dead: false,
+                aiState: 'expand', 
             });
         }
 
+        // Key Handler (WASD + Arrows)
         function handleKey(e) {
             if(!gameRunning) return;
             const p = players.find(p => p.isHuman);
             if(!p || p.dead) return;
 
-            if(e.key === 'ArrowUp' && p.dy !== 1) { p.nextDx = 0; p.nextDy = -1; }
-            if(e.key === 'ArrowDown' && p.dy !== -1) { p.nextDx = 0; p.nextDy = 1; }
-            if(e.key === 'ArrowLeft' && p.dx !== 1) { p.nextDx = -1; p.nextDy = 0; }
-            if(e.key === 'ArrowRight' && p.dx !== -1) { p.nextDx = 1; p.nextDy = 0; }
+            const k = e.key.toLowerCase();
+
+            if((k === 'w' || k === 'arrowup') && p.dy !== 1) { p.nextDx = 0; p.nextDy = -1; }
+            else if((k === 's' || k === 'arrowdown') && p.dy !== -1) { p.nextDx = 0; p.nextDy = 1; }
+            else if((k === 'a' || k === 'arrowleft') && p.dx !== 1) { p.nextDx = -1; p.nextDy = 0; }
+            else if((k === 'd' || k === 'arrowright') && p.dx !== -1) { p.nextDx = 1; p.nextDy = 0; }
         }
 
         function initJoystick() {
@@ -228,12 +416,53 @@
             });
         }
 
+        // Bot AI
+        function updateBotAI(p) {
+            let safeMoves = [];
+            const moves = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
+            
+            moves.forEach(m => {
+                if (m.dx === -p.dx && m.dy === -p.dy && (p.dx !== 0 || p.dy !== 0)) return;
+
+                let nx = p.x + m.dx;
+                let ny = p.y + m.dy;
+
+                if (nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT) return;
+                
+                if (p.trail.some(t => t.x === nx && t.y === ny)) return;
+
+                safeMoves.push(m);
+            });
+
+            if (safeMoves.length === 0) return; 
+
+            if (p.trail.length > 5) {
+                p.aiState = 'return';
+            } else if (p.trail.length === 0) {
+                p.aiState = 'expand';
+            }
+
+            let bestMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
+
+            if (p.aiState === 'return') {
+                const homeMove = safeMoves.find(m => map[p.y + m.dy][p.x + m.dx] === p.id);
+                if (homeMove) bestMove = homeMove;
+            }
+
+            if (Math.random() < 0.1 || (p.dx === 0 && p.dy === 0)) {
+                p.nextDx = bestMove.dx;
+                p.nextDy = bestMove.dy;
+            }
+        }
+
         function loop() {
             if(!gameRunning) return;
+            
             frameCount++;
-            if(frameCount % 8 === 0) {
+            if(frameCount % 4 === 0) { 
                 update();
             }
+            
             draw();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -243,53 +472,64 @@
                 if(p.dead) return;
 
                 if(!p.isHuman) {
-                    if(Math.random() < 0.05) {
-                        const dirs = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
-                        const randDir = dirs[Math.floor(Math.random()*dirs.length)];
-                        if(randDir.dx !== -p.dx || randDir.dy !== -p.dy) { p.nextDx = randDir.dx; p.nextDy = randDir.dy; }
-                    }
-                    let futureX = p.x + p.nextDx;
-                    let futureY = p.y + p.nextDy;
-                    if(futureX < 0 || futureX >= MAP_WIDTH || futureY < 0 || futureY >= MAP_HEIGHT) {
-                        if(p.dx !== 0) { p.nextDx = 0; p.nextDy = 1; }
-                        else { p.nextDx = 1; p.nextDy = 0; }
-                    }
+                    updateBotAI(p);
                 }
 
-                p.dx = p.nextDx; p.dy = p.nextDy;
-                let nx = p.x + p.dx; let ny = p.y + p.dy;
+                p.dx = p.nextDx; 
+                p.dy = p.nextDy;
 
-                if(nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT) { killPlayer(p, "Wall Hit"); return; }
-                if(p.trail.some(t => t.x === nx && t.y === ny)) { killPlayer(p, "Own Tail"); return; }
+                if(p.dx === 0 && p.dy === 0) return;
 
+                let nx = p.x + p.dx; 
+                let ny = p.y + p.dy;
+
+                // 1. Wall Collision
+                if(nx < 0 || nx >= MAP_WIDTH || ny < 0 || ny >= MAP_HEIGHT) { 
+                    killPlayer(p, "Hit a Wall"); return; 
+                }
+
+                // 2. Self Collision
+                if(p.trail.some(t => t.x === nx && t.y === ny)) { 
+                    killPlayer(p, "Hit Own Tail"); return; 
+                }
+
+                // 3. Other Player Collision
                 players.forEach(other => {
                     if(p === other || other.dead) return;
+                    
                     if(other.trail.some(t => t.x === nx && t.y === ny)) {
-                        killPlayer(other, p.name);
-                        if(p.isHuman) showKillLog(`You cut ${other.name}!`);
+                        killPlayer(other, `Tail cut by ${p.name}`);
+                        if(p.isHuman) showKillLog(`${other.name} Eliminated!`);
                     }
-                    if(other.x === nx && other.y === ny) { killPlayer(p, "Crash"); killPlayer(other, "Crash"); }
+                    
+                    if(other.x === nx && other.y === ny) {
+                        killPlayer(p, "Head-on Collision");
+                        killPlayer(other, "Head-on Collision");
+                    }
                 });
 
                 if(p.dead) return;
 
                 p.x = nx; p.y = ny;
 
+                // 4. Capture Logic
                 if(map[ny][nx] === p.id) {
                     if(p.trail.length > 0) {
                         p.trail.forEach(t => map[t.y][t.x] = p.id);
                         
-                        let minX=p.x, maxX=p.x, minY=p.y, maxY=p.y;
+                        let minX = p.x, maxX = p.x, minY = p.y, maxY = p.y;
                         p.trail.forEach(t => {
                             minX = Math.min(minX, t.x); maxX = Math.max(maxX, t.x);
                             minY = Math.min(minY, t.y); maxY = Math.max(maxY, t.y);
                         });
-                        for(let cy=minY; cy<=maxY; cy++) {
-                            for(let cx=minX; cx<=maxX; cx++) {
-                                if(map[cy][cx] !== p.id) map[cy][cx] = p.id; 
+
+                        for(let cy = minY; cy <= maxY; cy++) {
+                            for(let cx = minX; cx <= maxX; cx++) {
+                                if (map[cy][cx] !== p.id) {
+                                    map[cy][cx] = p.id; 
+                                }
                             }
                         }
-
                         p.trail = [];
                         p.score = countScore(p.id);
                     }
@@ -300,61 +540,66 @@
             updateLeaderboard();
         }
 
+        // Game Over Logic
         function killPlayer(p, reason) {
-            p.dead = true; p.trail = [];
-            if(p.isHuman) gameOver(reason);
-            else setTimeout(() => { if(gameRunning) spawnPlayer(p.id, false); }, 2000);
+            p.dead = true;
+            p.trail = [];
+            
+            if(p.isHuman) {
+                gameOver(reason); 
+            } else {
+                setTimeout(() => { 
+                    if(gameRunning) spawnPlayer(p.id, false); 
+                }, 2000);
+            }
         }
 
         function countScore(id) {
             let s = 0;
-            for(let y=0; y<MAP_HEIGHT; y++) for(let x=0; x<MAP_WIDTH; x++) if(map[y][x] === id) s++;
+            for(let y=0; y<MAP_HEIGHT; y++) {
+                for(let x=0; x<MAP_WIDTH; x++) {
+                    if(map[y][x] === id) s++;
+                }
+            }
             return s;
         }
 
         function draw() {
+            const p = players.find(pl => pl.isHuman);
+            if(!p) return;
+
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = '#2c3e50';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const p = players.find(pl => pl.isHuman);
-            if(!p) return;
-
+            // Camera
             let camX = p.x * GRID_SIZE - canvas.width / 2;
             let camY = p.y * GRID_SIZE - canvas.height / 2;
-            
+            camX = Math.max(0, Math.min(camX, MAP_WIDTH * GRID_SIZE - canvas.width));
+            camY = Math.max(0, Math.min(camY, MAP_HEIGHT * GRID_SIZE - canvas.height));
+
             ctx.translate(-camX, -camY);
 
-            ctx.strokeStyle = '#34495e';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
+            // Border
+            ctx.strokeStyle = '#7f8c8d';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(0, 0, MAP_WIDTH * GRID_SIZE, MAP_HEIGHT * GRID_SIZE);
+
+            // Culling
             let startCol = Math.floor(camX / GRID_SIZE);
             let endCol = startCol + (canvas.width / GRID_SIZE) + 1;
             let startRow = Math.floor(camY / GRID_SIZE);
             let endRow = startRow + (canvas.height / GRID_SIZE) + 1;
 
-            for (let x = startCol; x <= endCol; x++) {
-                ctx.moveTo(x * GRID_SIZE, camY);
-                ctx.lineTo(x * GRID_SIZE, camY + canvas.height + GRID_SIZE);
-            }
-            for (let y = startRow; y <= endRow; y++) {
-                ctx.moveTo(camX, y * GRID_SIZE);
-                ctx.lineTo(camX + canvas.width + GRID_SIZE, y * GRID_SIZE);
-            }
-            ctx.stroke();
-
-            ctx.strokeStyle = '#c0392b';
-            ctx.lineWidth = 5;
-            ctx.strokeRect(0, 0, MAP_WIDTH * GRID_SIZE, MAP_HEIGHT * GRID_SIZE);
-
-            for(let y=Math.max(0, startRow); y<Math.min(MAP_HEIGHT, endRow); y++) {
-                for(let x=Math.max(0, startCol); x<Math.min(MAP_WIDTH, endCol); x++) {
+            // Draw Territory
+            for(let y = Math.max(0, startRow); y < Math.min(MAP_HEIGHT, endRow); y++) {
+                for(let x = Math.max(0, startCol); x < Math.min(MAP_WIDTH, endCol); x++) {
                     let id = map[y][x];
                     if(id !== 0) {
                         let owner = players.find(pl => pl.id === id);
                         if(owner) {
                             ctx.fillStyle = owner.color;
-                            ctx.globalAlpha = 0.4;
+                            ctx.globalAlpha = 0.5;
                             ctx.fillRect(x*GRID_SIZE, y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                             ctx.globalAlpha = 1.0;
                         }
@@ -362,27 +607,23 @@
                 }
             }
 
+            // Draw Players & Trails
             players.forEach(pl => {
                 if(pl.dead) return;
-
+                // Trail
                 ctx.fillStyle = pl.color;
-                ctx.globalAlpha = 0.6;
-                pl.trail.forEach(t => ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE));
+                ctx.globalAlpha = 0.8;
+                pl.trail.forEach(t => {
+                    ctx.fillRect(t.x*GRID_SIZE, t.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
+                });
                 ctx.globalAlpha = 1.0;
-
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = 'black';
+                // Head
+                ctx.shadowBlur = 10; ctx.shadowColor = 'black';
                 ctx.fillStyle = pl.color;
                 ctx.fillRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
                 ctx.shadowBlur = 0;
-
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(pl.x*GRID_SIZE, pl.y*GRID_SIZE, GRID_SIZE, GRID_SIZE);
-
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 12px Roboto';
-                ctx.textAlign = 'center';
+                // Name
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Noto Sans KR'; ctx.textAlign = 'center';
                 ctx.fillText(pl.name, pl.x*GRID_SIZE + GRID_SIZE/2, pl.y*GRID_SIZE - 5);
             });
         }
@@ -397,7 +638,7 @@
             let html = '';
             for(let i=0; i<Math.min(5, list.length); i++) {
                 let p = list[i];
-                let name = p.isHuman ? `<span style="color:#fd79a8">${p.name}</span>` : p.name;
+                let name = p.isHuman ? `<span style="color:#e74c3c">${p.name}</span>` : p.name;
                 html += `<li>${i+1}. ${name} <small>(${p.score})</small></li>`;
             }
             rankList.innerHTML = html;
@@ -406,188 +647,34 @@
         function gameOver(reason) {
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
-            ingameAd.style.display = 'none';
-            ui.style.display = 'block';
+            // Hide Ad if needed, but show Game Over UI
+            // Assuming ads are in container or outside, just show UI layer
+            const ad = document.getElementById('ingame-ad');
+            if(ad) ad.style.display = 'none';
+
+            uiLayer.style.display = 'flex'; 
             
             const btn = document.getElementById('start-btn');
             btn.innerText = "Try Again ↺";
-            ui.querySelector('h1').innerText = "💀 Game Over";
             
+            document.getElementById('ui-title').innerText = "💀 Game Over";
             const p = players.find(p => p.isHuman);
-            ui.querySelector('p').innerHTML = `
+            document.getElementById('ui-desc').innerHTML = `
                 Cause: <b>${reason}</b><br>
-                Final Score: <span style="color:#6c5ce7; font-weight:bold;">${p ? p.score : 0}</span>
+                Final Size: <span style="color:#e74c3c; font-weight:bold;">${p ? p.score : 0}</span> tiles
             `;
         }
-    </script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-    /* Share Container: Fixed at the bottom center */
-    .game-share-wrapper {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(30, 30, 40, 0.85); /* Semi-transparent black bg */
-        padding: 12px 25px;
-        border-radius: 50px;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 9999;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    }
-
-    .share-label {
-        color: #fff;
-        font-size: 0.9rem;
-        font-weight: bold;
-        margin-right: 5px;
-        white-space: nowrap;
-    }
-
-    .share-btn-group {
-        display: flex;
-        gap: 10px;
-    }
-
-    .share-icon-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .share-icon-btn:hover { transform: translateY(-3px); }
-    
-    /* Button Colors */
-    .bg-twitter { background-color: #1DA1F2; }
-    .bg-facebook { background-color: #1877F2; }
-    .bg-link { background-color: #6c5ce7; }
-
-    /* Toast Message (Copy Notification) */
-    #copy-toast {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 16px;
-        position: fixed;
-        z-index: 10000;
-        left: 50%;
-        bottom: 80px; /* Appears above the share button */
-        transform: translateX(-50%);
-        font-size: 0.9rem;
-        opacity: 0;
-        transition: opacity 0.5s, bottom 0.5s;
-    }
-
-    #copy-toast.show {
-        visibility: visible;
-        opacity: 1;
-        bottom: 90px;
-    }
-    
-    /* Mobile Responsiveness */
-    @media (max-width: 500px) {
-        .share-label { display: none; } /* Hide label on narrow screens */
-        .game-share-wrapper { padding: 10px; }
-    }
-</style>
-
-<div class="game-share-wrapper">
-    <span class="share-label">📢 Share with friends</span>
-    <div class="share-btn-group">
-        <button onclick="shareTo('twitter')" class="share-icon-btn bg-twitter" title="Twitter">
-            <i class="fa-brands fa-twitter"></i>
-        </button>
-        <button onclick="shareTo('facebook')" class="share-icon-btn bg-facebook" title="Facebook">
-            <i class="fa-brands fa-facebook-f"></i>
-        </button>
-        <button onclick="copyLink()" class="share-icon-btn bg-link" title="Copy Link">
-            <i class="fa-solid fa-link"></i>
-        </button>
-    </div>
-</div>
-
-<div id="copy-toast">📋 Link copied!</div>
-
-<script>
-    function shareTo(sns) {
-        const url = encodeURIComponent(window.location.href);
-        const title = encodeURIComponent(document.title);
-        let link = "";
-
-        if (sns === 'twitter') {
-            link = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-        } else if (sns === 'facebook') {
-            link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+            });
         }
-        
-        if(link) window.open(link, '_blank', 'width=600,height=400');
-    }
 
-    function copyLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            const toast = document.getElementById("copy-toast");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-        }).catch(err => {
-            alert("Copy failed: " + err);
-        });
-    }
-</script>
-
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
-
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 How to Play <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">Draw lines to expand your territory.</p>
-    <ul class="desc-list">
-        <li><strong>Control:</strong> Arrow keys or Mouse</li>
-        <li><strong>Attack:</strong> Hit other's tail line</li>
-        <li><strong>Die:</strong> If your tail is hit</li>
-    </ul>
-    <div class="desc-tip">✨ <strong>Tip:</strong> Don't go too far. Defend your base frequently.</div>
-</div>
-
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
-    
+        // Run
+        init();
+    </script>
 </body>
 </html>
