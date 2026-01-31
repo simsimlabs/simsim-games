@@ -4,112 +4,286 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tank Battle - SimSim Game Labs</title>
-    <meta property="og:type" content="website">
-<meta property="og:title" content="🛡️ Tank Battle - SimSim Game Labs">
-<meta property="og:description" content="Destroy shapes, level up, and upgrade your stats. Dominate the battlefield! (WASD Support)">
-<meta property="og:image" content="https://simsimlabs.github.io/simsim-games/en/thumbnail.png">
-<meta property="og:url" content="https://simsimlabs.github.io/simsim-games/en/game5.html">
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    
+    <link rel="canonical" href="https://simsimlabs.com/simsim-games/en/game5.html">
+
+    <meta name="description" content="Play Tank Battle.io for free! Destroy shapes to level up and dominate the battlefield. No installation required.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🛡️ Tank Battle - SimSim Game Labs">
+    <meta property="og:description" content="Destroy shapes, upgrade your stats, and battle! Become the strongest tank commander.">
+    <meta property="og:image" content="https://simsimlabs.com/simsim-games/thumbnail.png">
+    <meta property="og:url" content="https://simsimlabs.com/simsim-games/en/game5.html">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
-
+        /* 1. Layout & Background */
         body { 
-            margin: 0; padding: 0; overflow: hidden; background-color: #b4b4b4; 
-            font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
+            margin: 0; padding: 0; 
+            background-color: #f0f2f5; 
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #333;
+            overflow-x: hidden; 
         }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
-
-        #game-ui { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; background: rgba(255, 255, 255, 0.98);
-            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
-            pointer-events: auto;
+        header {
+            background: #2d3436; color: white; padding: 15px 20px; text-align: center;
         }
 
-        #game-ui h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #2d3436; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #bdc3c7; }
-        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+        .header-top {
+            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
+        }
+        .header-top a { color: #bdc3c7; text-decoration: none; }
 
+        h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
+
+        /* 2. Ad Banner */
+        .ad-banner {
+            width: 100%; max-width: 1200px; margin: 20px auto;
+            text-align: center; background: #fff; padding: 10px 0;
+            border-radius: 8px; overflow: hidden;
+        }
+
+        /* 3. Game Container (Responsive) */
+        #game-container-box {
+            position: relative;
+            width: 100%; 
+            max-width: 1280px; 
+            height: 720px;     
+            margin: 0 auto;
+            background-color: #b4b4b4; /* In-game background */
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        /* 4. UI Layer */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; text-align: center;
+        }
+
+        #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #74b9ff; margin-bottom: 10px; text-shadow: 3px 3px 0 #fff; }
+        #ui-layer p { font-size: 1.2rem; color: #dfe6e9; margin-bottom: 30px; line-height: 1.6; }
+        
         #start-btn {
-            background: #0984e3; color: white; border: none; padding: 15px 0;
-            font-size: 1.8rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 6px 0 #0769b5; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+            background: #0984e3; color: white; border: none; padding: 15px 60px;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #0769b5; transition: transform 0.1s;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
+        #start-btn:hover { background: #74b9ff; }
 
-        .back-link { display: inline-block; margin-top: 10px; color: #636e72; text-decoration: none; cursor: pointer; }
-        .back-link:hover { color: #2d3436; text-decoration: underline; }
+        /* 5. HUD */
+        #leaderboard {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.6); color: white; padding: 15px;
+            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 1rem;
+            min-width: 160px; pointer-events: none; z-index: 50;
+        }
+        #rank-list { list-style: none; padding: 0; margin: 0; }
+        #rank-list li { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 
-        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px; }
-        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
-        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        #score-box {
+            position: absolute; top: 15px; left: 15px;
+            color: white; font-family: 'Jua', sans-serif; font-size: 1.5rem;
+            text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 50;
+        }
 
-        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(45, 52, 54, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+        #kill-log {
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(45, 52, 54, 0.9); color: white;
+            padding: 10px 30px; border-radius: 30px; font-weight: bold;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
+            white-space: nowrap; font-size: 1.1rem;
+        }
 
-        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
-        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+        /* 6. Mobile Joystick */
+        #joystick-zone {
+            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px;
+            z-index: 90; display: none; 
+        }
+        #joystick-bg {
+            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.15);
+            border-radius: 50%; position: relative; border: 2px solid rgba(0,0,0,0.2);
+        }
+        #joystick-stick {
+            width: 60px; height: 60px; background: rgba(0, 0, 0, 0.4);
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
 
-        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
-        #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.1); border-radius: 50%; position: relative; border: 2px solid rgba(0,0,0,0.2); }
-        #joystick-stick { width: 50px; height: 50px; background: rgba(0, 0, 0, 0.3); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        /* 7. Content Article */
+        .content-article {
+            max-width: 1200px; margin: 40px auto; padding: 40px;
+            background: #fff; border-radius: 12px; line-height: 1.8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .content-article h2 { color: #0984e3; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; margin-top: 30px; }
+        .content-article h3 { color: #ff7675; margin-top: 25px; }
+        .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
 
-        @media (max-width: 600px) {
-            #game-ui { width: 85%; }
-            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
-            #joystick-zone { display: block; }
+        /* 8. Share Button */
+        .share-bar { text-align: center; margin: 30px 0; }
+        .share-btn {
+            background: #333; color: white; border: none; padding: 12px 25px;
+            border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
+            transition: 0.2s;
+        }
+        .share-btn:hover { transform: translateY(-2px); }
+        .share-btn.copy { background: #6c5ce7; }
+        
+        #toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px;
+            background-color: #333; color: #fff; text-align: center;
+            border-radius: 2px; padding: 16px; position: fixed; z-index: 1000;
+            left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        footer { text-align: center; padding: 30px; color: #b2bec3; font-size: 0.9rem; }
+
+        /* Mobile Optimization */
+        @media (max-width: 800px) {
+            #game-container-box {
+                width: 100%;
+                height: 85vh; 
+                border-radius: 0;
+            }
+            #ui-layer h2 { font-size: 2.2rem; }
+            .content-article { margin: 20px 10px; padding: 20px; }
+            h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
-
-    <div id="leaderboard" class="game-overlay">
-        <h3>🏆 Top Score</h3>
-        <ul id="rank-list"><li>Loading...</li></ul>
-    </div>
-
-    <div id="kill-log" class="game-overlay"></div>
-
-    <div id="joystick-zone">
-        <div id="joystick-bg"><div id="joystick-stick"></div></div>
-    </div>
-
-    <div id="ingame-ad">
-        <span class="ad-label">Sponsored</span>
-        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
-    <div id="game-ui">
-        <h1>🛡️ Tank Battle</h1>
-        <p>
-            <b>[PC]</b> Move: WASD / Aim: Mouse / Shoot: Click<br>
-            <b>[Mobile]</b> Move: Left Stick / Shoot: Right Tap
-        </p>
-        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
-             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <header>
+        <div class="header-top">
+            <a href="../game5.html">🇰🇷 Korean</a>
+            <a href="index.html">🏠 Back to List</a>
         </div>
-        <button id="start-btn">Play Now ▶</button>
-        <br>
-        <a href="index.html" class="back-link">🏠 Main Menu</a>
+        <h1>🛡️ Tank Battle</h1>
+    </header>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
+
+    <div id="game-container-box">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="score-box">Score: 0</div>
+
+        <div id="leaderboard">
+            <h3>🏆 Top 5</h3>
+            <ul id="rank-list"><li>Loading...</li></ul>
+        </div>
+
+        <div id="kill-log"></div>
+
+        <div id="joystick-zone">
+            <div id="joystick-bg">
+                <div id="joystick-stick"></div>
+            </div>
+        </div>
+
+        <div id="ui-layer">
+            <h2 id="ui-title">Tank Battle</h2>
+            <p id="ui-desc">
+                Destroy shapes to level up!<br>
+                [WASD] Move / [Mouse] Aim & Fire
+            </p>
+            <button id="start-btn">Play Now ▶</button>
+        </div>
+    </div>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <div class="share-bar">
+        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> Copy Link</button>
+    </div>
+    <div id="toast">📋 Link Copied!</div>
+
+    <article class="content-article">
+        <h2>🎮 Tank Battle (Diep.io Style) Guide</h2>
+        <p>
+            Command your tank and dominate the battlefield!
+            Destroy shapes (Squares, Triangles, Pentagons) scattered across the map to gain XP and level up.
+            As you level up, your stats increase, allowing you to fight stronger enemies.
+        </p>
+
+        <h3>🕹️ Controls</h3>
+        <ul>
+            <li><strong>PC:</strong> Move with WASD, Aim with Mouse, Click to Fire.</li>
+            <li><strong>Mobile:</strong> Use the left joystick to move, and touch the right side of the screen to fire.</li>
+            <li><strong>Strategy:</strong> Focus on destroying shapes to grow safely before engaging enemies.</li>
+        </ul>
+
+        <h3>🏆 Survival Tips</h3>
+        <p>
+            1. <strong>Farming:</strong> Yellow Square < Red Triangle < Blue Pentagon gives more XP.<br><br>
+            2. <strong>Dodging:</strong> Enemy bullets travel slowly. Practice moving unpredictably to dodge them.<br><br>
+            3. <strong>Stats:</strong> Damage and Health increase automatically as you level up.
+        </p>
+    </article>
+
+    <footer>
+        <p>© 2024 SimSim Game Labs. All rights reserved.</p>
+        <a href="https://simsimlabs.com/en/privacy.html" style="color:#b2bec3; text-decoration:none;">Privacy Policy</a>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const ui = document.getElementById('game-ui');
+        const container = document.getElementById('game-container-box');
+        
+        const uiLayer = document.getElementById('ui-layer');
+        const uiTitle = document.getElementById('ui-title');
+        const uiDesc = document.getElementById('ui-desc');
+        const startBtn = document.getElementById('start-btn');
+        const scoreBox = document.getElementById('score-box');
+        
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
-        const ingameAd = document.getElementById('ingame-ad');
-        const startBtn = document.getElementById('start-btn');
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
-        const MAP_SIZE = 4000;
+        // Game Settings
+        const MAP_SIZE = 3000;
+        const SHAPE_COUNT = 300;
+        const BOT_COUNT = 10;
         
         let entities = []; 
         let particles = [];
@@ -125,83 +299,149 @@
         let keys = { w: false, a: false, s: false, d: false };
         let joystickActive = false;
 
-        const adjectives = ["Iron", "Fast", "Heavy", "Angry", "Brave", "Mad", "Silent", "Legendary"];
+        // Names (English)
+        const adjectives = ["Steel", "Fast", "Heavy", "Angry", "Brave", "Crazy", "Silent", "Legendary"];
         const nouns = ["Tank", "Panzer", "Cannon", "Guardian", "Destroyer", "Sniper", "Commander", "Pilot"];
         function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            resize();
-            window.addEventListener('resize', resize);
-            if(startBtn) startBtn.addEventListener('click', startGame);
-            initJoystick();
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
             
-            // Mouse
-            window.addEventListener('mousemove', e => { 
-                mouseX = e.clientX; 
-                mouseY = e.clientY; 
+            // Mobile Check
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                joystickZone.style.display = 'block';
+                inputType = 'joystick';
+                initJoystick();
+            }
+
+            // PC Input
+            container.addEventListener('mousemove', e => {
+                if(inputType !== 'joystick') {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    mouseX = (e.clientX - rect.left) * scaleX;
+                    mouseY = (e.clientY - rect.top) * scaleY;
+                }
             });
-            window.addEventListener('mousedown', () => { isFiring = true; inputType='mouse'; });
-            window.addEventListener('mouseup', () => { isFiring = false; });
+            container.addEventListener('mousedown', () => { isFiring = true; inputType='mouse'; });
+            container.addEventListener('mouseup', () => { isFiring = false; });
             
-            // Keyboard
             window.addEventListener('keydown', e => { 
                 if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; 
             });
             window.addEventListener('keyup', e => { 
                 if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; 
             });
-            
-            // Touch
-            window.addEventListener('touchstart', e => {
-                if(e.touches[0].clientX > window.innerWidth/2) isFiring = true;
-            }, {passive:false});
-            window.addEventListener('touchend', e => {
-                 if (e.touches.length === 0) isFiring = false;
-            });
-        });
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            // Mobile Touch Fire
+            container.addEventListener('touchstart', e => {
+                let touchX = e.touches[0].clientX;
+                if(touchX > window.innerWidth / 2) isFiring = true;
+            }, {passive:false});
+            container.addEventListener('touchend', e => {
+                if (e.touches.length === 0) isFiring = false;
+            });
+
+            startBtn.addEventListener('click', startGame);
+        }
+
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function initJoystick() {
+            let startX, startY;
+            const maxDist = 35;
+            
+            joystickZone.addEventListener('touchstart', e => {
+                e.preventDefault();
+                joystickActive = true;
+                let t = e.touches[0];
+                startX = t.clientX;
+                startY = t.clientY;
+                joystickStick.style.transition = 'none';
+            });
+
+            joystickZone.addEventListener('touchmove', e => {
+                if(!joystickActive) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let dx = t.clientX - startX;
+                let dy = t.clientY - startY;
+                let dist = Math.min(maxDist, Math.hypot(dx, dy));
+                let angle = Math.atan2(dy, dx);
+                
+                joystickVector = { 
+                    x: Math.cos(angle) * (dist/maxDist), 
+                    y: Math.sin(angle) * (dist/maxDist) 
+                };
+
+                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+            });
+
+            joystickZone.addEventListener('touchend', e => {
+                e.preventDefault();
+                joystickActive = false;
+                joystickVector = { x: 0, y: 0 };
+                joystickStick.style.transform = `translate(-50%, -50%)`;
+            });
         }
 
         function startGame() {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            uiLayer.style.display = 'none';
             gameRunning = true;
+            
             entities = [];
             particles = [];
             isFiring = false;
             keys = { w: false, a: false, s: false, d: false };
 
-            for(let i=0; i<300; i++) spawnShape();
+            for(let i=0; i<SHAPE_COUNT; i++) spawnShape();
+            
+            // Player Spawn
             player = spawnTank(true);
-            for(let i=0; i<15; i++) spawnTank(false);
+            
+            // Bot Spawn
+            for(let i=0; i<BOT_COUNT; i++) spawnTank(false);
 
-            ui.style.display = 'none';
-            ingameAd.style.display = 'block';
             loop();
         }
 
         function spawnTank(isHuman) {
+            let tX, tY, safe;
+            let attempts = 0;
+            // Safe Spawn Check
+            do {
+                safe = true;
+                tX = Math.random() * (MAP_SIZE - 200) + 100;
+                tY = Math.random() * (MAP_SIZE - 200) + 100;
+                for(let e of entities) {
+                    if(e.type === 'tank' && Math.hypot(e.x - tX, e.y - tY) < 100) {
+                        safe = false; break;
+                    }
+                }
+                attempts++;
+            } while(!safe && attempts < 50);
+
             let t = {
                 type: 'tank',
                 id: Math.random(),
                 isHuman: isHuman,
-                x: Math.random() * MAP_SIZE,
-                y: Math.random() * MAP_SIZE,
+                x: tX, y: tY,
                 r: 20,
                 color: isHuman ? '#00b894' : '#d63031',
                 angle: 0, gunAngle: 0,
                 hp: 100, maxHp: 100,
                 score: 0, level: 1,
-                name: isHuman ? 'Me (You)' : getName(),
-                reload: 0, reloadTime: 30,
-                damage: 10, speed: 2.8,
+                name: isHuman ? 'Me (Player)' : getName(),
+                reload: 0, reloadTime: 30, 
+                damage: 10, speed: isHuman ? 3.5 : 2.5,
                 aiTarget: null, aiTimer: 0,
+                aiState: 'farm', 
                 remove: false
             };
             entities.push(t);
@@ -210,12 +450,15 @@
 
         function spawnShape() {
             let rand = Math.random();
-            let shapeType = rand < 0.6 ? 0 : (rand < 0.9 ? 1 : 2);
+            let shapeType = rand < 0.6 ? 0 : (rand < 0.9 ? 1 : 2); 
+            
+            let sX = Math.random() * MAP_SIZE;
+            let sY = Math.random() * MAP_SIZE;
+
             let s = {
                 type: 'shape',
                 shapeType: shapeType,
-                x: Math.random() * MAP_SIZE,
-                y: Math.random() * MAP_SIZE,
+                x: sX, y: sY,
                 r: 15 + shapeType * 5,
                 angle: Math.random() * Math.PI,
                 rotationSpeed: (Math.random()-0.5) * 0.05,
@@ -228,8 +471,9 @@
         }
 
         function spawnBullet(owner) {
-            owner.x -= Math.cos(owner.gunAngle) * 2; // recoil
+            owner.x -= Math.cos(owner.gunAngle) * 2; 
             owner.y -= Math.sin(owner.gunAngle) * 2;
+            
             entities.push({
                 type: 'bullet',
                 ownerId: owner.id,
@@ -237,7 +481,7 @@
                 y: owner.y + Math.sin(owner.gunAngle) * (owner.r + 5),
                 vx: Math.cos(owner.gunAngle) * 12,
                 vy: Math.sin(owner.gunAngle) * 12,
-                r: 8, damage: owner.damage, life: 80,
+                r: 8, damage: owner.damage, life: 80, 
                 color: owner.color,
                 remove: false
             });
@@ -247,72 +491,33 @@
             for(let i=0; i<count; i++) {
                 particles.push({
                     x: x, y: y,
-                    vx: (Math.random()-0.5)*6, vy: (Math.random()-0.5)*6,
+                    vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8,
                     life: 20 + Math.random()*10,
-                    color: color, r: Math.random()*3 + 1
+                    color: color, r: Math.random()*4 + 2
                 });
             }
         }
 
-        function initJoystick() {
-            let startX, startY;
-            const zone = joystickZone; const stick = joystickStick;
-            const maxDist = 35;
-
-            zone.addEventListener('touchstart', e => {
-                e.preventDefault(); joystickActive = true;
-                let t = e.touches[0]; startX = t.clientX; startY = t.clientY;
-                stick.style.transition = 'none';
-            }, {passive:false});
-
-            zone.addEventListener('touchmove', e => {
-                if(!joystickActive) return;
-                e.preventDefault();
-                let t = e.touches[0];
-                let dx = t.clientX - startX; let dy = t.clientY - startY;
-                let dist = Math.min(maxDist, Math.sqrt(dx*dx + dy*dy));
-                let angle = Math.atan2(dy, dx);
-                stick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-                
-                joystickVector = { 
-                    x: Math.cos(angle) * (dist/maxDist), 
-                    y: Math.sin(angle) * (dist/maxDist) 
-                };
-            }, {passive:false});
-
-            zone.addEventListener('touchend', e => {
-                e.preventDefault(); joystickActive = false;
-                stick.style.transform = `translate(-50%, -50%)`;
-                joystickVector = {x:0, y:0};
-            });
-        }
-
         function loop() {
             if(!gameRunning) return;
-
-            // 1. Clear Screen
+            
             ctx.setTransform(1, 0, 0, 1, 0, 0); 
             ctx.fillStyle = '#b4b4b4';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Camera Logic
             let camX = MAP_SIZE/2, camY = MAP_SIZE/2;
             let zoom = 1;
 
-            if (player && !player.remove && !isNaN(player.x)) {
+            if (player && !player.remove) {
                 camX = player.x; camY = player.y;
-                zoom = Math.max(0.6, 25 / (player.r + 10));
-            } else {
-                if(!entities.find(e => e === player && !e.remove)) {
-                     // Player dead logic handled elsewhere
-                }
+                zoom = Math.max(0.6, 25 / (player.r + 10)); 
             }
 
             ctx.translate(canvas.width/2, canvas.height/2);
             ctx.scale(zoom, zoom);
             ctx.translate(-camX, -camY);
 
-            // 3. Grid
+            // Grid
             ctx.strokeStyle = '#a4a4a4'; ctx.lineWidth = 2; ctx.beginPath();
             let viewW = canvas.width / zoom;
             let viewH = canvas.height / zoom;
@@ -328,9 +533,10 @@
                 if(y>=0 && y<=MAP_SIZE) { ctx.moveTo(Math.max(0, startX), y); ctx.lineTo(Math.min(MAP_SIZE, endX), y); }
             }
             ctx.stroke();
+            
             ctx.strokeStyle = '#636e72'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
 
-            // 4. Update Logic
+            // Logic Update
             for(let i=0; i<entities.length; i++) {
                 let e = entities[i];
                 if(e.remove) continue;
@@ -340,7 +546,7 @@
                 else if(e.type === 'shape') updateShape(e);
             }
 
-            // 5. Collision Check
+            // Collision Check
             for(let i=0; i<entities.length; i++) {
                 let b = entities[i];
                 if(b.type !== 'bullet' || b.remove) continue;
@@ -353,51 +559,54 @@
                     if(dist < b.r + e.r) {
                         e.hp -= b.damage;
                         b.remove = true; 
-                        createParticles(e.x, e.y, e.color, 3);
+                        createParticles(e.x, e.y, e.color, 3); 
 
                         if(e.hp <= 0) {
                             e.remove = true;
                             let owner = entities.find(ent => ent.id === b.ownerId);
                             if(owner && !owner.remove) {
                                 owner.score += e.score || 100;
-                                if(owner.score > owner.level * 100) {
-                                    owner.level++; owner.damage += 2; owner.maxHp += 10; owner.hp = owner.maxHp; owner.r += 1;
+                                if(owner.score > owner.level * 150) {
+                                    owner.level++; owner.damage += 3; owner.maxHp += 15; owner.hp = owner.maxHp; 
                                 }
                             }
                             if(e.type === 'tank') killTank(e, owner ? owner.name : 'Unknown');
-                            else createParticles(e.x, e.y, e.color, 5);
+                            else createParticles(e.x, e.y, e.color, 8); 
                         }
                         break; 
                     }
                 }
             }
 
-            // 6. Filter Dead Entities
+            // Clean up
             entities = entities.filter(e => !e.remove);
 
-            // 7. Draw Visible Entities
+            // Draw
             for(let e of entities) {
-                if(Math.abs(e.x - camX) > (viewW/2 + 200) || Math.abs(e.y - camY) > (viewH/2 + 200)) {
-                    if(e.type !== 'tank') continue;
+                if(Math.abs(e.x - camX) > (viewW/2 + 100) || Math.abs(e.y - camY) > (viewH/2 + 100)) {
+                    if(e.type !== 'tank') continue; 
                 }
                 drawEntity(e);
             }
 
-            // 8. Particles
+            // Particles
             for(let i=particles.length-1; i>=0; i--) {
                 let p = particles[i];
                 p.x += p.vx; p.y += p.vy; p.life--;
                 if(p.life <= 0) { particles.splice(i,1); continue; }
-                if(Math.abs(p.x - camX) > viewW) continue;
+                if(Math.abs(p.x - camX) > viewW) continue; 
+                
                 ctx.globalAlpha = p.life / 30;
                 ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
 
-            // Refill Shapes
+            // Refill
             if(entities.filter(e=>e.type==='shape').length < 200) spawnShape();
 
+            if(player && !player.remove) scoreBox.innerText = `Score: ${player.score} (Lv.${player.level})`;
+            
             updateLeaderboard();
             animationFrameId = requestAnimationFrame(loop);
         }
@@ -406,16 +615,14 @@
             let moveX = 0, moveY = 0;
             
             if(t.isHuman) {
-                // Aim
                 if(inputType === 'mouse') {
                     let centerX = canvas.width / 2;
                     let centerY = canvas.height / 2;
                     t.gunAngle = Math.atan2(mouseY - centerY, mouseX - centerX);
                 } else if(isFiring) {
-                    t.gunAngle = Math.atan2(joystickVector.y, joystickVector.x);
+                     if(joystickActive) t.gunAngle = Math.atan2(joystickVector.y, joystickVector.x);
                 }
 
-                // Move
                 if(keys.w) moveY = -1;
                 if(keys.s) moveY = 1;
                 if(keys.a) moveX = -1;
@@ -428,39 +635,45 @@
                     t.reload = t.reloadTime;
                 }
             } else {
-                // Bot AI
+                // AI Logic
                 t.aiTimer--;
                 if(t.aiTimer <= 0) {
-                    t.aiTimer = 15;
+                    t.aiTimer = 30; 
                     let closest = null;
-                    let minDist = 700;
+                    let minDist = 600; 
                     
-                    for(let other of entities) {
-                        if(other.type === 'tank' && other !== t && !other.remove) {
-                            let d = Math.hypot(t.x-other.x, t.y-other.y);
-                            if(d < minDist) { minDist = d; closest = other; t.aiState = 'combat'; }
-                        }
-                    }
-
-                    if(!closest) {
-                        t.aiState = 'farm';
-                        for(let s of entities) {
-                            if(s.type === 'shape' && !s.remove) {
-                                let d = Math.hypot(t.x-s.x, t.y-s.y);
-                                if(d < minDist) { minDist = d; closest = s; }
+                    if (t.x < 100 || t.x > MAP_SIZE - 100 || t.y < 100 || t.y > MAP_SIZE - 100) {
+                        t.aiTarget = { x: MAP_SIZE/2, y: MAP_SIZE/2, remove: false }; 
+                    } else {
+                        for(let other of entities) {
+                            if(other.type === 'tank' && other !== t && !other.remove) {
+                                let d = Math.hypot(t.x-other.x, t.y-other.y);
+                                if(d < minDist) { minDist = d; closest = other; t.aiState = 'combat'; }
                             }
                         }
+                        if(!closest) {
+                            t.aiState = 'farm';
+                            for(let s of entities) {
+                                if(s.type === 'shape' && !s.remove) {
+                                    let d = Math.hypot(t.x-s.x, t.y-s.y);
+                                    if(d < minDist) { minDist = d; closest = s; }
+                                }
+                            }
+                        }
+                        t.aiTarget = closest;
                     }
-                    t.aiTarget = closest;
                 }
 
                 if(t.aiTarget && !t.aiTarget.remove) {
                     t.gunAngle = Math.atan2(t.aiTarget.y - t.y, t.aiTarget.x - t.x);
+                    if (t.aiState === 'combat') t.gunAngle += (Math.random() - 0.5) * 0.2;
+
                     moveX = Math.cos(t.gunAngle);
                     moveY = Math.sin(t.gunAngle);
+                    
                     let dist = Math.hypot(t.aiTarget.x - t.x, t.aiTarget.y - t.y);
-                    if(dist < 150 && t.aiState === 'combat') { moveX *= -1; moveY *= -1; }
-                    else if(dist < 200) { moveX = 0; moveY = 0; }
+                    if(dist < 200 && t.aiState === 'combat') { moveX *= -1; moveY *= -1; }
+                    else if(dist < 150) { moveX = 0; moveY = 0; }
 
                     if(dist < 500 && t.reload <= 0) {
                         spawnBullet(t);
@@ -481,7 +694,7 @@
                 let diff = targetBodyAngle - t.angle;
                 while (diff <= -Math.PI) diff += Math.PI*2;
                 while (diff > Math.PI) diff -= Math.PI*2;
-                t.angle += diff * 0.2;
+                t.angle += diff * 0.1;
 
                 t.x += moveX * t.speed;
                 t.y += moveY * t.speed;
@@ -581,184 +794,32 @@
         function gameOver(killer) {
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
-            ingameAd.style.display = 'none';
-            ui.style.display = 'block';
+            // Scope Fix
+            const ui = document.getElementById('ui-layer');
+            const ingameAd = document.getElementById('ingame-ad');
+            if(ingameAd) ingameAd.style.display = 'none';
+
+            ui.style.display = 'flex';
             const btn = document.getElementById('start-btn');
             btn.innerText = "Revenge! (Restart)";
-            ui.querySelector('h1').innerText = "💀 Destroyed";
-            ui.querySelector('p').innerHTML = `
+            document.getElementById('ui-title').innerText = "💀 Destroyed";
+            
+            let finalScore = player ? player.score : 0;
+            document.getElementById('ui-desc').innerHTML = `
                 Killed by <b>${killer}</b>...<br>
-                Final Score: <span style="color:#0984e3; font-weight:bold;">${player.score}</span>
+                Final Score: <span style="color:#0984e3;">${finalScore}</span>
             `;
         }
-    </script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-    /* Share Container: Fixed at the bottom center */
-    .game-share-wrapper {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(30, 30, 40, 0.85); /* Semi-transparent black bg */
-        padding: 12px 25px;
-        border-radius: 50px;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 9999;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    }
-
-    .share-label {
-        color: #fff;
-        font-size: 0.9rem;
-        font-weight: bold;
-        margin-right: 5px;
-        white-space: nowrap;
-    }
-
-    .share-btn-group {
-        display: flex;
-        gap: 10px;
-    }
-
-    .share-icon-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .share-icon-btn:hover { transform: translateY(-3px); }
-    
-    /* Button Colors */
-    .bg-twitter { background-color: #1DA1F2; }
-    .bg-facebook { background-color: #1877F2; }
-    .bg-link { background-color: #6c5ce7; }
-
-    /* Toast Message (Copy Notification) */
-    #copy-toast {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 16px;
-        position: fixed;
-        z-index: 10000;
-        left: 50%;
-        bottom: 80px; /* Appears above the share button */
-        transform: translateX(-50%);
-        font-size: 0.9rem;
-        opacity: 0;
-        transition: opacity 0.5s, bottom 0.5s;
-    }
-
-    #copy-toast.show {
-        visibility: visible;
-        opacity: 1;
-        bottom: 90px;
-    }
-    
-    /* Mobile Responsiveness */
-    @media (max-width: 500px) {
-        .share-label { display: none; } /* Hide label on narrow screens */
-        .game-share-wrapper { padding: 10px; }
-    }
-</style>
-
-<div class="game-share-wrapper">
-    <span class="share-label">📢 Share with friends</span>
-    <div class="share-btn-group">
-        <button onclick="shareTo('twitter')" class="share-icon-btn bg-twitter" title="Twitter">
-            <i class="fa-brands fa-twitter"></i>
-        </button>
-        <button onclick="shareTo('facebook')" class="share-icon-btn bg-facebook" title="Facebook">
-            <i class="fa-brands fa-facebook-f"></i>
-        </button>
-        <button onclick="copyLink()" class="share-icon-btn bg-link" title="Copy Link">
-            <i class="fa-solid fa-link"></i>
-        </button>
-    </div>
-</div>
-
-<div id="copy-toast">📋 Link copied!</div>
-
-<script>
-    function shareTo(sns) {
-        const url = encodeURIComponent(window.location.href);
-        const title = encodeURIComponent(document.title);
-        let link = "";
-
-        if (sns === 'twitter') {
-            link = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-        } else if (sns === 'facebook') {
-            link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+            });
         }
-        
-        if(link) window.open(link, '_blank', 'width=600,height=400');
-    }
 
-    function copyLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            const toast = document.getElementById("copy-toast");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-        }).catch(err => {
-            alert("Copy failed: " + err);
-        });
-    }
-</script>
-
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
-
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 How to Play <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">Destroy shapes!</p>
-    <ul class="desc-list">
-        <li><strong>Move:</strong> WASD keys</li>
-        <li><strong>Shoot:</strong> Click </li>
-    </ul>
-    <div class="desc-tip">✨ <strong>Tip:</strong> Keep moving and avoid bullets! </div>
-</div>
-
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
-    
+        init();
+    </script>
 </body>
 </html>
