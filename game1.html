@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>세포 키우기 | 심심풀이 게임 연구소</title>
+    <title>세포 키우기 - 심심풀이 게임 연구소</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
-
+    
     <link rel="canonical" href="https://simsimlabs.com/simsim-games/game1.html">
 
-    <meta name="description" content="세포 키우기(Cell Eaters) 무료 플레이! 작은 세포로 시작해 적을 피하고 거대하게 성장하세요. 설치 없는 웹게임.">
+    <meta name="description" content="세포 키우기(Cell Eaters) 웹게임. 작은 세포로 시작해 적을 피하고 먹이를 먹어 거대하게 성장하세요. 설치 없는 무료 서바이벌 게임.">
     
     <meta property="og:type" content="website">
-    <meta property="og:title" content="🦠 세포 키우기 게임하기">
-    <meta property="og:description" content="나보다 작은 세포를 먹고 1등에 도전하세요! 스릴 넘치는 서바이벌 IO 게임.">
+    <meta property="og:title" content="🦠 세포 키우기 - 심심풀이 게임 연구소">
+    <meta property="og:description" content="나보다 작은 세포를 먹고 거대해지세요! 적을 피하고 최후의 생존자가 되는 실시간 서바이벌 게임.">
     <meta property="og:image" content="https://simsimlabs.com/simsim-games/thumbnail.png">
     <meta property="og:url" content="https://simsimlabs.com/simsim-games/game1.html">
 
     <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
-        /* 1. 기본 레이아웃 설정 */
+        /* 1. 기본 레이아웃 (애드센스 친화적 구조) */
         body { 
             margin: 0; padding: 0; 
             background-color: #f0f2f5; 
@@ -31,69 +31,45 @@
         }
 
         header {
-            background: #2d3436;
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
+            background: #2d3436; color: white; padding: 15px 20px; text-align: center;
         }
 
         .header-top {
-            display: flex;
-            justify-content: space-between;
-            max-width: 1000px;
-            margin: 0 auto 10px;
-            font-size: 0.9rem;
+            display: flex; justify-content: space-between; max-width: 1000px; margin: 0 auto 10px; font-size: 0.9rem;
         }
         .header-top a { color: #dfe6e9; text-decoration: none; }
 
         h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
 
-        /* 2. 광고 영역 스타일 (오클릭 방지 여백 포함) */
+        /* 2. 광고 영역 (오클릭 방지 여백) */
         .ad-banner {
-            width: 100%;
-            max-width: 1000px;
-            margin: 20px auto;
-            text-align: center;
-            background: #fff;
-            padding: 10px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            overflow: hidden;
+            width: 100%; max-width: 1000px; margin: 20px auto;
+            text-align: center; background: #fff; padding: 10px 0;
+            border-radius: 8px; overflow: hidden;
         }
 
         /* 3. 게임 컨테이너 (반응형 박스) */
         #game-container-box {
             position: relative;
-            width: 100%;
-            max-width: 800px; /* PC 최대 너비 */
-            height: 600px;    /* PC 기본 높이 */
+            width: 100%; max-width: 900px; /* PC 최대 너비 */
+            height: 600px; /* PC 기본 높이 */
             margin: 0 auto;
-            background-color: #000;
-            border-radius: 12px;
+            background-color: #000; border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            touch-action: none; /* 게임 내 터치 시 스크롤 방지 */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            touch-action: none; /* 게임 내 터치 시 페이지 스크롤 방지 */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-        }
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
-        /* 4. 게임 오버레이 (시작 화면, 게임오버 등) */
+        /* 4. UI 레이어 (시작 화면, 게임오버) */
         #ui-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            color: white;
-            text-align: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; text-align: center;
         }
 
         #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #6c5ce7; margin-bottom: 10px; text-shadow: 2px 2px 0 #fff; }
@@ -107,68 +83,58 @@
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
         #start-btn:hover { background: #ff6b6b; }
 
-        /* 5. 인게임 UI (랭킹, 킬로그, 조이스틱) */
+        /* 5. 인게임 HUD */
         #leaderboard {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.5); color: white; padding: 10px;
-            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 0.9rem;
-            min-width: 120px; pointer-events: none; z-index: 50;
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.5); color: white; padding: 12px;
+            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 0.95rem;
+            min-width: 140px; pointer-events: none; z-index: 50;
         }
         #rank-list { list-style: none; padding: 0; margin: 0; }
-        #rank-list li { margin-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 
         #kill-log {
             position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
             background: rgba(214, 48, 49, 0.9); color: white;
-            padding: 8px 20px; border-radius: 20px; font-weight: bold;
+            padding: 8px 25px; border-radius: 20px; font-weight: bold;
             opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
+            white-space: nowrap;
         }
 
-        /* 모바일 조이스틱 */
+        /* 6. 모바일 조이스틱 */
         #joystick-zone {
-            position: absolute; bottom: 20px; left: 20px; width: 100px; height: 100px;
-            z-index: 90; display: none; /* JS에서 모바일일 때만 block 처리 */
+            position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px;
+            z-index: 90; display: none; /* JS로 모바일에서만 켜짐 */
         }
         #joystick-bg {
-            width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2);
+            width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15);
             border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
         }
         #joystick-stick {
-            width: 40px; height: 40px; background: rgba(255, 255, 255, 0.8);
+            width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8);
             border-radius: 50%; position: absolute;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
 
-        /* 6. 설명글 영역 (블로그 스타일) */
+        /* 7. 콘텐츠 설명글 (애드센스용 블로그 스타일) */
         .content-article {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 30px;
-            background: #fff;
-            border-radius: 12px;
-            line-height: 1.8;
+            max-width: 900px; margin: 40px auto; padding: 30px;
+            background: #fff; border-radius: 12px; line-height: 1.8;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         .content-article h2 { color: #ff7675; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; margin-top: 30px; }
         .content-article h3 { color: #74b9ff; margin-top: 25px; }
         .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
-        
-        footer {
-            text-align: center; padding: 30px; color: #b2bec3; font-size: 0.9rem;
-        }
 
-        /* 7. 공유하기 버튼 & 토스트 */
-        .share-bar {
-            text-align: center; margin: 30px 0;
-        }
+        /* 8. 공유 버튼 & 토스트 */
+        .share-bar { text-align: center; margin: 30px 0; }
         .share-btn {
             background: #333; color: white; border: none; padding: 10px 20px;
             border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
             transition: 0.2s;
         }
         .share-btn:hover { transform: translateY(-2px); }
-        .share-btn.kakao { background: #FEE500; color: #3c1e1e; }
         .share-btn.copy { background: #6c5ce7; }
         
         #toast {
@@ -179,15 +145,18 @@
         }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
 
+        footer { text-align: center; padding: 30px; color: #b2bec3; font-size: 0.9rem; }
+
         /* 모바일 최적화 미디어 쿼리 */
         @media (max-width: 800px) {
             #game-container-box {
                 width: 100%;
-                height: 80vh; /* 모바일에서는 화면 높이의 80% 사용 */
-                border-radius: 0; /* 모바일에서는 꽉 차게 */
+                height: 80vh; /* 화면 높이의 80%를 꽉 채움 */
+                border-radius: 0;
             }
             #ui-layer h2 { font-size: 2.2rem; }
             .content-article { margin: 20px 10px; padding: 20px; }
+            h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -202,6 +171,7 @@
     </header>
 
     <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-2261846676525942"
@@ -239,6 +209,7 @@
         </div>
     </div>
     <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-2261846676525942"
@@ -251,7 +222,7 @@
     </div>
 
     <div class="share-bar">
-        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> 링크 복사</button>
+        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> 친구와 링크 공유</button>
     </div>
     <div id="toast">📋 링크가 복사되었습니다!</div>
 
@@ -300,8 +271,11 @@
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
-        // 게임 상수 및 변수
-        const MAP_SIZE = 4000; // 맵 크기 적당히 조절
+        // 게임 설정 변수
+        const MAP_SIZE = 4000; 
+        const BOT_COUNT = 60;
+        const FOOD_COUNT = 1500;
+
         let player = { x: 0, y: 0, r: 0, color: '', name: '' };
         let foods = [];
         let bots = [];
@@ -313,9 +287,9 @@
         let mouseX = 0, mouseY = 0;
         let joystickVector = { x: 0, y: 0 };
 
-        // 봇 이름 생성기
-        const adjectives = ["배고픈", "졸린", "행복한", "화난", "빠른", "느린", "강력한", "귀여운", "무서운", "심심한", "즐거운", "용감한", "소심한", "미친", "숨은", "전설의", "게으른", "부지런한", "더러운", "깨끗한", "거대한"];
-        const nouns = ["사람", "고양이", "강아지", "개발자", "학생", "직장인", "지렁이", "세포", "호랑이", "사자", "토끼", "다람쥐", "곰", "치킨", "피자", "햄버거", "라면", "김치", "게이머", "공룡", "슬라임"];
+        // 봇 이름 생성기 (다양화)
+        const adjectives = ["배고픈", "졸린", "행복한", "화난", "빠른", "느린", "강력한", "귀여운", "무서운", "심심한", "즐거운", "용감한", "소심한", "미친", "숨은", "전설의", "게으른", "부지런한", "더러운", "깨끗한", "거대한", "수상한", "천재", "바보"];
+        const nouns = ["사람", "고양이", "강아지", "개발자", "학생", "직장인", "지렁이", "세포", "호랑이", "사자", "토끼", "다람쥐", "곰", "치킨", "피자", "햄버거", "라면", "김치", "게이머", "공룡", "슬라임", "외계인", "히어로", "로봇"];
 
         function generateBotName() {
             return adjectives[Math.floor(Math.random() * adjectives.length)] + " " + nouns[Math.floor(Math.random() * nouns.length)];
@@ -332,12 +306,15 @@
                 inputType = 'joystick';
             }
 
-            // 마우스 이벤트 (캔버스 기준 좌표 계산)
+            // 마우스 이벤트 (컨테이너 기준 좌표 계산)
             container.addEventListener('mousemove', e => {
                 if(inputType !== 'joystick') {
                     const rect = canvas.getBoundingClientRect();
-                    mouseX = e.clientX - rect.left;
-                    mouseY = e.clientY - rect.top;
+                    // 캔버스 스케일링 비율 계산 (반응형 대응)
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    mouseX = (e.clientX - rect.left) * scaleX;
+                    mouseY = (e.clientY - rect.top) * scaleY;
                 }
             });
 
@@ -350,7 +327,7 @@
         }
 
         function resizeCanvas() {
-            // 컨테이너 크기에 맞춰 캔버스 리사이징 (반응형 핵심)
+            // 캔버스 해상도 최적화 (레티나 디스플레이 고려 등은 성능상 1:1로 설정)
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
         }
@@ -364,12 +341,13 @@
             foods = [];
             bots = [];
             
-            for(let i=0; i<1000; i++) addFood();
-            for(let i=0; i<50; i++) addBot();
+            for(let i=0; i<FOOD_COUNT; i++) addFood();
+            for(let i=0; i<BOT_COUNT; i++) addBot();
             
-            // 마우스 좌표 중앙으로 초기화
+            // 입력 초기화
             mouseX = canvas.width / 2;
             mouseY = canvas.height / 2;
+            joystickVector = { x: 0, y: 0 };
 
             if (animationFrameId) cancelAnimationFrame(animationFrameId);
             loop();
@@ -391,8 +369,9 @@
                 r: Math.random() * 40 + 20,
                 color: `hsl(${Math.random()*360}, 60%, 50%)`,
                 name: generateBotName(),
-                decisionTimer: 0,
+                state: 'wander', // wander, chase, flee
                 target: null,
+                changeDirTimer: 0,
                 angle: Math.random() * Math.PI * 2
             });
         }
@@ -441,6 +420,58 @@
             }
         }
 
+        // 🤖 스마트 봇 AI 로직
+        function updateBotAI(b) {
+            b.changeDirTimer--;
+
+            // 1. 주변 탐색 (나보다 크거나 작은 애 찾기)
+            let threat = null; // 나보다 커서 피해야 할 대상
+            let prey = null;   // 나보다 작아서 먹을 대상
+            let minDistPrey = Infinity;
+            let minDistThreat = Infinity;
+            const viewRange = 500 + b.r * 2; // 시야 범위
+
+            // 플레이어 확인
+            let dToPlayer = Math.hypot(b.x - player.x, b.y - player.y);
+            if (dToPlayer < viewRange) {
+                if (player.r > b.r * 1.1) {
+                    threat = player;
+                    minDistThreat = dToPlayer;
+                } else if (player.r < b.r * 0.9) {
+                    prey = player;
+                    minDistPrey = dToPlayer;
+                }
+            }
+
+            // 다른 봇 확인 (성능상 일부만 체크하거나 전체 체크)
+            // 간단하게는 무시하고 플레이어 위주로 반응하거나,
+            // 전체 봇 루프 돌면 무거우니 랜덤하게 몇 명만 체크하거나 가까운 애만 체크해야 함.
+            // 여기선 간단히 플레이어만 신경쓰되, 주기적으로 랜덤 방향 전환
+
+            // 2. 상태 결정
+            if (threat) {
+                // 도망가기 (Flee)
+                b.state = 'flee';
+                b.angle = Math.atan2(b.y - threat.y, b.x - threat.x); // 반대 방향
+            } else if (prey) {
+                // 쫓아가기 (Chase)
+                b.state = 'chase';
+                b.angle = Math.atan2(prey.y - b.y, prey.x - b.x);
+            } else {
+                // 배회하기 (Wander)
+                b.state = 'wander';
+                if (b.changeDirTimer <= 0) {
+                    b.changeDirTimer = Math.random() * 50 + 20;
+                    b.angle += (Math.random() - 0.5) * 2; // 약간씩 방향 틀기
+                    
+                    // 맵 중앙으로 돌아오려는 경향 추가 (벽에 박혀있지 않게)
+                    if (b.x < 100 || b.x > MAP_SIZE - 100 || b.y < 100 || b.y > MAP_SIZE - 100) {
+                        b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
+                    }
+                }
+            }
+        }
+
         // 메인 게임 루프
         function loop() {
             if(!gameRunning) return;
@@ -475,19 +506,15 @@
                 drawCircle(f.x, f.y, f.r, f.color);
                 
                 let distSq = (player.x-f.x)**2 + (player.y-f.y)**2;
-                if(distSq < (player.r - f.r/2)**2) { // 먹는 판정 조금 여유 있게
+                if(distSq < (player.r - f.r/2)**2) { 
                     player.r += 0.2; foods.splice(i, 1); addFood();
                 }
             }
 
             // 봇 로직 및 그리기
             bots.forEach((b, i) => {
-                // 간단한 AI: 랜덤 이동하다가 근처 먹이나 플레이어 반응
-                b.decisionTimer = (b.decisionTimer || 0) - 1;
-                if(b.decisionTimer <= 0) {
-                    b.decisionTimer = Math.random() * 50 + 20;
-                    b.angle += (Math.random() - 0.5) * 2;
-                }
+                // AI 업데이트
+                updateBotAI(b);
                 
                 let bSpeed = 2 + (50 / b.r);
                 b.x += Math.cos(b.angle) * bSpeed;
@@ -495,19 +522,24 @@
                 b.x = Math.max(0, Math.min(MAP_SIZE, b.x)); 
                 b.y = Math.max(0, Math.min(MAP_SIZE, b.y));
 
-                drawCircle(b.x, b.y, b.r, b.color);
-                
-                // 봇 이름
-                ctx.fillStyle = 'white'; 
-                ctx.font = `bold ${Math.max(10, b.r * 0.4)}px Noto Sans KR`;
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
-                ctx.fillText(b.name, b.x, b.y);
+                // 화면 안에 들어오면 그리기
+                if(Math.abs(b.x - player.x) < (canvas.width/zoom + b.r + 50) && 
+                   Math.abs(b.y - player.y) < (canvas.height/zoom + b.r + 50)) {
+                    
+                    drawCircle(b.x, b.y, b.r, b.color);
+                    
+                    // 봇 이름
+                    ctx.fillStyle = 'white'; 
+                    ctx.font = `bold ${Math.max(10, b.r * 0.4)}px Noto Sans KR`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; 
+                    ctx.fillText(b.name, b.x, b.y);
+                }
 
                 // 봇 vs 플레이어 충돌
                 let distSq = (player.x-b.x)**2 + (player.y-b.y)**2;
                 if(distSq < (player.r + b.r)**2) {
                     if(player.r > b.r * 1.1) { // 플레이어가 봇을 먹음
-                        player.r += b.r * 0.2; 
+                        player.r += b.r * 0.4; // 성장률 증가
                         bots.splice(i, 1); 
                         addBot(); 
                         showKillLog(`냠냠! ${b.name} 처치!`);
@@ -576,8 +608,8 @@
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
             uiLayer.style.display = 'flex';
-            uiTitle.innerText = "💀 게임 오버";
-            uiDesc.innerHTML = `<strong style="color:#ff7675">${killer}</strong>에게 잡아먹혔습니다.<br>최종 크기: ${Math.floor(player.r)}`;
+            document.getElementById('ui-title').innerText = "💀 게임 오버";
+            document.getElementById('ui-desc').innerHTML = `<strong style="color:#ff7675">${killer}</strong>에게 잡아먹혔습니다.<br>최종 크기: ${Math.floor(player.r)}`;
             startBtn.innerText = "다시 도전하기 ↺";
         }
 
