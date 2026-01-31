@@ -3,99 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fruit Merge - SimSim Game Labs</title>
-    <meta property="og:type" content="website">
-<meta property="og:title" content="🍉 Fruit Merge - SimSim Game Labs">
-<meta property="og:description" content="Merge identical fruits to create a giant watermelon! The most addictive puzzle game is here.">
-<meta property="og:image" content="https://simsimlabs.github.io/simsim-games/en/thumbnail.png">
-<meta property="og:url" content="https://simsimlabs.github.io/simsim-games/en/game6.html">
+    <title>Suika Game - SimSim Game Labs</title>
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    
+    <link rel="canonical" href="https://simsimlabs.com/simsim-games/en/game6.html">
+
+    <meta name="description" content="Play Suika Game (Watermelon Game) for free! Merge identical fruits to create a giant watermelon. Highly addictive puzzle game.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🍉 Suika Game - SimSim Game Labs">
+    <meta property="og:description" content="Merge fruits from cherry to watermelon! Can you make the biggest fruit without overflowing?">
+    <meta property="og:image" content="https://simsimlabs.com/simsim-games/en/thumbnail.png">
+    <meta property="og:url" content="https://simsimlabs.com/simsim-games/en/game6.html">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
-
+        /* 1. Layout & Background */
         body { 
-            margin: 0; padding: 0; overflow: hidden; background-color: #ffeaa7; 
-            font-family: 'Roboto', sans-serif; touch-action: none; user-select: none;
+            margin: 0; padding: 0; 
+            background-color: #ffeaa7; 
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #333;
+            overflow-x: hidden; 
+            touch-action: none;
         }
 
-        canvas { display: block; margin: 0 auto; background-color: #fff8e1; border-left: 2px solid #fdcb6e; border-right: 2px solid #fdcb6e; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-
-        #game-ui { 
-            position: fixed; top: 20px; left: 20px; pointer-events: none;
-            font-family: 'Fredoka One', cursive; color: #2d3436;
+        header {
+            background: #fdcb6e; color: #2d3436; padding: 15px 20px; text-align: center;
         }
-        #score-box { font-size: 2rem; text-shadow: 2px 2px 0px white; }
+
+        .header-top {
+            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
+        }
+        .header-top a { color: #636e72; text-decoration: none; }
+
+        h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
+
+        /* 2. Ad Banner */
+        .ad-banner {
+            width: 100%; max-width: 1200px; margin: 10px auto;
+            text-align: center; background: #fff; padding: 10px 0;
+            border-radius: 8px; overflow: hidden;
+        }
+
+        /* 3. Game Container */
+        #game-container-box {
+            position: relative;
+            width: 100%; 
+            max-width: 480px; 
+            height: 75vh;     
+            margin: 0 auto;
+            background-color: #fff8e1; 
+            border: 4px solid #fdcb6e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        /* 4. UI Overlay */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; 
+            padding: 15px; box-sizing: border-box;
+            display: flex; justify-content: space-between;
+            font-family: 'Jua', sans-serif; font-size: 1.2rem; color: #2d3436;
+            pointer-events: none;
+        }
         
-        #game-over {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px;
-            text-align: center; border: 5px solid #fdcb6e; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            display: none; pointer-events: auto;
+        #game-over-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; text-align: center;
         }
-        #game-over h1 { margin: 0 0 10px 0; font-family: 'Fredoka One', cursive; font-size: 3rem; color: #e17055; }
+
+        #game-over-screen h2 { font-family: 'Jua', sans-serif; font-size: 3rem; color: #e17055; margin: 0 0 10px 0; }
         #restart-btn {
-            background: #00b894; color: white; border: none; padding: 15px 30px;
-            font-size: 1.5rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
-            cursor: pointer; margin-top: 15px; box-shadow: 0 5px 0 #008f6d;
+            background: #00b894; color: white; border: none; padding: 15px 40px;
+            font-size: 1.5rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #008f6d; transition: transform 0.1s;
         }
         #restart-btn:active { transform: translateY(4px); box-shadow: none; }
-        
-        .back-link { 
-            position: fixed; top: 20px; right: 20px; text-decoration: none; 
-            background: rgba(255,255,255,0.8); padding: 10px 15px; border-radius: 20px;
-            font-weight: bold; color: #636e72; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            pointer-events: auto;
-        }
 
-        #ingame-ad { position: fixed; bottom: 0; left: 0; width: 100%; text-align: center; pointer-events: none; }
-        .adsbygoogle { display: inline-block; pointer-events: auto; }
+        /* 5. Content Article */
+        .content-article {
+            max-width: 800px; margin: 40px auto; padding: 20px;
+            background: #fff; border-radius: 12px; line-height: 1.8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .content-article h2 { color: #e17055; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; }
+        .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
+
+        /* 6. Share Button */
+        .share-bar { text-align: center; margin: 20px 0; }
+        .share-btn {
+            background: #2d3436; color: white; border: none; padding: 10px 20px;
+            border-radius: 30px; cursor: pointer; font-size: 1rem;
+            transition: 0.2s;
+        }
+        .share-btn:hover { transform: translateY(-2px); }
+        .share-btn.copy { background: #6c5ce7; }
+        
+        #toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px;
+            background-color: #333; color: #fff; text-align: center;
+            border-radius: 2px; padding: 16px; position: fixed; z-index: 1000;
+            left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        footer { text-align: center; padding: 30px; color: #b2bec3; font-size: 0.9rem; }
+
+        /* Mobile Optimization */
+        @media (max-width: 600px) {
+            #game-container-box {
+                width: 95%;
+                height: 70vh; 
+            }
+            .content-article { margin: 20px 10px; }
+            h1 { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
 
-    <div id="game-ui">
-        <div id="score-box">Score: 0</div>
-        <div style="font-size: 1rem; color: #636e72;">Next: <span id="next-fruit" style="font-size: 1.5rem;">🍒</span></div>
-    </div>
+    <header>
+        <div class="header-top">
+            <a href="../game6.html">🇰🇷 Korean</a>
+            <a href="index.html">🏠 Back to List</a>
+        </div>
+        <h1>🍉 Suika Game</h1>
+    </header>
 
-    <a href="index.html" class="back-link">🏠 Menu</a>
-
-    <div id="game-over">
-        <h1>😲 Overflow!</h1>
-        <p>Final Score: <span id="final-score" style="color:#e17055; font-weight:bold;">0</span></p>
-        <button id="restart-btn">Try Again ▶</button>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
-
-    <div id="ingame-ad">
-        <ins class="adsbygoogle"
-             style="display:inline-block;width:320px;height:50px"
-             data-ad-client="ca-pub-2261846676525942"
-             data-ad-slot="4380369066"></ins>
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="auto" data-full-width-responsive="true"></ins>
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
     </div>
+
+    <div id="game-container-box">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="ui-layer">
+            <div id="score-box">Score: 0</div>
+            <div>Next: <span id="next-fruit">🍒</span></div>
+        </div>
+
+        <div id="game-over-screen">
+            <h2>😲 Overflow!</h2>
+            <p>Final Score: <span id="final-score" style="color:#e17055; font-weight:bold; font-size:1.5rem;">0</span></p>
+            <button id="restart-btn">Try Again ▶</button>
+        </div>
+    </div>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+
+    <div class="share-bar">
+        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> Copy Link</button>
+    </div>
+    <div id="toast">📋 Link Copied!</div>
+
+    <article class="content-article">
+        <h2>🎮 Suika Game (Watermelon Game) Guide</h2>
+        <p>
+            Collide two identical fruits to evolve them into a larger one!
+            Start from a cherry and aim to create a massive <strong>Watermelon</strong>.
+            Be careful not to let the fruits overflow from the box, or it's Game Over.
+        </p>
+
+        <h3>🕹️ Controls</h3>
+        <ul>
+            <li><strong>PC:</strong> Move your mouse to aim, Click to drop.</li>
+            <li><strong>Mobile:</strong> Touch and drag to aim, Release to drop.</li>
+        </ul>
+
+        <h3>🏆 Tips</h3>
+        <p>
+            1. <strong>Corners:</strong> Try to keep the largest fruit in one corner to trigger chain reactions easily.<br>
+            2. <strong>Stacking:</strong> Stack fruits in descending order of size next to each other.<br>
+            3. <strong>Small Fruits:</strong> Be careful not to let small fruits get stuck in gaps between larger ones.
+        </p>
+    </article>
+
+    <footer>
+        <p>© 2024 SimSim Game Labs. All rights reserved.</p>
+        <a href="https://simsimlabs.com/en/privacy.html" style="color:#b2bec3; text-decoration:none;">Privacy Policy</a>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-container-box');
         const scoreEl = document.getElementById('score-box');
         const nextFruitEl = document.getElementById('next-fruit');
-        const gameOverEl = document.getElementById('game-over');
+        const gameOverScreen = document.getElementById('game-over-screen');
         const finalScoreEl = document.getElementById('final-score');
         const restartBtn = document.getElementById('restart-btn');
 
+        // Fruit Data
         const FRUITS = [
-            { r: 16, color: '#ff7675', name: '🍒' },
-            { r: 26, color: '#fd79a8', name: '🍓' },
-            { r: 36, color: '#6c5ce7', name: '🍇' },
-            { r: 46, color: '#fab1a0', name: '🍊' },
-            { r: 60, color: '#e17055', name: '🍎' },
-            { r: 74, color: '#ffeaa7', name: '🍐' },
-            { r: 90, color: '#fdcb6e', name: '🍑' },
-            { r: 108, color: '#00b894', name: '🍍' },
-            { r: 128, color: '#81ecec', name: '🍈' },
-            { r: 154, color: '#2d3436', name: '🍉' }
+            { r: 16, color: '#ff7675', name: '🍒' }, 
+            { r: 24, color: '#fd79a8', name: '🍓' }, 
+            { r: 32, color: '#6c5ce7', name: '🍇' }, 
+            { r: 40, color: '#fab1a0', name: '🍊' }, 
+            { r: 50, color: '#e17055', name: '🍎' }, 
+            { r: 62, color: '#ffeaa7', name: '🍐' }, 
+            { r: 76, color: '#fdcb6e', name: '🍑' }, 
+            { r: 92, color: '#00b894', name: '🍍' }, 
+            { r: 110, color: '#81ecec', name: '🍈' }, 
+            { r: 130, color: '#2d3436', name: '🍉' }  
         ];
 
         let balls = [];
@@ -105,62 +230,69 @@
         let nextFruitIdx = 0;
         let dropping = false;
         let mouseX = 0;
+        let animationFrameId;
 
-        let GAME_WIDTH = 450; 
-        let GAME_HEIGHT = 800;
-
-        function resize() {
-            if(window.innerWidth < 500) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            } else {
-                canvas.width = 450;
-                canvas.height = 800;
-            }
-            GAME_WIDTH = canvas.width;
-            GAME_HEIGHT = canvas.height;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
+        // Init
         function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Input Events
+            container.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                mouseX = (e.clientX - rect.left) * scaleX;
+            });
+            container.addEventListener('touchmove', e => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                mouseX = (e.touches[0].clientX - rect.left) * scaleX;
+            }, {passive: false});
+
+            // Drop Event
+            const handleDrop = (e) => {
+                if(e.type === 'touchstart') e.preventDefault();
+                if(gameOver || dropping) return;
+                
+                dropping = true;
+                let r = FRUITS[nextFruitIdx].r;
+                let dropX = Math.max(r, Math.min(canvas.width - r, mouseX));
+                
+                addBall(dropX, 50, nextFruitIdx);
+
+                nextFruitIdx = Math.floor(Math.random() * 4); // 0~3 only
+                updateNextFruit();
+
+                setTimeout(() => { dropping = false; }, 500); 
+            };
+
+            container.addEventListener('mousedown', handleDrop);
+            container.addEventListener('touchend', handleDrop);
+            restartBtn.addEventListener('click', resetGame);
+
+            resetGame();
+        }
+
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function resetGame() {
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
             balls = [];
             particles = [];
             score = 0;
             gameOver = false;
-            gameOverEl.style.display = 'none';
+            gameOverScreen.style.display = 'none';
             scoreEl.innerText = "Score: 0";
             nextFruitIdx = 0;
             updateNextFruit();
-            requestAnimationFrame(loop);
+            mouseX = canvas.width / 2;
+            dropping = false;
+            loop();
         }
-
-        canvas.addEventListener('mousemove', e => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
-        });
-        canvas.addEventListener('touchmove', e => {
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.touches[0].clientX - rect.left;
-        }, {passive: false});
-
-        function handleInput() {
-            if(gameOver || dropping) return;
-            dropping = true;
-            
-            let x = Math.max(FRUITS[nextFruitIdx].r, Math.min(GAME_WIDTH - FRUITS[nextFruitIdx].r, mouseX));
-            addBall(x, 50, nextFruitIdx);
-
-            nextFruitIdx = Math.floor(Math.random() * 4);
-            updateNextFruit();
-
-            setTimeout(() => { dropping = false; }, 600);
-        }
-
-        canvas.addEventListener('mousedown', handleInput);
-        canvas.addEventListener('touchstart', handleInput);
-        restartBtn.addEventListener('click', init);
 
         function updateNextFruit() {
             nextFruitEl.innerText = FRUITS[nextFruitIdx].name;
@@ -172,7 +304,7 @@
                 vx: 0, vy: 0,
                 level: level,
                 r: FRUITS[level].r,
-                mass: FRUITS[level].r,
+                mass: FRUITS[level].r, 
                 angle: 0,
                 merged: false
             });
@@ -182,8 +314,9 @@
             for(let i=0; i<8; i++) {
                 particles.push({
                     x: x, y: y,
-                    vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4,
-                    life: 20 + Math.random()*10, color: color, r: Math.random()*3 + 2
+                    vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5,
+                    life: 20 + Math.random()*10, 
+                    color: color, r: Math.random()*4 + 2
                 });
             }
         }
@@ -191,284 +324,171 @@
         function loop() {
             if(gameOver) return;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if(!dropping) {
-                ctx.beginPath();
-                ctx.moveTo(mouseX, 20); ctx.lineTo(mouseX, GAME_HEIGHT);
-                ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2; ctx.stroke();
-                
-                ctx.globalAlpha = 0.5;
-                let previewX = Math.max(FRUITS[nextFruitIdx].r, Math.min(GAME_WIDTH - FRUITS[nextFruitIdx].r, mouseX));
-                
-                // Bigger Emoji size
-                ctx.font = `${FRUITS[nextFruitIdx].r * 2}px sans-serif`;
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(FRUITS[nextFruitIdx].name, previewX, 50);
-                ctx.globalAlpha = 1.0;
-            }
-
-            ctx.beginPath();
-            ctx.moveTo(0, 100); ctx.lineTo(GAME_WIDTH, 100);
-            ctx.strokeStyle = '#fab1a0'; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
-
-            // --- Physics Speed Slow Down ---
-            // Steps 3, Gravity 0.04
-            for(let step=0; step<3; step++) {
+            // Physics Update (Sub-stepping)
+            const SUB_STEPS = 8; 
+            for(let s=0; s<SUB_STEPS; s++) {
                 balls.forEach(b => {
-                    b.vy += 0.04;
-                    b.x += b.vx; b.y += b.vy;
-                    b.vx *= 0.99; b.vy *= 0.99;
-                    b.angle += b.vx * 0.02;
-
-                    if(b.x < b.r) { b.x = b.r; b.vx *= -0.4; }
-                    if(b.x > GAME_WIDTH - b.r) { b.x = GAME_WIDTH - b.r; b.vx *= -0.4; }
-                    if(b.y > GAME_HEIGHT - b.r) { b.y = GAME_HEIGHT - b.r; b.vy *= -0.4; }
+                    b.vy += 0.3 / SUB_STEPS; // Gravity
+                    b.x += b.vx / SUB_STEPS; 
+                    b.y += b.vy / SUB_STEPS;
+                    
+                    // Wall Collision
+                    if(b.x < b.r) { b.x = b.r; b.vx *= -0.3; }
+                    if(b.x > canvas.width - b.r) { b.x = canvas.width - b.r; b.vx *= -0.3; }
+                    if(b.y > canvas.height - b.r) { b.y = canvas.height - b.r; b.vy *= -0.3; b.vx *= 0.95; } 
                 });
 
+                // Ball Collision (O(N^2))
                 for(let i=0; i<balls.length; i++) {
                     for(let j=i+1; j<balls.length; j++) {
-                        let b1 = balls[i], b2 = balls[j];
+                        let b1 = balls[i];
+                        let b2 = balls[j];
                         if(b1.merged || b2.merged) continue;
-                        let dx = b2.x - b1.x, dy = b2.y - b1.y;
-                        let distSq = dx*dx + dy*dy, radSum = b1.r + b2.r;
+
+                        let dx = b2.x - b1.x;
+                        let dy = b2.y - b1.y;
+                        let distSq = dx*dx + dy*dy;
+                        let radSum = b1.r + b2.r;
 
                         if(distSq < radSum * radSum) {
                             let dist = Math.sqrt(distSq);
-                            
+                            if(dist === 0) dist = 0.1; 
+
+                            // Merge Logic
                             if(b1.level === b2.level && b1.level < FRUITS.length-1) {
                                 b1.merged = true; b2.merged = true;
-                                let newX = (b1.x + b2.x) / 2, newY = (b1.y + b2.y) / 2;
+                                let newX = (b1.x + b2.x) / 2;
+                                let newY = (b1.y + b2.y) / 2;
                                 addBall(newX, newY, b1.level + 1);
                                 createParticles(newX, newY, FRUITS[b1.level].color);
                                 score += (b1.level + 1) * 10;
                                 scoreEl.innerText = `Score: ${score}`;
-                                continue;
+                                continue; 
                             }
 
-                            let overlap = radSum - dist, nx = dx / dist, ny = dy / dist;
-                            b1.x -= nx * overlap * 0.5; b1.y -= ny * overlap * 0.5;
-                            b2.x += nx * overlap * 0.5; b2.y += ny * overlap * 0.5;
+                            // Push Away
+                            let overlap = radSum - dist;
+                            let nx = dx / dist;
+                            let ny = dy / dist;
                             
-                            let dvx = b2.vx - b1.vx, dvy = b2.vy - b1.vy;
-                            let velAlongNormal = dvx * nx + dvy * ny;
-                            if(velAlongNormal > 0) continue;
+                            let totalMass = b1.mass + b2.mass;
+                            let m1 = b2.mass / totalMass;
+                            let m2 = b1.mass / totalMass;
+
+                            b1.x -= nx * overlap * m1;
+                            b1.y -= ny * overlap * m1;
+                            b2.x += nx * overlap * m2;
+                            b2.y += ny * overlap * m2;
+
+                            // Elastic Collision
+                            let rvx = b2.vx - b1.vx;
+                            let rvy = b2.vy - b1.vy;
+                            let velAlongNormal = rvx * nx + rvy * ny;
+
+                            if(velAlongNormal > 0) continue; 
+
+                            let restitution = 0.2; 
+                            let jImpulse = -(1 + restitution) * velAlongNormal;
+                            jImpulse /= (1/b1.mass + 1/b2.mass);
                             
-                            let impulse = -(1.2) * velAlongNormal / (1/b1.mass + 1/b2.mass);
-                            b1.vx -= (1/b1.mass) * impulse * nx; b1.vy -= (1/b1.mass) * impulse * ny;
-                            b2.vx += (1/b2.mass) * impulse * nx; b2.vy += (1/b2.mass) * impulse * ny;
+                            let impulseX = jImpulse * nx;
+                            let impulseY = jImpulse * ny;
+
+                            b1.vx -= impulseX / b1.mass;
+                            b1.vy -= impulseY / b1.mass;
+                            b2.vx += impulseX / b2.mass;
+                            b2.vy += impulseY / b2.mass;
+                            
+                            // Rotation
+                            b1.angle += b1.vx * 0.01;
+                            b2.angle += b2.vx * 0.01;
                         }
                     }
                 }
             }
 
+            // Remove Merged Balls
             balls = balls.filter(b => !b.merged);
 
+            // Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Guideline
+            if(!dropping) {
+                let r = FRUITS[nextFruitIdx].r;
+                let dropX = Math.max(r, Math.min(canvas.width - r, mouseX));
+                
+                ctx.beginPath();
+                ctx.moveTo(dropX, 20); ctx.lineTo(dropX, canvas.height);
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 2; ctx.stroke();
+
+                ctx.globalAlpha = 0.5;
+                ctx.font = `${r * 2}px sans-serif`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(FRUITS[nextFruitIdx].name, dropX, 50);
+                ctx.globalAlpha = 1.0;
+            }
+
+            // Deadline
+            ctx.beginPath();
+            ctx.moveTo(0, 100); ctx.lineTo(canvas.width, 100);
+            ctx.strokeStyle = '#e17055'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+
+            // Draw Fruits
             balls.forEach(b => {
                 ctx.save();
                 ctx.translate(b.x, b.y);
                 ctx.rotate(b.angle);
                 
-                ctx.font = `${b.r * 2.3}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                // Circle
+                ctx.beginPath(); ctx.arc(0, 0, b.r, 0, Math.PI*2);
+                ctx.fillStyle = FRUITS[b.level].color; 
+                ctx.shadowBlur = 5; ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.fill(); ctx.shadowBlur = 0;
+                
+                // Emoji
+                ctx.font = `${b.r * 1.6}px sans-serif`;
+                ctx.fillStyle = 'white'; 
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(FRUITS[b.level].name, 0, b.r * 0.1); 
 
                 ctx.restore();
             });
 
-             for(let i=particles.length-1; i>=0; i--) {
+            // Particles
+            for(let i=particles.length-1; i>=0; i--) {
                 let p = particles[i];
                 p.x += p.vx; p.y += p.vy; p.life--;
                 if(p.life <= 0) { particles.splice(i,1); continue; }
+                
                 ctx.globalAlpha = p.life / 30;
                 ctx.fillStyle = p.color;
                 ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
 
+            // Game Over Check
             for(let b of balls) {
                 if(b.y - b.r < 100 && Math.abs(b.vy) < 0.1 && Math.abs(b.vx) < 0.1 && !dropping) {
                     gameOver = true;
                     finalScoreEl.innerText = score;
-                    gameOverEl.style.display = 'block';
+                    gameOverScreen.style.display = 'flex';
                     break;
                 }
             }
 
-            requestAnimationFrame(loop);
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+            });
         }
 
         init();
     </script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-    /* Share Container: Fixed at the bottom center */
-    .game-share-wrapper {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(30, 30, 40, 0.85); /* Semi-transparent black bg */
-        padding: 12px 25px;
-        border-radius: 50px;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 9999;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    }
-
-    .share-label {
-        color: #fff;
-        font-size: 0.9rem;
-        font-weight: bold;
-        margin-right: 5px;
-        white-space: nowrap;
-    }
-
-    .share-btn-group {
-        display: flex;
-        gap: 10px;
-    }
-
-    .share-icon-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .share-icon-btn:hover { transform: translateY(-3px); }
-    
-    /* Button Colors */
-    .bg-twitter { background-color: #1DA1F2; }
-    .bg-facebook { background-color: #1877F2; }
-    .bg-link { background-color: #6c5ce7; }
-
-    /* Toast Message (Copy Notification) */
-    #copy-toast {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 16px;
-        position: fixed;
-        z-index: 10000;
-        left: 50%;
-        bottom: 80px; /* Appears above the share button */
-        transform: translateX(-50%);
-        font-size: 0.9rem;
-        opacity: 0;
-        transition: opacity 0.5s, bottom 0.5s;
-    }
-
-    #copy-toast.show {
-        visibility: visible;
-        opacity: 1;
-        bottom: 90px;
-    }
-    
-    /* Mobile Responsiveness */
-    @media (max-width: 500px) {
-        .share-label { display: none; } /* Hide label on narrow screens */
-        .game-share-wrapper { padding: 10px; }
-    }
-</style>
-
-<div class="game-share-wrapper">
-    <span class="share-label">📢 Share with friends</span>
-    <div class="share-btn-group">
-        <button onclick="shareTo('twitter')" class="share-icon-btn bg-twitter" title="Twitter">
-            <i class="fa-brands fa-twitter"></i>
-        </button>
-        <button onclick="shareTo('facebook')" class="share-icon-btn bg-facebook" title="Facebook">
-            <i class="fa-brands fa-facebook-f"></i>
-        </button>
-        <button onclick="copyLink()" class="share-icon-btn bg-link" title="Copy Link">
-            <i class="fa-solid fa-link"></i>
-        </button>
-    </div>
-</div>
-
-<div id="copy-toast">📋 Link copied!</div>
-
-<script>
-    function shareTo(sns) {
-        const url = encodeURIComponent(window.location.href);
-        const title = encodeURIComponent(document.title);
-        let link = "";
-
-        if (sns === 'twitter') {
-            link = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-        } else if (sns === 'facebook') {
-            link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        }
-        
-        if(link) window.open(link, '_blank', 'width=600,height=400');
-    }
-
-    function copyLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            const toast = document.getElementById("copy-toast");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-        }).catch(err => {
-            alert("Copy failed: " + err);
-        });
-    }
-</script>
-
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
-
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 How to Play <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">Merge identical fruits into a Watermelon.</p>
-    <ul class="desc-list">
-        <li><strong>Control:</strong> Aim & Click to drop</li>
-        <li><strong>Chain:</strong> Cherry > ... > Watermelon</li>
-        <li><strong>Warning:</strong> Don't overflow the box!</li>
-    </ul>
-    <div class="desc-tip">✨ <strong>Tip:</strong> Keep the largest fruit in one corner.</div>
-</div>
-
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
-    
 </body>
 </html>
