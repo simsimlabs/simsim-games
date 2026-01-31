@@ -4,110 +4,287 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Black Hole - SimSim Game Labs</title>
-    <meta property="og:type" content="website">
-<meta property="og:title" content="🕳️ Black Hole - SimSim Game Labs">
-<meta property="og:description" content="Swallow everything in the city! Grow from eating people to devouring entire buildings.">
-<meta property="og:image" content="https://simsimlabs.github.io/simsim-games/en/thumbnail.png">
-<meta property="og:url" content="https://simsimlabs.github.io/simsim-games/en/game4.html">
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    
+    <link rel="canonical" href="https://simsimlabs.com/simsim-games/en/game4.html">
+
+    <meta name="description" content="Play Black Hole.io for free! Swallow cars, buildings, and everything in the city to grow massive. No installation required.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🕳️ Black Hole - SimSim Game Labs">
+    <meta property="og:description" content="Swallow everything in the city! Eat cars, buildings, and other players to become the biggest black hole.">
+    <meta property="og:image" content="https://simsimlabs.com/simsim-games/thumbnail.png">
+    <meta property="og:url" content="https://simsimlabs.com/simsim-games/en/game4.html">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
-
+        /* 1. Layout & Background */
         body { 
-            margin: 0; padding: 0; overflow: hidden; background-color: #34495e; 
-            font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
+            margin: 0; padding: 0; 
+            background-color: #f0f2f5; 
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #333;
+            overflow-x: hidden; 
         }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
-        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
-
-        #game-ui { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; background: rgba(255, 255, 255, 0.98);
-            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
-            pointer-events: auto;
+        header {
+            background: #2c3e50; color: white; padding: 15px 20px; text-align: center;
         }
 
-        #game-ui h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #1a1a1a; margin: 0 0 10px 0; text-shadow: 2px 2px 0px #bdc3c7; }
-        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+        .header-top {
+            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
+        }
+        .header-top a { color: #bdc3c7; text-decoration: none; }
 
+        h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
+
+        /* 2. Ad Banner */
+        .ad-banner {
+            width: 100%; max-width: 1200px; margin: 20px auto;
+            text-align: center; background: #fff; padding: 10px 0;
+            border-radius: 8px; overflow: hidden;
+        }
+
+        /* 3. Game Container (Responsive) */
+        #game-container-box {
+            position: relative;
+            width: 100%; 
+            max-width: 1280px; 
+            height: 720px;     
+            margin: 0 auto;
+            background-color: #34495e; border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        /* 4. UI Layer */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; text-align: center;
+        }
+
+        #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #6c5ce7; margin-bottom: 10px; text-shadow: 3px 3px 0 #fff; }
+        #ui-layer p { font-size: 1.2rem; color: #bdc3c7; margin-bottom: 30px; line-height: 1.6; }
+        
         #start-btn {
-            background: #2c3e50; color: white; border: none; padding: 15px 0;
-            font-size: 1.8rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 6px 0 #1a252f; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+            background: #6c5ce7; color: white; border: none; padding: 15px 60px;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #5f27cd; transition: transform 0.1s;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
+        #start-btn:hover { background: #8e44ad; }
 
-        .back-link { display: inline-block; margin-top: 10px; color: #7f8c8d; text-decoration: none; cursor: pointer; }
-        .back-link:hover { color: #2c3e50; text-decoration: underline; }
+        /* 5. HUD */
+        #leaderboard {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.6); color: white; padding: 15px;
+            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 1rem;
+            min-width: 160px; pointer-events: none; z-index: 50;
+        }
+        #rank-list { list-style: none; padding: 0; margin: 0; }
+        #rank-list li { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 
-        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px; }
-        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
-        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        #score-box {
+            position: absolute; top: 15px; left: 15px;
+            color: white; font-family: 'Jua', sans-serif; font-size: 1.5rem;
+            text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 50;
+        }
 
-        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(44, 62, 80, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+        #kill-log {
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.9); color: white;
+            padding: 10px 30px; border-radius: 30px; font-weight: bold;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
+            white-space: nowrap; font-size: 1.1rem;
+        }
 
-        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
-        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+        /* 6. Mobile Joystick */
+        #joystick-zone {
+            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px;
+            z-index: 90; display: none; 
+        }
+        #joystick-bg {
+            width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
+        }
+        #joystick-stick {
+            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
 
-        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
-        #joystick-bg { width: 100%; height: 100%; background: rgba(0, 0, 0, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
-        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        /* 7. Content Article */
+        .content-article {
+            max-width: 1200px; margin: 40px auto; padding: 40px;
+            background: #fff; border-radius: 12px; line-height: 1.8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .content-article h2 { color: #6c5ce7; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; margin-top: 30px; }
+        .content-article h3 { color: #0984e3; margin-top: 25px; }
+        .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
 
-        @media (max-width: 600px) {
-            #game-ui { width: 85%; }
-            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
-            #joystick-zone { display: block; }
+        /* 8. Share Button */
+        .share-bar { text-align: center; margin: 30px 0; }
+        .share-btn {
+            background: #34495e; color: white; border: none; padding: 12px 25px;
+            border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
+            transition: 0.2s;
+        }
+        .share-btn:hover { transform: translateY(-2px); }
+        .share-btn.copy { background: #6c5ce7; }
+        
+        #toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px;
+            background-color: #333; color: #fff; text-align: center;
+            border-radius: 2px; padding: 16px; position: fixed; z-index: 1000;
+            left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        footer { text-align: center; padding: 30px; color: #7f8c8d; font-size: 0.9rem; }
+
+        /* Mobile Optimization */
+        @media (max-width: 800px) {
+            #game-container-box {
+                width: 100%;
+                height: 85vh; 
+                border-radius: 0;
+            }
+            #ui-layer h2 { font-size: 2.2rem; }
+            .content-article { margin: 20px 10px; padding: 20px; }
+            h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
-
-    <div id="leaderboard" class="game-overlay">
-        <h3>🏆 Biggest Holes</h3>
-        <ul id="rank-list"><li>Loading...</li></ul>
-    </div>
-
-    <div id="kill-log" class="game-overlay"></div>
-
-    <div id="joystick-zone">
-        <div id="joystick-bg"><div id="joystick-stick"></div></div>
-    </div>
-
-    <div id="ingame-ad">
-        <span class="ad-label">Sponsored</span>
-        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
-    <div id="game-ui">
-        <h1>🕳️ Black Hole</h1>
-        <p>Swallow everything in the city!<br>People → Cars → Buildings</p>
-        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
-             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <header>
+        <div class="header-top">
+            <a href="../game4.html">🇰🇷 Korean</a>
+            <a href="index.html">🏠 Back to List</a>
         </div>
-        <button id="start-btn">Play Now ▶</button>
-        <br>
-        <a href="index.html" class="back-link">🏠 Main Menu</a>
+        <h1>🕳️ Black Hole</h1>
+    </header>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
+
+    <div id="game-container-box">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="score-box">Score: 0</div>
+
+        <div id="leaderboard">
+            <h3>🏆 Top 5</h3>
+            <ul id="rank-list"><li>Loading...</li></ul>
+        </div>
+
+        <div id="kill-log"></div>
+
+        <div id="joystick-zone">
+            <div id="joystick-bg">
+                <div id="joystick-stick"></div>
+            </div>
+        </div>
+
+        <div id="ui-layer">
+            <h2 id="ui-title">Black Hole</h2>
+            <p id="ui-desc">
+                Swallow everything in the city!<br>
+                People → Cars → Buildings
+            </p>
+            <button id="start-btn">Play Now ▶</button>
+        </div>
+    </div>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <div class="share-bar">
+        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> Copy Link</button>
+    </div>
+    <div id="toast">📋 Link Copied!</div>
+
+    <article class="content-article">
+        <h2>🎮 Black Hole (Hole.io Style) Guide</h2>
+        <p>
+            Start as a small sinkhole and grow into a monster black hole that swallows the entire city!
+            At first, you can only eat small objects like signs and people, but as you grow, you can devour cars, houses, and even massive skyscrapers.
+            The goal is to become the biggest black hole within the time limit.
+        </p>
+
+        <h3>🕹️ Controls</h3>
+        <ul>
+            <li><strong>PC:</strong> Move your mouse to guide the black hole.</li>
+            <li><strong>Mobile:</strong> Drag the virtual joystick on the bottom left.</li>
+            <li><strong>Rules:</strong> You can eat smaller black holes. Avoid bigger ones!</li>
+        </ul>
+
+        <h3>🏆 Pro Tips</h3>
+        <p>
+            1. <strong>Early Game:</strong> Rush to parks or parking lots. Eating many small objects like fences and cones is the fastest way to grow early on.<br><br>
+            2. <strong>Step by Step:</strong> Don't try to eat big buildings too soon. Focus on objects that fit your size perfectly for continuous growth.<br><br>
+            3. <strong>Hunting:</strong> Once you're big enough, hunt other players. Absorbing them gives you a huge score boost instantly.
+        </p>
+    </article>
+
+    <footer>
+        <p>© 2024 SimSim Game Labs. All rights reserved.</p>
+        <a href="https://simsimlabs.com/en/privacy.html" style="color:#b2bec3; text-decoration:none;">Privacy Policy</a>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const ui = document.getElementById('game-ui');
+        const container = document.getElementById('game-container-box');
+        
+        const uiLayer = document.getElementById('ui-layer');
+        const uiTitle = document.getElementById('ui-title');
+        const uiDesc = document.getElementById('ui-desc');
+        const startBtn = document.getElementById('start-btn');
+        const scoreBox = document.getElementById('score-box');
+        
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
-        const ingameAd = document.getElementById('ingame-ad');
-        const startBtn = document.getElementById('start-btn');
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
 
-        const MAP_SIZE = 5000;
-        const MAP_BG_COLOR = '#ecf0f1';
+        // Game Settings
+        const MAP_SIZE = 4000;
+        const PROP_COUNT = 300; 
+        const BOT_COUNT = 7;
+        const MAP_COLOR = '#ecf0f1';
         
         let holes = [];
         let props = [];
@@ -115,313 +292,428 @@
         let animationFrameId;
         
         let playerIndex = -1;
-        let inputType = 'mouse';
         let mouseX = 0, mouseY = 0;
+        let inputType = 'mouse';
         let joystickVector = { x: 0, y: 0 };
+        let joystickActive = false;
 
-        const adjectives = ["Hungry", "Black", "Scary", "Giant", "Cosmic", "Dark", "Empty", "Super"];
-        const nouns = ["Hole", "Void", "Eater", "Monster", "Vacuum", "Abyss", "Ghost"];
-        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+        // Names (English)
+        const adjectives = ["Hungry", "Giant", "Scary", "Strong", "Abyssal", "Cosmic", "Dark", "Mystic", "Greedy", "Wild"];
+        const nouns = ["Hole", "Sinkhole", "Cleaner", "Monster", "Predator", "Void", "Pit", "Typhoon", "Core", "Shadow"];
+        function generateName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
+        // Prop Data
         const PROP_TYPES = [
-            { type: 0, color: '#27ae60', r: 5, score: 1 },   // Person
-            { type: 1, color: '#e67e22', r: 9, score: 3 },   // Tree
-            { type: 2, color: '#e74c3c', r: 14, score: 5 },  // Car
-            { type: 3, color: '#95a5a6', r: 25, score: 15 }, // Small Building
-            { type: 4, color: '#34495e', r: 40, score: 30 }  // Big Building
+            { id: 0, r: 6, h: 4, score: 1, color: '#e67e22', side: '#d35400', name: 'Cone' },
+            { id: 1, r: 8, h: 10, score: 2, color: '#2ecc71', side: '#27ae60', name: 'Person' },
+            { id: 2, r: 15, h: 8, score: 5, color: '#3498db', side: '#2980b9', name: 'Car' },
+            { id: 3, r: 30, h: 30, score: 20, color: '#95a5a6', side: '#7f8c8d', name: 'House' },
+            { id: 4, r: 50, h: 60, score: 50, color: '#34495e', side: '#2c3e50', name: 'Building' }
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            if(startBtn) startBtn.addEventListener('click', startGame);
-            mouseX = window.innerWidth/2; mouseY = window.innerHeight/2;
-            initJoystick();
-            window.addEventListener('mousemove', e => { if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } });
-            window.addEventListener('mousedown', () => inputType='mouse');
-            window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
-        });
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                joystickZone.style.display = 'block';
+                inputType = 'joystick';
+                initJoystick();
+            }
+
+            container.addEventListener('mousemove', e => {
+                if(inputType !== 'joystick') {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    mouseX = (e.clientX - rect.left) * scaleX - canvas.width / 2;
+                    mouseY = (e.clientY - rect.top) * scaleY - canvas.height / 2;
+                }
+            });
+
+            container.addEventListener('mousedown', () => { if(inputType !== 'joystick') inputType = 'mouse'; });
+            startBtn.addEventListener('click', startGame);
+        }
+
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function initJoystick() {
+            let startX, startY;
+            const maxDist = 35;
+            
+            joystickZone.addEventListener('touchstart', e => {
+                e.preventDefault();
+                joystickActive = true;
+                let t = e.touches[0];
+                startX = t.clientX;
+                startY = t.clientY;
+                joystickStick.style.transition = 'none';
+            });
+
+            joystickZone.addEventListener('touchmove', e => {
+                if(!joystickActive) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let dx = t.clientX - startX;
+                let dy = t.clientY - startY;
+                let dist = Math.min(maxDist, Math.hypot(dx, dy));
+                let angle = Math.atan2(dy, dx);
+                
+                joystickVector = { 
+                    x: Math.cos(angle) * (dist/maxDist), 
+                    y: Math.sin(angle) * (dist/maxDist) 
+                };
+
+                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+            });
+
+            joystickZone.addEventListener('touchend', e => {
+                e.preventDefault();
+                joystickActive = false;
+                joystickVector = { x: 0, y: 0 };
+                joystickStick.style.transform = `translate(-50%, -50%)`;
+            });
+        }
 
         function startGame() {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            uiLayer.style.display = 'none';
             gameRunning = true;
+            
             holes = [];
             props = [];
 
-            for(let i=0; i<2000; i++) addProp();
+            for(let i=0; i<PROP_COUNT; i++) addProp();
             playerIndex = addHole(true);
-            for(let i=0; i<15; i++) addHole(false);
+            for(let i=0; i<BOT_COUNT; i++) addHole(false);
 
-            ui.style.display = 'none';
-            ingameAd.style.display = 'block';
             loop();
-        }
-
-        function addHole(isHuman) {
-            let r = 20;
-            if(!isHuman) r = 20 + Math.random() * 20;
-
-            let hole = {
-                isHuman: isHuman,
-                x: Math.random() * (MAP_SIZE - 200) + 100,
-                y: Math.random() * (MAP_SIZE - 200) + 100,
-                r: r,
-                color: '#000000',
-                rimColor: isHuman ? '#6c5ce7' : `hsl(${Math.random()*360}, 70%, 50%)`,
-                name: isHuman ? 'Me (You)' : getName(),
-                score: 0, dead: false,
-                aiTargetX: 0, aiTargetY: 0, aiTimer: 0
-            };
-            holes.push(hole);
-            return holes.length - 1;
         }
 
         function addProp() {
             let rand = Math.random();
             let typeIdx = 0;
-            if (rand < 0.5) typeIdx = 0;
-            else if (rand < 0.8) typeIdx = 1;
-            else if (rand < 0.92) typeIdx = 2;
-            else if (rand < 0.98) typeIdx = 3;
-            else typeIdx = 4;
+            // Probability
+            if (rand < 0.6) typeIdx = 0;      
+            else if (rand < 0.85) typeIdx = 1; 
+            else if (rand < 0.95) typeIdx = 2; 
+            else if (rand < 0.99) typeIdx = 3; 
+            else typeIdx = 4;                 
 
             let type = PROP_TYPES[typeIdx];
-            props.push({
-                x: Math.random() * MAP_SIZE,
-                y: Math.random() * MAP_SIZE,
-                ...type,
-                angle: Math.random() * Math.PI * 2,
-                alive: true,
-                suckTarget: null
-            });
-        }
-
-        function initJoystick() {
-            let stick = joystickStick;
-            let zone = joystickZone;
-            let maxDist = 35; let active = false;
             
-            zone.addEventListener('touchstart', e => {
-                e.preventDefault(); active=true; inputType='joystick';
-                let t = e.touches[0];
-                let rect = zone.getBoundingClientRect();
-                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
-            }, {passive:false});
+            let pX, pY, safe;
+            let attempts = 0;
+            // Spawn Safe Logic
+            do {
+                safe = true;
+                pX = Math.random() * MAP_SIZE;
+                pY = Math.random() * MAP_SIZE;
+                for(let h of holes) {
+                    if (Math.hypot(h.x - pX, h.y - pY) < h.r + 100) {
+                        safe = false; break;
+                    }
+                }
+                attempts++;
+            } while(!safe && attempts < 20);
 
-            zone.addEventListener('touchmove', e => {
-                if(!active) return;
-                e.preventDefault();
-                let t = e.touches[0];
-                let rect = zone.getBoundingClientRect();
-                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
-            }, {passive:false});
-
-            zone.addEventListener('touchend', e => {
-                e.preventDefault(); active=false;
-                stick.style.transform = `translate(-50%, -50%)`;
-                joystickVector = {x:0, y:0};
+            props.push({
+                x: pX, y: pY,
+                ...type,
+                rotation: typeIdx > 2 ? 0 : Math.random() * Math.PI * 2,
+                alive: true,
+                falling: false,
+                fallTarget: null,
+                fallScale: 1
             });
-
-            function updateStick(clientX, clientY, centerX, centerY) {
-                let dx = clientX - centerX;
-                let dy = clientY - centerY;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if(dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
-                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                joystickVector = {x: dx, y: dy};
-            }
         }
 
-        function drawProp(ctx, p) {
-            let size = p.r * 2;
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            ctx.rotate(p.angle);
-
-            if (p.type === 0) { // Person
-                ctx.fillStyle = p.color;
-                ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI*2); ctx.fill();
-            } else if (p.type === 1) { // Tree
-                ctx.fillStyle = '#2ecc71';
-                ctx.beginPath(); ctx.arc(-p.r/2, 0, p.r, 0, Math.PI*2); ctx.fill();
-                ctx.beginPath(); ctx.arc(p.r/2, 0, p.r*0.8, 0, Math.PI*2); ctx.fill();
-            } else if (p.type === 2) { // Car
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.r, -p.r/2, size, p.r);
-                ctx.fillStyle = '#ecf0f1';
-                ctx.fillRect(-p.r+2, -p.r/2+2, 4, p.r-4);
-            } else if (p.type >= 3) { // Building
-                ctx.fillStyle = 'rgba(0,0,0,0.2)';
-                ctx.fillRect(-p.r + 5, -p.r + 5, size, size);
-                ctx.fillStyle = p.color;
-                ctx.fillRect(-p.r, -p.r, size, size);
-                ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(-p.r+2, -p.r+2, size-4, size-4);
-            }
-            ctx.restore();
+        function addHole(isHuman) {
+            let startR = 25; 
+            let color = isHuman ? '#6c5ce7' : `hsl(${Math.random()*360}, 70%, 50%)`;
+            
+            holes.push({
+                isHuman: isHuman,
+                x: Math.random() * (MAP_SIZE - 200) + 100,
+                y: Math.random() * (MAP_SIZE - 200) + 100,
+                r: startR,
+                color: color,
+                name: isHuman ? 'Me (Player)' : generateName(),
+                score: 0,
+                dead: false,
+                aiTimer: 0,
+                aiTargetX: Math.random() * MAP_SIZE,
+                aiTargetY: Math.random() * MAP_SIZE,
+                angle: 0
+            });
+            return holes.length - 1;
         }
 
         function loop() {
             if(!gameRunning) return;
+            update();
+            draw();
+            animationFrameId = requestAnimationFrame(loop);
+        }
 
-            ctx.fillStyle = MAP_BG_COLOR;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            let player = holes[playerIndex];
-            let zoom = 1;
-            if(player && !player.dead) zoom = Math.max(0.3, 30 / (player.r + 20));
-
-            ctx.save();
-            ctx.translate(canvas.width/2, canvas.height/2);
-            ctx.scale(zoom, zoom);
-            if(player && !player.dead) ctx.translate(-player.x, -player.y);
-            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
-
-            ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 40; ctx.lineCap = 'round';
-            ctx.beginPath();
-            for(let x=0; x<=MAP_SIZE; x+=300) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
-            for(let y=0; y<=MAP_SIZE; y+=300) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
-            ctx.stroke();
-            
-            ctx.strokeStyle = '#7f8c8d'; ctx.lineWidth = 20; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
-
-            for(let i=props.length-1; i>=0; i--) {
-                let p = props[i];
-                if(!p.alive) continue;
-                if(player && !player.dead && Math.abs(p.x - player.x) > (canvas.width/zoom + 100)) continue;
-
-                if(p.suckTarget && !p.suckTarget.dead) {
-                    let dx = p.suckTarget.x - p.x;
-                    let dy = p.suckTarget.y - p.y;
-                    p.x += dx * 0.15;
-                    p.y += dy * 0.15;
-                    p.r *= 0.85;
-                    
-                    if(Math.hypot(dx, dy) < 5) {
-                        p.suckTarget.score += p.score;
-                        p.suckTarget.r += p.score * 0.05; 
-                        props.splice(i, 1);
-                        if(Math.random() < 0.2) addProp();
-                        continue;
-                    }
-                }
-                drawProp(ctx, p);
+        function update() {
+            if(props.filter(p => p.alive).length < PROP_COUNT * 0.3) {
+                for(let i=0; i<10; i++) addProp();
             }
 
-            holes.forEach((h, index) => {
+            holes.forEach((h, idx) => {
                 if(h.dead) return;
 
                 let dx = 0, dy = 0;
-                let speed = 2.5 + (40 / h.r);
+                let speed = 3 + (50 / (h.r + 20)); 
 
                 if(h.isHuman) {
-                    if(inputType === 'joystick') { dx = joystickVector.x; dy = joystickVector.y; }
-                    else {
-                        let angle = Math.atan2(mouseY - canvas.height/2, mouseX - canvas.width/2);
-                        let dist = Math.hypot(mouseX - canvas.width/2, mouseY - canvas.height/2);
-                        if(dist > 10) { dx = Math.cos(angle); dy = Math.sin(angle); }
+                    if(inputType === 'joystick') {
+                        dx = joystickVector.x;
+                        dy = joystickVector.y;
+                    } else {
+                        let dist = Math.hypot(mouseX, mouseY);
+                        if(dist > 10) {
+                            let angle = Math.atan2(mouseY, mouseX);
+                            dx = Math.cos(angle);
+                            dy = Math.sin(angle);
+                        }
                     }
-                    let len = Math.hypot(dx, dy);
-                    if(len > 1) { dx/=len; dy/=len; }
                 } else {
+                    // AI Logic
                     h.aiTimer--;
                     if(h.aiTimer <= 0) {
-                        h.aiTimer = Math.random() * 20 + 10;
-                        let danger = false;
-                        for(let other of holes) {
-                            if(h !== other && !other.dead && other.r > h.r * 1.1) {
-                                let d = Math.hypot(h.x - other.x, h.y - other.y);
-                                if(d < 300) {
-                                    h.aiTargetX = h.x - (other.x - h.x);
-                                    h.aiTargetY = h.y - (other.y - h.y);
-                                    danger = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if(!danger) {
-                            let closest = null;
-                            let minDist = 500;
-                            for(let other of holes) {
-                                if(h !== other && !other.dead && h.r > other.r * 1.1) {
-                                    let d = Math.hypot(h.x - other.x, h.y - other.y);
-                                    if(d < minDist) { minDist = d; closest = {x:other.x, y:other.y}; }
-                                }
-                            }
-                            if(!closest) {
+                        h.aiTimer = Math.random() * 50 + 20; 
+                        
+                        let bestTarget = null; 
+                        let minTargetDist = 400;
+
+                        let threat = holes.find(other => other !== h && !other.dead && other.r > h.r && Math.hypot(h.x-other.x, h.y-other.y) < 150);
+                        
+                        if (threat) {
+                            let angle = Math.atan2(h.y - threat.y, h.x - threat.x);
+                            h.aiTargetX = h.x + Math.cos(angle) * 500;
+                            h.aiTargetY = h.y + Math.sin(angle) * 500;
+                        } else {
+                            if (Math.random() < 0.7) { 
                                 for(let p of props) {
-                                    if(!p.alive || p.suckTarget) continue;
-                                    if(h.r > p.r) { 
+                                    if(!p.alive || p.falling) continue;
+                                    if(h.r > p.r) {
                                         let d = Math.hypot(h.x - p.x, h.y - p.y);
-                                        if(d < minDist) { minDist = d; closest = p; }
+                                        if(d < 150 && d < minTargetDist) { 
+                                            minTargetDist = d; 
+                                            bestTarget = {x: p.x, y: p.y}; 
+                                        }
                                     }
                                 }
                             }
-                            if(closest) { h.aiTargetX = closest.x; h.aiTargetY = closest.y; }
-                            else { h.aiTargetX = Math.random() * MAP_SIZE; h.aiTargetY = Math.random() * MAP_SIZE; }
+
+                            if(bestTarget) {
+                                h.aiTargetX = bestTarget.x;
+                                h.aiTargetY = bestTarget.y;
+                            } else {
+                                h.aiTargetX = Math.random() * MAP_SIZE;
+                                h.aiTargetY = Math.random() * MAP_SIZE;
+                            }
                         }
                     }
                     let angle = Math.atan2(h.aiTargetY - h.y, h.aiTargetX - h.x);
-                    dx = Math.cos(angle); dy = Math.sin(angle);
+                    dx = Math.cos(angle);
+                    dy = Math.sin(angle);
                 }
 
                 h.x += dx * speed;
                 h.y += dy * speed;
-                h.x = Math.max(0, Math.min(MAP_SIZE, h.x));
-                h.y = Math.max(0, Math.min(MAP_SIZE, h.y));
+                h.x = Math.max(h.r, Math.min(MAP_SIZE - h.r, h.x));
+                h.y = Math.max(h.r, Math.min(MAP_SIZE - h.r, h.y));
+                h.angle += 0.05;
 
-                ctx.beginPath();
-                ctx.arc(h.x, h.y, h.r + 2, 0, Math.PI*2);
-                ctx.fillStyle = h.rimColor;
-                ctx.shadowBlur = 15; ctx.shadowColor = h.rimColor;
-                ctx.fill(); ctx.shadowBlur = 0;
-
-                ctx.beginPath();
-                ctx.arc(h.x, h.y, h.r, 0, Math.PI*2);
-                ctx.fillStyle = 'black';
-                ctx.fill();
-
-                ctx.fillStyle = '#333';
-                ctx.font = `bold ${Math.max(12, h.r/3)}px sans-serif`;
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(h.name, h.x, h.y);
-
+                // Prop Collision
                 props.forEach(p => {
-                    if(p.suckTarget) return; 
+                    if(!p.alive) return;
                     let dist = Math.hypot(h.x - p.x, h.y - p.y);
-                    if(dist < h.r - p.r/2 && h.r > p.r) {
-                        p.suckTarget = h; 
+                    if(dist < h.r + p.r) { 
+                        if(h.r > p.r) { // Size check
+                             if(!p.falling) {
+                                if(dist < h.r - p.r/2) {
+                                    p.falling = true;
+                                    p.fallTarget = h;
+                                }
+                            }
+                        }
                     }
                 });
 
+                // Hole Collision
                 holes.forEach((other, oIdx) => {
                     if(h === other || other.dead) return;
                     let dist = Math.hypot(h.x - other.x, h.y - other.y);
                     if(dist < h.r && h.r > other.r * 1.1) {
-                        h.r += other.r * 0.2; h.score += 50; killHole(oIdx);
+                        other.dead = true;
+                        h.r += other.r * 0.05; 
+                        h.score += Math.floor(other.score / 2) + 50;
+                        killHole(oIdx);
                     }
                 });
             });
 
-            ctx.restore();
-            if(props.length < 500) addProp();
+            // Falling Props
+            props.forEach(p => {
+                if(p.falling && p.fallTarget) {
+                    let t = p.fallTarget;
+                    let dx = t.x - p.x;
+                    let dy = t.y - p.y;
+                    p.x += dx * 0.2;
+                    p.y += dy * 0.2;
+                    p.fallScale -= 0.1;
+
+                    if(p.fallScale <= 0 || t.dead) {
+                        p.alive = false;
+                        if(!t.dead) {
+                            t.score += p.score;
+                            t.r += p.score * 0.005; // Growth rate
+                        }
+                    }
+                }
+            });
+
+            if(playerIndex !== -1 && holes[playerIndex]) {
+                scoreBox.innerText = `Score: ${holes[playerIndex].score}`;
+            }
             updateLeaderboard();
-            animationFrameId = requestAnimationFrame(loop);
         }
 
         function killHole(idx) {
             let h = holes[idx];
-            h.dead = true;
-            if(h.isHuman) gameOver(h.name);
-            else {
-                showKillLog(`${h.name} Destroyed!`);
+            if(h.isHuman) {
+                gameOver(holes.find(killer => !killer.dead && killer.r > h.r)?.name || "Giant Hole");
+            } else {
+                showKillLog(`${h.name} eliminated!`);
                 setTimeout(() => { if(gameRunning) { holes.splice(idx, 1); addHole(false); } }, 3000);
             }
+        }
+
+        function draw() {
+            let p = holes[playerIndex];
+            
+            ctx.fillStyle = '#f0f2f5'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let zoom = 1;
+            let camX = 0, camY = 0;
+
+            if (p && !p.dead) {
+                zoom = Math.max(0.4, 40 / (p.r + 20));
+                camX = canvas.width/2 - p.x * zoom;
+                camY = canvas.height/2 - p.y * zoom;
+            } else {
+                camX = canvas.width/2 - MAP_SIZE/2 * zoom;
+                camY = canvas.height/2 - MAP_SIZE/2 * zoom;
+            }
+
+            ctx.save();
+            ctx.translate(camX, camY);
+            ctx.scale(zoom, zoom);
+
+            ctx.lineWidth = 150; 
+            ctx.strokeStyle = '#dcdde1'; 
+            ctx.beginPath();
+            for(let y=0; y<=MAP_SIZE; y+=400) { ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); }
+            for(let x=0; x<=MAP_SIZE; x+=400) { ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); }
+            ctx.stroke();
+
+            ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 20;
+            ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
+
+            let renderList = [];
+            holes.forEach(h => { if(!h.dead) renderList.push({type: 'hole', obj: h, y: h.y}); });
+            props.forEach(p => {
+                if(p.alive) {
+                    if(p.falling) renderList.push({type: 'prop_fall', obj: p, y: p.y});
+                    else renderList.push({type: 'prop', obj: p, y: p.y});
+                }
+            });
+
+            props.forEach(prop => { if(prop.alive && prop.falling) drawProp25D(ctx, prop); });
+            holes.forEach(h => { if(!h.dead) drawHole(ctx, h); });
+            
+            let groundProps = props.filter(p => p.alive && !p.falling);
+            groundProps.sort((a,b) => a.y - b.y);
+            groundProps.forEach(prop => {
+                if(Math.abs(prop.x - (p?p.x:0)) > (canvas.width/zoom + 200)) return;
+                drawProp25D(ctx, prop);
+            });
+            
+            holes.forEach(h => {
+                if(!h.dead) {
+                    ctx.fillStyle = 'white'; ctx.strokeStyle = 'black'; ctx.lineWidth = 3;
+                    ctx.font = `bold ${Math.max(12, h.r*0.4)}px Jua`;
+                    ctx.textAlign = 'center';
+                    ctx.strokeText(h.name, h.x, h.y - h.r - 10);
+                    ctx.fillText(h.name, h.x, h.y - h.r - 10);
+                }
+            });
+
+            ctx.restore();
+        }
+
+        function drawHole(ctx, h) {
+            ctx.beginPath(); ctx.arc(h.x, h.y, h.r, 0, Math.PI*2); ctx.fillStyle = 'black'; ctx.fill();
+
+            ctx.save();
+            ctx.translate(h.x, h.y);
+            ctx.rotate(h.angle);
+            
+            let grad = ctx.createRadialGradient(0, 0, h.r * 0.8, 0, 0, h.r + 5);
+            grad.addColorStop(0, 'black'); grad.addColorStop(0.9, h.color); grad.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            for(let i=0; i<10; i++) { ctx.arc(0, 0, h.r + (i%2==0 ? 5 : 0), i*Math.PI/5, (i+1)*Math.PI/5); }
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawProp25D(ctx, p) {
+            let scale = p.falling ? p.fallScale : 1;
+            let w = p.r * 2 * scale; let h = p.r * 2 * scale; let d = p.h * scale;
+
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            if(p.falling) ctx.rotate(p.fallScale * 10); else ctx.rotate(p.rotation);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath(); ctx.ellipse(5*scale, 5*scale, w/2, h/2, 0, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = p.side;
+            if (p.id === 0 || p.id === 1) { 
+                ctx.beginPath(); ctx.arc(0, -d, w/2, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(-w/2, 0); ctx.lineTo(-w/2, -d); 
+                ctx.arc(0, -d, w/2, Math.PI, 0); ctx.lineTo(w/2, 0); ctx.arc(0, 0, w/2, 0, Math.PI); ctx.fill();
+            } else { 
+                ctx.fillRect(-w/2, -h/2, w, h);
+                ctx.fillRect(-w/2, h/2 - d, w, d); 
+                ctx.fillStyle = p.side; ctx.fillRect(-w/2, -h/2, w, h);
+                ctx.fillStyle = p.color; ctx.translate(0, -d); ctx.fillRect(-w/2, -h/2, w, h);
+                
+                if(p.id === 2) { 
+                    ctx.fillStyle = '#bdc3c7'; ctx.fillRect(-w/2+2*scale, -h/2+4*scale, w-4*scale, h*0.3);
+                } else if(p.id === 3) { 
+                    ctx.beginPath(); ctx.moveTo(-w/2, -h/2); ctx.lineTo(0, -h/2 - 5*scale); ctx.lineTo(w/2, -h/2);
+                    ctx.fillStyle = '#c0392b'; ctx.fill();
+                } else if(p.id === 4) { 
+                    ctx.fillStyle = '#ecf0f1'; ctx.font = `bold ${12*scale}px sans-serif`;
+                    ctx.textAlign = 'center'; ctx.textBaseline='middle'; ctx.fillText('H', 0, 0);
+                }
+            }
+            if (p.id === 0 || p.id === 1) {
+                ctx.translate(0, -d); ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(0, 0, w/2, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.restore();
         }
 
         function showKillLog(msg) {
@@ -430,7 +722,7 @@
         }
 
         function updateLeaderboard() {
-            let list = [...holes].filter(h => !h.dead).sort((a,b) => b.r - a.r);
+            let list = [...holes].filter(h => !h.dead).sort((a,b) => b.score - a.score);
             let html = '';
             for(let i=0; i<Math.min(5, list.length); i++) {
                 let h = list[i];
@@ -443,185 +735,24 @@
         function gameOver(killer) {
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
-            ingameAd.style.display = 'none';
-            ui.style.display = 'block';
-            
-            const btn = document.getElementById('start-btn');
-            btn.innerText = "Play Again ↺";
-            ui.querySelector('h1').innerText = "💀 Destroyed";
-            ui.querySelector('p').innerHTML = `
-                Absorbed by a bigger hole.<br>
-                Final Size: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(holes[playerIndex].r)}</span>
+            uiLayer.style.display = 'flex';
+            document.getElementById('ui-title').innerText = "💀 Game Over";
+            document.getElementById('ui-desc').innerHTML = `
+                Absorbed by <b>${killer}</b><br>
+                Final Score: <span style="color:#6c5ce7; font-weight:bold;">${holes[playerIndex].score}</span>
             `;
+            startBtn.innerText = "Try Again ↺";
         }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+            });
+        }
+
+        init();
     </script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-    /* Share Container: Fixed at the bottom center */
-    .game-share-wrapper {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(30, 30, 40, 0.85); /* Semi-transparent black bg */
-        padding: 12px 25px;
-        border-radius: 50px;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 9999;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    }
-
-    .share-label {
-        color: #fff;
-        font-size: 0.9rem;
-        font-weight: bold;
-        margin-right: 5px;
-        white-space: nowrap;
-    }
-
-    .share-btn-group {
-        display: flex;
-        gap: 10px;
-    }
-
-    .share-icon-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .share-icon-btn:hover { transform: translateY(-3px); }
-    
-    /* Button Colors */
-    .bg-twitter { background-color: #1DA1F2; }
-    .bg-facebook { background-color: #1877F2; }
-    .bg-link { background-color: #6c5ce7; }
-
-    /* Toast Message (Copy Notification) */
-    #copy-toast {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 16px;
-        position: fixed;
-        z-index: 10000;
-        left: 50%;
-        bottom: 80px; /* Appears above the share button */
-        transform: translateX(-50%);
-        font-size: 0.9rem;
-        opacity: 0;
-        transition: opacity 0.5s, bottom 0.5s;
-    }
-
-    #copy-toast.show {
-        visibility: visible;
-        opacity: 1;
-        bottom: 90px;
-    }
-    
-    /* Mobile Responsiveness */
-    @media (max-width: 500px) {
-        .share-label { display: none; } /* Hide label on narrow screens */
-        .game-share-wrapper { padding: 10px; }
-    }
-</style>
-
-<div class="game-share-wrapper">
-    <span class="share-label">📢 Share with friends</span>
-    <div class="share-btn-group">
-        <button onclick="shareTo('twitter')" class="share-icon-btn bg-twitter" title="Twitter">
-            <i class="fa-brands fa-twitter"></i>
-        </button>
-        <button onclick="shareTo('facebook')" class="share-icon-btn bg-facebook" title="Facebook">
-            <i class="fa-brands fa-facebook-f"></i>
-        </button>
-        <button onclick="copyLink()" class="share-icon-btn bg-link" title="Copy Link">
-            <i class="fa-solid fa-link"></i>
-        </button>
-    </div>
-</div>
-
-<div id="copy-toast">📋 Link copied!</div>
-
-<script>
-    function shareTo(sns) {
-        const url = encodeURIComponent(window.location.href);
-        const title = encodeURIComponent(document.title);
-        let link = "";
-
-        if (sns === 'twitter') {
-            link = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-        } else if (sns === 'facebook') {
-            link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        }
-        
-        if(link) window.open(link, '_blank', 'width=600,height=400');
-    }
-
-    function copyLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            const toast = document.getElementById("copy-toast");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-        }).catch(err => {
-            alert("Copy failed: " + err);
-        });
-    }
-</script>
-
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
-
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 How to Play <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">Swallow everything in the city!</p>
-    <ul class="desc-list">
-        <li><strong>Grow:</strong> Eat small objects first</li>
-        <li><strong>Fight:</strong> Eat smaller black holes</li>
-    </ul>
-    <div class="desc-tip">✨ <strong>Tip:</strong> Go to parks or parking lots for easy points early on.</div>
-</div>
-
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
-    
 </body>
 </html>
