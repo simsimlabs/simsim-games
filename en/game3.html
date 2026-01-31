@@ -4,415 +4,699 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Worm.io - SimSim Game Labs</title>
-    <meta property="og:type" content="website">
-<meta property="og:title" content="🐍 Worm.io - SimSim Game Labs">
-<meta property="og:description" content="Eat lights and grow longer. Trap other worms with your body to win!">
-<meta property="og:image" content="https://simsimlabs.github.io/simsim-games/en/thumbnail.png">
-<meta property="og:url" content="https://simsimlabs.github.io/simsim-games/en/game3.html">
+    
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2261846676525942" crossorigin="anonymous"></script>
+    
+    <link rel="canonical" href="https://simsimlabs.com/simsim-games/en/game3.html">
+
+    <meta name="description" content="Play Worm.io for free! Eat light to grow long and surround enemies. No installation required. Optimized for PC and Mobile.">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🐍 Worm.io - SimSim Game Labs">
+    <meta property="og:description" content="Eat light to grow massive! Use boost to cut off enemies and win.">
+    <meta property="og:image" content="https://simsimlabs.com/simsim-games/en/thumbnail.png">
+    <meta property="og:url" content="https://simsimlabs.com/simsim-games/en/game3.html">
+
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Roboto:wght@400;700&display=swap');
-
+        /* 1. Layout & Background */
         body { 
-            margin: 0; padding: 0; overflow: hidden; background-color: #2d3436; 
-            font-family: 'Roboto', sans-serif; user-select: none; touch-action: none;
+            margin: 0; padding: 0; 
+            background-color: #f0f2f5; 
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #333;
+            overflow-x: hidden; 
         }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background-color: #2d3436; }
-        .game-overlay { pointer-events: none; position: fixed; z-index: 100; }
-
-        #game-ui { 
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 9999; background: rgba(255, 255, 255, 0.98);
-            padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            text-align: center; width: 90%; max-width: 420px; border: 5px solid #6c5ce7;
-            pointer-events: auto;
+        header {
+            background: #2d3436; color: white; padding: 15px 20px; text-align: center;
         }
 
-        #game-ui h1 { font-family: 'Fredoka One', cursive; font-size: 3rem; color: #6c5ce7; margin: 0 0 10px 0; text-shadow: 3px 3px 0px #a29bfe; }
-        #game-ui p { color: #636e72; font-size: 1.1rem; margin-bottom: 20px; }
+        .header-top {
+            display: flex; justify-content: space-between; max-width: 1200px; margin: 0 auto 10px; font-size: 0.9rem;
+        }
+        .header-top a { color: #dfe6e9; text-decoration: none; }
 
+        h1 { margin: 0; font-family: 'Jua', sans-serif; font-size: 1.8rem; }
+
+        /* 2. Ad Banner */
+        .ad-banner {
+            width: 100%; max-width: 1200px; margin: 20px auto;
+            text-align: center; background: #fff; padding: 10px 0;
+            border-radius: 8px; overflow: hidden;
+        }
+
+        /* 3. Game Container (Responsive) */
+        #game-container-box {
+            position: relative;
+            width: 100%; 
+            max-width: 1280px; 
+            height: 720px;     
+            margin: 0 auto;
+            background-color: #1e272e; border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+
+        /* 4. UI Layer */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white; text-align: center;
+        }
+
+        #ui-layer h2 { font-family: 'Jua', sans-serif; font-size: 3.5rem; color: #fab1a0; margin-bottom: 10px; text-shadow: 3px 3px 0 #fff; }
+        #ui-layer p { font-size: 1.2rem; color: #dfe6e9; margin-bottom: 30px; line-height: 1.6; }
+        
         #start-btn {
-            background: #ff7675; color: white; border: none; padding: 15px 0;
-            font-size: 1.8rem; font-family: 'Fredoka One', cursive; border-radius: 50px;
-            cursor: pointer; box-shadow: 0 6px 0 #d63031; width: 100%; margin-bottom: 15px; transition: transform 0.1s; display: block;
+            background: #e17055; color: white; border: none; padding: 15px 60px;
+            font-size: 1.8rem; font-family: 'Jua', sans-serif; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 0 #d63031; transition: transform 0.1s;
         }
         #start-btn:active { transform: translateY(4px); box-shadow: none; }
+        #start-btn:hover { background: #fab1a0; }
 
-        .back-link { display: inline-block; margin-top: 10px; color: #b2bec3; text-decoration: none; cursor: pointer; }
-        .back-link:hover { color: #636e72; text-decoration: underline; }
+        /* 5. HUD (Leaderboard, Score) */
+        #leaderboard {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.5); color: white; padding: 15px;
+            border-radius: 8px; font-family: 'Jua', sans-serif; font-size: 1rem;
+            min-width: 160px; pointer-events: none; z-index: 50;
+        }
+        #rank-list { list-style: none; padding: 0; margin: 0; }
+        #rank-list li { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.2); }
 
-        #leaderboard { top: 15px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 15px; border-radius: 10px; font-family: 'Fredoka One', cursive; min-width: 160px; }
-        #rank-list { list-style: none; padding: 0; margin: 0; font-size: 0.95rem; }
-        #rank-list li { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        #score-box {
+            position: absolute; top: 15px; left: 15px;
+            color: white; font-family: 'Jua', sans-serif; font-size: 1.5rem;
+            text-shadow: 2px 2px 0 #000; pointer-events: none; z-index: 50;
+        }
 
-        #kill-log { bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(214, 48, 49, 0.9); color: white; padding: 10px 25px; border-radius: 30px; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+        #kill-log {
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(214, 48, 49, 0.9); color: white;
+            padding: 10px 30px; border-radius: 30px; font-weight: bold;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 50;
+            white-space: nowrap; font-size: 1.1rem;
+        }
 
-        #ingame-ad { position: fixed; bottom: 10px; right: 10px; z-index: 50; background: white; padding: 5px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: auto; display: none; }
-        .ad-label { font-size: 10px; color: #ccc; text-align: right; display: block; }
+        /* 6. Mobile Controls */
+        #joystick-zone {
+            position: absolute; bottom: 30px; left: 30px; width: 140px; height: 140px;
+            z-index: 90; display: none; 
+        }
+        #joystick-bg {
+            width: 100%; height: 100%; background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.3);
+        }
+        #joystick-stick {
+            width: 60px; height: 60px; background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
 
-        #joystick-zone { position: fixed; bottom: 30px; left: 30px; width: 120px; height: 120px; z-index: 200; display: none; pointer-events: auto; }
-        #joystick-bg { width: 100%; height: 100%; background: rgba(255, 255, 255, 0.2); border-radius: 50%; position: relative; border: 2px solid rgba(255,255,255,0.5); }
-        #joystick-stick { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.8); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+        #boost-btn-mobile {
+            position: absolute; bottom: 40px; right: 40px;
+            width: 80px; height: 80px; border-radius: 50%;
+            background: rgba(255, 100, 100, 0.6); border: 3px solid rgba(255,255,255,0.5);
+            display: none; justify-content: center; align-items: center;
+            font-size: 2rem; color: white; z-index: 90;
+            touch-action: none;
+        }
+        #boost-btn-mobile:active { background: rgba(255, 50, 50, 0.9); transform: scale(0.95); }
 
-        @media (max-width: 600px) {
-            #game-ui { width: 85%; }
-            #ingame-ad { transform: scale(0.8); transform-origin: bottom right; bottom: 5px; right: 5px; }
-            #joystick-zone { display: block; }
+        /* 7. Content Article */
+        .content-article {
+            max-width: 1200px; margin: 40px auto; padding: 40px;
+            background: #fff; border-radius: 12px; line-height: 1.8;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .content-article h2 { color: #e17055; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; margin-top: 30px; }
+        .content-article h3 { color: #74b9ff; margin-top: 25px; }
+        .content-article ul { background: #f8f9fa; padding: 20px 40px; border-radius: 8px; }
+
+        /* 8. Share Button */
+        .share-bar { text-align: center; margin: 30px 0; }
+        .share-btn {
+            background: #333; color: white; border: none; padding: 12px 25px;
+            border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 0 5px;
+            transition: 0.2s;
+        }
+        .share-btn:hover { transform: translateY(-2px); }
+        .share-btn.copy { background: #6c5ce7; }
+        
+        #toast {
+            visibility: hidden; min-width: 250px; margin-left: -125px;
+            background-color: #333; color: #fff; text-align: center;
+            border-radius: 2px; padding: 16px; position: fixed; z-index: 1000;
+            left: 50%; bottom: 30px; font-size: 17px; opacity: 0; transition: 0.5s;
+        }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        footer { text-align: center; padding: 30px; color: #b2bec3; font-size: 0.9rem; }
+
+        /* Mobile Optimization */
+        @media (max-width: 800px) {
+            #game-container-box {
+                width: 100%;
+                height: 85vh; 
+                border-radius: 0;
+            }
+            #ui-layer h2 { font-size: 2.2rem; }
+            .content-article { margin: 20px 10px; padding: 20px; }
+            h1 { font-size: 1.4rem; }
         }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
-
-    <div id="leaderboard" class="game-overlay">
-        <h3>🏆 Top Length</h3>
-        <ul id="rank-list"><li>Loading...</li></ul>
-    </div>
-
-    <div id="kill-log" class="game-overlay"></div>
-
-    <div id="joystick-zone">
-        <div id="joystick-bg"><div id="joystick-stick"></div></div>
-    </div>
-
-    <div id="ingame-ad">
-        <span class="ad-label">Sponsored</span>
-        <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
-    <div id="game-ui">
-        <h1>🐍 Worm.io</h1>
-        <p>Eat lights to grow!<br>Don't hit other worms' bodies.</p>
-        <div style="margin: 15px 0; min-height: 100px; overflow:hidden;">
-             <ins class="adsbygoogle" style="display:block; height: 100px;" data-ad-client="ca-pub-2261846676525942" data-ad-slot="4380369066" data-ad-format="horizontal" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    <header>
+        <div class="header-top">
+            <a href="../game3.html">🇰🇷 Korean</a>
+            <a href="index.html">🏠 Back to List</a>
         </div>
-        <button id="start-btn">Play Now ▶</button>
-        <br>
-        <a href="index.html" class="back-link">🏠 Main Menu</a>
+        <h1>🐍 Worm.io</h1>
+    </header>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
     </div>
+
+    <div id="game-container-box">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="score-box">Length: 10</div>
+
+        <div id="leaderboard">
+            <h3>🏆 Top 5</h3>
+            <ul id="rank-list"><li>Loading...</li></ul>
+        </div>
+
+        <div id="kill-log"></div>
+
+        <div id="joystick-zone">
+            <div id="joystick-bg">
+                <div id="joystick-stick"></div>
+            </div>
+        </div>
+        <div id="boost-btn-mobile">⚡</div>
+
+        <div id="ui-layer">
+            <h2 id="ui-title">Worm.io</h2>
+            <p id="ui-desc">
+                Move with mouse.<br>
+                Click to boost speed!<br>
+                Avoid hitting other worms.
+            </p>
+            <button id="start-btn">Play Now ▶</button>
+        </div>
+    </div>
+
+    <div class="ad-banner">
+        <span style="font-size:10px; color:#ccc;">Sponsored</span>
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-2261846676525942"
+             data-ad-slot="4380369066"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+             (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+
+    <div class="share-bar">
+        <button class="share-btn copy" onclick="copyLink()"><i class="fa-solid fa-link"></i> Copy Link</button>
+    </div>
+    <div id="toast">📋 Link Copied!</div>
+
+    <article class="content-article">
+        <h2>🎮 Worm.io Strategy Guide</h2>
+        <p>
+            Worm.io is a popular snake-style IO survival game.
+            Start as a small worm, eat scattered light dots to grow massive.
+            Defeat other players by making them crash into your body, then eat their remains to grow even faster!
+        </p>
+
+        <h3>🕹️ Controls</h3>
+        <ul>
+            <li><strong>PC:</strong> The worm follows your mouse cursor. Click to boost speed.</li>
+            <li><strong>Mobile:</strong> Use the left joystick to move and the right lightning button to boost.</li>
+            <li><strong>Rules:</strong> If your head touches another worm's body, you die. Touching your own body is safe.</li>
+        </ul>
+
+        <h3>🏆 Pro Tips</h3>
+        <p>
+            1. <strong>Boost Wisely:</strong> Boosting consumes your length but allows you to cut off enemies and secure a kill.<br><br>
+            2. <strong>Encircle:</strong> Once you are long enough, surround smaller enemies to trap them until they crash into you.<br><br>
+            3. <strong>Scavenge:</strong> When a giant worm dies, it drops a lot of mass. Be quick to eat it, but watch out for other scavengers!
+        </p>
+    </article>
+
+    <footer>
+        <p>© 2024 SimSim Game Labs. All rights reserved.</p>
+        <a href="https://simsimlabs.com/en/privacy.html" style="color:#b2bec3; text-decoration:none;">Privacy Policy</a>
+    </footer>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const ui = document.getElementById('game-ui');
+        const container = document.getElementById('game-container-box');
+        
+        const uiLayer = document.getElementById('ui-layer');
+        const uiTitle = document.getElementById('ui-title');
+        const uiDesc = document.getElementById('ui-desc');
+        const startBtn = document.getElementById('start-btn');
+        const scoreBox = document.getElementById('score-box');
+        
         const rankList = document.getElementById('rank-list');
         const killLog = document.getElementById('kill-log');
-        const ingameAd = document.getElementById('ingame-ad');
-        const startBtn = document.getElementById('start-btn');
+        
         const joystickZone = document.getElementById('joystick-zone');
         const joystickStick = document.getElementById('joystick-stick');
+        const boostBtnMobile = document.getElementById('boost-btn-mobile');
 
-        const MAP_SIZE = 4000;
-        const PADDING = 150; // Wall avoidance distance
+        // Game Settings
+        const MAP_SIZE = 3000;
+        const FOOD_COUNT = 800;
+        const BOT_COUNT = 25;
         
         let snakes = [];
         let foods = [];
         let gameRunning = false;
         let animationFrameId;
-        
+
+        // Player Variables
         let playerIndex = -1;
-        let inputType = 'mouse';
         let mouseX = 0, mouseY = 0;
-        let joystickVector = { x: 0, y: 0 };
+        let inputType = 'mouse';
+        let isBoosting = false;
+        let joystickAngle = 0;
+        let joystickActive = false;
 
-        const adjectives = ["Slithery", "Long", "Short", "Angry", "Hungry", "Shiny", "Fast", "Brave", "Neon", "Golden", "Dark", "Crazy"];
-        const nouns = ["Worm", "Snake", "Python", "Cobra", "Viper", "Noodle", "Sausage", "Wire", "Dragon", "Eel"];
-        function getName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
+        // Names (English)
+        const adjectives = ["Hungry", "Shiny", "Angry", "Fast", "Giant", "Cute", "Scary", "Invisible", "Golden", "Crazy", "Brave", "Happy", "Lazy"];
+        const nouns = ["Worm", "Anaconda", "Cobra", "Eel", "Noodle", "Sausage", "Udon", "Ramen", "Virus", "Python", "Snake", "Dragon"];
+        function generateName() { return adjectives[Math.floor(Math.random()*adjectives.length)] + " " + nouns[Math.floor(Math.random()*nouns.length)]; }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            if(startBtn) startBtn.addEventListener('click', startGame);
-            mouseX = window.innerWidth/2; mouseY = window.innerHeight/2;
-            initJoystick();
-            window.addEventListener('mousemove', e => { if(inputType!=='joystick') { mouseX=e.clientX; mouseY=e.clientY; } });
-            window.addEventListener('mousedown', () => inputType='mouse');
-            window.addEventListener('resize', () => { canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
-        });
+        // Initialization
+        function init() {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Mobile Detection
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                joystickZone.style.display = 'block';
+                boostBtnMobile.style.display = 'flex';
+                inputType = 'joystick';
+                initJoystick();
+            }
+
+            // PC Mouse
+            container.addEventListener('mousemove', e => {
+                if(inputType !== 'joystick') {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    mouseX = (e.clientX - rect.left) * scaleX - canvas.width / 2;
+                    mouseY = (e.clientY - rect.top) * scaleY - canvas.height / 2;
+                }
+            });
+
+            container.addEventListener('mousedown', () => { if(inputType !== 'joystick') isBoosting = true; });
+            container.addEventListener('mouseup', () => { if(inputType !== 'joystick') isBoosting = false; });
+            
+            // Mobile Boost
+            boostBtnMobile.addEventListener('touchstart', (e) => { e.preventDefault(); isBoosting = true; });
+            boostBtnMobile.addEventListener('touchend', (e) => { e.preventDefault(); isBoosting = false; });
+
+            startBtn.addEventListener('click', startGame);
+        }
+
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        function initJoystick() {
+            let startX, startY;
+            const maxDist = 35;
+            
+            joystickZone.addEventListener('touchstart', e => {
+                e.preventDefault();
+                joystickActive = true;
+                let t = e.touches[0];
+                startX = t.clientX;
+                startY = t.clientY;
+                joystickStick.style.transition = 'none';
+            });
+
+            joystickZone.addEventListener('touchmove', e => {
+                if(!joystickActive) return;
+                e.preventDefault();
+                let t = e.touches[0];
+                let dx = t.clientX - startX;
+                let dy = t.clientY - startY;
+                let dist = Math.min(maxDist, Math.hypot(dx, dy));
+                joystickAngle = Math.atan2(dy, dx);
+                
+                joystickStick.style.transform = `translate(-50%, -50%) translate(${Math.cos(joystickAngle)*dist}px, ${Math.sin(joystickAngle)*dist}px)`;
+            });
+
+            joystickZone.addEventListener('touchend', e => {
+                e.preventDefault();
+                joystickActive = false;
+                joystickStick.style.transform = `translate(-50%, -50%)`;
+            });
+        }
 
         function startGame() {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#2d3436';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            uiLayer.style.display = 'none';
             gameRunning = true;
+            
             snakes = [];
             foods = [];
-
-            for(let i=0; i<1000; i++) addFood();
+            
+            for(let i=0; i<FOOD_COUNT; i++) addFood();
             playerIndex = addSnake(true);
-            for(let i=0; i<30; i++) addSnake(false);
+            for(let i=0; i<BOT_COUNT; i++) addSnake(false);
 
-            ui.style.display = 'none';
-            ingameAd.style.display = 'block';
             loop();
         }
 
+        function addFood(x, y, val=1) {
+            foods.push({
+                x: x || Math.random() * MAP_SIZE,
+                y: y || Math.random() * MAP_SIZE,
+                r: val > 1 ? 6 : 3,
+                val: val,
+                color: `hsl(${Math.random()*360}, 100%, 70%)`
+            });
+        }
+
         function addSnake(isHuman) {
-            let x = Math.random() * (MAP_SIZE - 400) + 200;
-            let y = Math.random() * (MAP_SIZE - 400) + 200;
-            let color = isHuman ? '#e74c3c' : `hsl(${Math.random()*360}, 70%, 60%)`;
+            let x = Math.random() * (MAP_SIZE - 200) + 100;
+            let y = Math.random() * (MAP_SIZE - 200) + 100;
             
+            const types = ['aggressive', 'balanced', 'defensive'];
+            const randType = types[Math.floor(Math.random() * types.length)];
+
             snakes.push({
                 isHuman: isHuman,
                 x: x, y: y,
                 angle: Math.random() * Math.PI * 2,
-                speed: 3, radius: 10, length: 10,
-                body: [], color: color,
-                name: isHuman ? 'Me (You)' : getName(),
-                score: 0, dead: false, 
-                aiTargetAngle: 0, aiTimer: 0, turnSpeed: 0.1
+                targetAngle: 0,
+                speed: 3,
+                radius: 10,
+                length: 10,
+                body: [],
+                color: isHuman ? '#e17055' : `hsl(${Math.random()*360}, 70%, 50%)`,
+                name: isHuman ? 'Me' : generateName(),
+                dead: false,
+                score: 0,
+                type: randType, // AI Type
+                changeDirTimer: 0,
+                boostTimer: 0
             });
             
             let s = snakes[snakes.length-1];
             for(let i=0; i<20; i++) s.body.push({x: x, y: y});
-            return snakes.length - 1;
-        }
-
-        function addFood(x, y, value=1) {
-            foods.push({
-                x: x || Math.random() * MAP_SIZE,
-                y: y || Math.random() * MAP_SIZE,
-                r: value > 1 ? 6 : 3,
-                color: `hsl(${Math.random()*360}, 100%, 70%)`,
-                value: value
-            });
-        }
-
-        function initJoystick() {
-            let stick = joystickStick;
-            let zone = joystickZone;
-            let maxDist = 35; let active = false;
             
-            zone.addEventListener('touchstart', e => {
-                e.preventDefault(); active=true; inputType='joystick';
-                let t = e.touches[0];
-                let rect = zone.getBoundingClientRect();
-                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
-            }, {passive:false});
-
-            zone.addEventListener('touchmove', e => {
-                if(!active) return;
-                e.preventDefault();
-                let t = e.touches[0];
-                let rect = zone.getBoundingClientRect();
-                updateStick(t.clientX, t.clientY, rect.left+rect.width/2, rect.top+rect.height/2);
-            }, {passive:false});
-
-            zone.addEventListener('touchend', e => {
-                e.preventDefault(); active=false;
-                stick.style.transform = `translate(-50%, -50%)`;
-                joystickVector = {x:0, y:0};
-            });
-
-            function updateStick(clientX, clientY, centerX, centerY) {
-                let dx = clientX - centerX;
-                let dy = clientY - centerY;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if(dist > maxDist) { dx = (dx/dist)*maxDist; dy = (dy/dist)*maxDist; }
-                stick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-                joystickVector = {x: dx, y: dy};
-            }
+            return snakes.length - 1;
         }
 
         function loop() {
             if(!gameRunning) return;
+            update();
+            draw();
+            animationFrameId = requestAnimationFrame(loop);
+        }
 
-            ctx.fillStyle = '#2d3436';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function update() {
+            if(foods.length < FOOD_COUNT) addFood();
 
-            let player = snakes[playerIndex];
-            let zoom = 1;
-            if(player && !player.dead) zoom = Math.max(0.5, 20 / (player.radius + 10));
-
-            ctx.save();
-            ctx.translate(canvas.width/2, canvas.height/2);
-            ctx.scale(zoom, zoom);
-            if(player && !player.dead) ctx.translate(-player.x, -player.y);
-            else ctx.translate(-MAP_SIZE/2, -MAP_SIZE/2);
-
-            ctx.strokeStyle = '#3d4a4d'; ctx.lineWidth = 2; ctx.beginPath();
-            for(let x=0; x<=MAP_SIZE; x+=200) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
-            for(let y=0; y<=MAP_SIZE; y+=200) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
-            ctx.stroke();
-            ctx.strokeStyle = '#ff7675'; ctx.lineWidth = 10; ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
-
-            for(let i=foods.length-1; i>=0; i--) {
-                let f = foods[i];
-                if(player && !player.dead && (Math.abs(f.x - player.x) > canvas.width/zoom && Math.abs(f.y - player.y) > canvas.height/zoom)) continue;
-                ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
-                ctx.fillStyle = f.color; 
-                ctx.shadowBlur = 10; ctx.shadowColor = f.color;
-                ctx.fill(); ctx.shadowBlur = 0;
-            }
-
-            snakes.forEach((s, index) => {
+            snakes.forEach((s, idx) => {
                 if(s.dead) return;
 
-                let targetAngle = s.angle;
-                s.turnSpeed = 0.1;
-
-                if(s.isHuman) {
-                    if(inputType === 'joystick' && (joystickVector.x !== 0 || joystickVector.y !== 0)) {
-                        targetAngle = Math.atan2(joystickVector.y, joystickVector.x);
-                    } else {
-                        let dx = mouseX - canvas.width/2;
-                        let dy = mouseY - canvas.height/2;
-                        targetAngle = Math.atan2(dy, dx);
+                // 1. Rotation
+                if (s.isHuman) {
+                    if (inputType === 'joystick' && joystickActive) {
+                        s.targetAngle = joystickAngle;
+                    } else if (inputType === 'mouse') {
+                        s.targetAngle = Math.atan2(mouseY, mouseX);
                     }
                 } else {
-                    // --- Improved AI ---
-                    s.aiTimer--;
-                    if(s.aiTimer <= 0) {
-                        s.aiTimer = 5;
-
-                        // 1. Avoid Danger
-                        let danger = false;
-                        let lookAheadDist = 200;
-                        let checkX = s.x + Math.cos(s.angle) * lookAheadDist;
-                        let checkY = s.y + Math.sin(s.angle) * lookAheadDist;
-
-                        // Wall
-                        if(checkX < PADDING || checkX > MAP_SIZE - PADDING || checkY < PADDING || checkY > MAP_SIZE - PADDING) {
-                            s.aiTargetAngle = Math.atan2(MAP_SIZE/2 - s.y, MAP_SIZE/2 - s.x);
-                            s.turnSpeed = 0.3;
-                            danger = true;
-                        }
-
-                        // Other snakes
-                        if(!danger) {
-                            for(let other of snakes) {
-                                if(s === other || other.dead) continue;
-                                if (Math.abs(s.x - other.x) > 300 || Math.abs(s.y - other.y) > 300) continue;
-
-                                for(let i=0; i<other.body.length; i+=3) {
-                                    let bp = other.body[i];
-                                    if(Math.hypot(checkX - bp.x, checkY - bp.y) < s.radius + other.radius + 40) {
-                                        s.aiTargetAngle = s.angle + Math.PI / 1.5;
-                                        s.turnSpeed = 0.4;
-                                        danger = true;
-                                        break;
-                                    }
-                                }
-                                if(danger) break;
-                            }
-                        }
-
-                        // 2. Hunt Food
-                        if(!danger) {
-                            let closest = null;
-                            let minDist = 500;
-                            
-                            for(let f of foods) {
-                                let dist = Math.hypot(s.x - f.x, s.y - f.y);
-                                if(dist < minDist) {
-                                    let angleToFood = Math.atan2(f.y - s.y, f.x - s.x);
-                                    let angleDiff = Math.abs(angleToFood - s.angle);
-                                    if(angleDiff > Math.PI) angleDiff = Math.PI*2 - angleDiff;
-                                    
-                                    if(angleDiff < Math.PI / 1.5) {
-                                        minDist = dist;
-                                        closest = f;
-                                    }
-                                }
-                            }
-
-                            if(closest) {
-                                s.aiTargetAngle = Math.atan2(closest.y - s.y, closest.x - s.x);
-                            } else {
-                                if(Math.random() < 0.05) s.aiTargetAngle += (Math.random() - 0.5);
-                            }
-                        }
-                    }
-                    targetAngle = s.aiTargetAngle;
+                    updateBotAI(s);
                 }
 
-                let diff = targetAngle - s.angle;
-                while (diff <= -Math.PI) diff += Math.PI*2;
-                while (diff > Math.PI) diff -= Math.PI*2;
-                s.angle += diff * (s.turnSpeed || 0.1);
+                let diff = s.targetAngle - s.angle;
+                while (diff <= -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                s.angle += diff * 0.1;
 
-                // Speed Reduction (4 -> 2.5)
-                let speed = 2.5 + (10 / (s.length + 10));
-                s.x += Math.cos(s.angle) * speed;
-                s.y += Math.sin(s.angle) * speed;
+                // 2. Move & Boost
+                let currentSpeed = s.speed;
+                let boosting = (s.isHuman && isBoosting) || (!s.isHuman && s.boostTimer > 0);
+                
+                if (boosting && s.length > 20) {
+                    currentSpeed *= 2;
+                    s.length -= 0.1;
+                    if (Math.random() < 0.2) {
+                        addFood(s.body[s.body.length-1].x, s.body[s.body.length-1].y, 0.5);
+                    }
+                }
 
-                s.x = Math.max(0, Math.min(MAP_SIZE, s.x));
-                s.y = Math.max(0, Math.min(MAP_SIZE, s.y));
+                s.x += Math.cos(s.angle) * currentSpeed;
+                s.y += Math.sin(s.angle) * currentSpeed;
 
+                // 3. Wall Collision
+                if (s.x < 0 || s.x > MAP_SIZE || s.y < 0 || s.y > MAP_SIZE) {
+                    killSnake(idx);
+                    return;
+                }
+
+                // 4. Body Update
                 s.body.unshift({x: s.x, y: s.y});
-                let neededLength = s.length * 4; 
-                while(s.body.length > neededLength) s.body.pop();
+                let targetLen = Math.floor(s.length * 2); 
+                while(s.body.length > targetLen) s.body.pop();
 
+                // 5. Eat Food
                 for(let i=foods.length-1; i>=0; i--) {
                     let f = foods[i];
-                    if(Math.hypot(s.x-f.x, s.y-f.y) < s.radius + f.r) {
-                        s.length += f.value * 0.5;
-                        s.radius = Math.min(25, 10 + s.length * 0.05);
-                        s.score += Math.floor(f.value * 10);
+                    if(Math.hypot(s.x - f.x, s.y - f.y) < s.radius + f.r + 5) {
+                        s.length += f.val * 0.2; 
+                        s.score += Math.ceil(f.val * 10);
+                        s.radius = Math.min(30, 10 + s.length * 0.05);
                         foods.splice(i, 1);
-                        if(Math.random() < 0.3) addFood();
                     }
                 }
 
-                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-                for(let i=s.body.length-1; i>=0; i-=4) {
-                    let p = s.body[i];
-                    ctx.beginPath(); ctx.arc(p.x, p.y, s.radius, 0, Math.PI*2);
-                    ctx.fillStyle = s.color; ctx.fill();
-                }
-                
-                ctx.beginPath(); ctx.arc(s.x, s.y, s.radius + 2, 0, Math.PI*2);
-                ctx.fillStyle = '#fff'; ctx.fill();
-                ctx.beginPath(); ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
-                ctx.fillStyle = s.color; ctx.fill();
-
-                ctx.fillStyle = 'white'; ctx.font = 'bold 12px Roboto'; ctx.textAlign = 'center';
-                ctx.fillText(s.name, s.x, s.y - s.radius - 10);
-
-                // Collision Detection (Fixed precision)
+                // 6. Collision with other snakes
                 snakes.forEach(other => {
-                    if(s.dead || other.dead) return;
-                    if(s === other) return;
-                    if(Math.abs(s.x - other.x) > 500 || Math.abs(s.y - other.y) > 500) return;
+                    if (s === other || other.dead) return;
+                    if(Math.abs(s.x - other.x) > 1000 || Math.abs(s.y - other.y) > 1000) return;
 
-                    for(let i=0; i<other.body.length; i+=2) { // More precise check (every 2nd node)
+                    for(let i=0; i<other.body.length; i+=2) {
                         let bp = other.body[i];
-                        if(Math.hypot(s.x - bp.x, s.y - bp.y) < s.radius + other.radius - 2) {
-                            killSnake(index); return;
+                        if (Math.hypot(s.x - bp.x, s.y - bp.y) < s.radius + other.radius - 2) {
+                            killSnake(idx); 
+                            return;
                         }
                     }
                 });
             });
 
-            ctx.restore();
-            if(foods.length < 500) addFood();
+            if (playerIndex !== -1 && snakes[playerIndex]) {
+                scoreBox.innerText = `Length: ${Math.floor(snakes[playerIndex].length)}`;
+            }
             updateLeaderboard();
-            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        // Smart Bot AI (3 Personalities + Anti-Clustering)
+        function updateBotAI(b) {
+            b.changeDirTimer--;
+            if (b.boostTimer > 0) b.boostTimer--;
+
+            // Personality Stats
+            let viewMult = 1;
+            let bravery = 1.1; 
+            let greed = 0.9;   
+
+            if (b.type === 'aggressive') { 
+                viewMult = 1.5; bravery = 1.25; greed = 0.99;   
+            } else if (b.type === 'defensive') { 
+                viewMult = 1.1; bravery = 1.01; greed = 0.70;   
+            } else { 
+                viewMult = 1.2; bravery = 1.15; greed = 0.90;
+            }
+
+            const viewRange = (600 + b.r * 2) * viewMult;
+
+            // Search
+            if (b.changeDirTimer <= 0) {
+                b.changeDirTimer = Math.random() * 50 + 20;
+                
+                let closest = null;
+                let minDist = 400; 
+                
+                // 1. Wall Avoidance (Bounce away from wall)
+                const margin = 200;
+                if (b.x < margin) b.targetAngle = 0;
+                else if (b.x > MAP_SIZE - margin) b.targetAngle = Math.PI;
+                else if (b.y < margin) b.targetAngle = Math.PI/2;
+                else if (b.y > MAP_SIZE - margin) b.targetAngle = -Math.PI/2;
+                else {
+                    // 2. Find Food
+                    for(let f of foods) {
+                        let d = Math.hypot(b.x - f.x, b.y - f.y);
+                        if(d < minDist) { minDist = d; closest = f; }
+                    }
+                    if(closest) {
+                        b.targetAngle = Math.atan2(closest.y - b.y, closest.x - b.x);
+                    } else {
+                        b.targetAngle += (Math.random() - 0.5) * 2;
+                    }
+                }
+            }
+
+            // 3. Collision Avoidance (Emergency turn)
+            let lookX = b.x + Math.cos(b.angle) * 100;
+            let lookY = b.y + Math.sin(b.angle) * 100;
+            
+            for(let other of snakes) {
+                if(b === other || other.dead) continue;
+                if(Math.hypot(b.x - other.x, b.y - other.y) > 500) continue;
+
+                for(let i=0; i<other.body.length; i+=10) {
+                    if(Math.hypot(lookX - other.body[i].x, lookY - other.body[i].y) < 50) {
+                        b.targetAngle += Math.PI / 2; // Turn 90 deg
+                        b.boostTimer = 20; // Boost to escape
+                        break;
+                    }
+                }
+            }
         }
 
         function killSnake(idx) {
             let s = snakes[idx];
             s.dead = true;
-            for(let i=0; i<s.body.length; i+=3) addFood(s.body[i].x, s.body[i].y, 2);
+            
+            // Spawn food from body
+            for(let i=0; i<s.body.length; i+=2) {
+                addFood(s.body[i].x + (Math.random()-0.5)*20, s.body[i].y + (Math.random()-0.5)*20, 2);
+            }
 
-            if(s.isHuman) gameOver(s.name);
-            else {
-                showKillLog(`${s.name} died!`);
+            if(s.isHuman) {
+                gameOver(s.name);
+            } else {
                 setTimeout(() => { if(gameRunning) { snakes.splice(idx, 1); addSnake(false); } }, 2000);
             }
         }
 
-        function showKillLog(msg) {
-            killLog.innerText = msg; killLog.style.opacity = 1;
-            setTimeout(() => { killLog.style.opacity = 0; }, 2000);
+        function draw() {
+            let p = snakes[playerIndex];
+            
+            ctx.fillStyle = '#1e272e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let zoom = 1;
+            let camX = 0, camY = 0;
+
+            if (p && !p.dead) {
+                zoom = Math.max(0.6, 1 - (p.length / 500));
+                camX = canvas.width/2 - p.x * zoom;
+                camY = canvas.height/2 - p.y * zoom;
+            } else {
+                camX = canvas.width/2 - (p ? p.x : MAP_SIZE/2) * zoom;
+                camY = canvas.height/2 - (p ? p.y : MAP_SIZE/2) * zoom;
+            }
+
+            ctx.save();
+            ctx.translate(camX, camY);
+            ctx.scale(zoom, zoom);
+
+            // Grid
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#2f3640';
+            ctx.beginPath();
+            for(let x=0; x<=MAP_SIZE; x+=100) { ctx.moveTo(x,0); ctx.lineTo(x,MAP_SIZE); }
+            for(let y=0; y<=MAP_SIZE; y+=100) { ctx.moveTo(0,y); ctx.lineTo(MAP_SIZE,y); }
+            ctx.stroke();
+
+            // Border
+            ctx.strokeStyle = '#e17055'; ctx.lineWidth = 5;
+            ctx.strokeRect(0,0,MAP_SIZE,MAP_SIZE);
+
+            // Food
+            for(let f of foods) {
+                ctx.globalAlpha = 0.8;
+                ctx.fillStyle = f.color;
+                ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (1 + Math.sin(Date.now()/200)*0.2), 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // Snakes
+            let sortedSnakes = [...snakes].sort((a,b) => a.score - b.score);
+
+            sortedSnakes.forEach(s => {
+                if(s.dead) return;
+
+                // Body
+                ctx.fillStyle = s.color;
+                for(let i = s.body.length-1; i>=0; i--) {
+                    let part = s.body[i];
+                    ctx.beginPath(); 
+                    ctx.arc(part.x, part.y, s.radius, 0, Math.PI*2);
+                    ctx.fill();
+                }
+
+                // Head
+                ctx.save();
+                ctx.translate(s.x, s.y);
+                ctx.rotate(s.angle);
+                
+                ctx.fillStyle = s.color;
+                ctx.beginPath(); ctx.arc(0, 0, s.radius + 2, 0, Math.PI*2); ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.beginPath(); ctx.arc(s.radius/2, -s.radius/2, s.radius/3, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(s.radius/2, s.radius/2, s.radius/3, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = 'black';
+                ctx.beginPath(); ctx.arc(s.radius/2 + 2, -s.radius/2, s.radius/6, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(s.radius/2 + 2, s.radius/2, s.radius/6, 0, Math.PI*2); ctx.fill();
+
+                ctx.restore();
+
+                // Name
+                ctx.fillStyle = 'white';
+                ctx.font = `bold ${Math.max(12, s.radius)}px Noto Sans KR`;
+                ctx.textAlign = 'center';
+                ctx.fillText(s.name, s.x, s.y - s.radius - 10);
+            });
+
+            ctx.restore();
         }
 
         function updateLeaderboard() {
@@ -420,7 +704,7 @@
             let html = '';
             for(let i=0; i<Math.min(5, list.length); i++) {
                 let s = list[i];
-                let name = s.isHuman ? `<span style="color:#fd79a8">${s.name}</span>` : s.name;
+                let name = s.isHuman ? `<span style="color:#fab1a0">${s.name}</span>` : s.name;
                 html += `<li>${i+1}. ${name} <small>(${Math.floor(s.length)})</small></li>`;
             }
             rankList.innerHTML = html;
@@ -429,184 +713,24 @@
         function gameOver(killerName) {
             gameRunning = false;
             cancelAnimationFrame(animationFrameId);
-            ingameAd.style.display = 'none';
-            ui.style.display = 'block';
-            
-            const btn = document.getElementById('start-btn');
-            btn.innerText = "Try Again ↺";
-            ui.querySelector('h1').innerText = "💀 Game Over";
-            ui.querySelector('p').innerHTML = `
-                Crashed into another worm.<br>
-                Final Length: <span style="color:#6c5ce7; font-weight:bold;">${Math.floor(snakes[playerIndex].length)}</span>
+            uiLayer.style.display = 'flex';
+            document.getElementById('ui-title').innerText = "💀 Game Over";
+            document.getElementById('ui-desc').innerHTML = `
+                Final Length: <span style="color:#e17055">${Math.floor(snakes[playerIndex].length)}</span><br>
+                Grow bigger and try again!
             `;
+            startBtn.innerText = "Try Again ↺";
         }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const toast = document.getElementById("toast");
+                toast.className = "show";
+                setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+            });
+        }
+
+        init();
     </script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-    /* Share Container: Fixed at the bottom center */
-    .game-share-wrapper {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(30, 30, 40, 0.85); /* Semi-transparent black bg */
-        padding: 12px 25px;
-        border-radius: 50px;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        z-index: 9999;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-    }
-
-    .share-label {
-        color: #fff;
-        font-size: 0.9rem;
-        font-weight: bold;
-        margin-right: 5px;
-        white-space: nowrap;
-    }
-
-    .share-btn-group {
-        display: flex;
-        gap: 10px;
-    }
-
-    .share-icon-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .share-icon-btn:hover { transform: translateY(-3px); }
-    
-    /* Button Colors */
-    .bg-twitter { background-color: #1DA1F2; }
-    .bg-facebook { background-color: #1877F2; }
-    .bg-link { background-color: #6c5ce7; }
-
-    /* Toast Message (Copy Notification) */
-    #copy-toast {
-        visibility: hidden;
-        min-width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 16px;
-        position: fixed;
-        z-index: 10000;
-        left: 50%;
-        bottom: 80px; /* Appears above the share button */
-        transform: translateX(-50%);
-        font-size: 0.9rem;
-        opacity: 0;
-        transition: opacity 0.5s, bottom 0.5s;
-    }
-
-    #copy-toast.show {
-        visibility: visible;
-        opacity: 1;
-        bottom: 90px;
-    }
-    
-    /* Mobile Responsiveness */
-    @media (max-width: 500px) {
-        .share-label { display: none; } /* Hide label on narrow screens */
-        .game-share-wrapper { padding: 10px; }
-    }
-</style>
-
-<div class="game-share-wrapper">
-    <span class="share-label">📢 Share with friends</span>
-    <div class="share-btn-group">
-        <button onclick="shareTo('twitter')" class="share-icon-btn bg-twitter" title="Twitter">
-            <i class="fa-brands fa-twitter"></i>
-        </button>
-        <button onclick="shareTo('facebook')" class="share-icon-btn bg-facebook" title="Facebook">
-            <i class="fa-brands fa-facebook-f"></i>
-        </button>
-        <button onclick="copyLink()" class="share-icon-btn bg-link" title="Copy Link">
-            <i class="fa-solid fa-link"></i>
-        </button>
-    </div>
-</div>
-
-<div id="copy-toast">📋 Link copied!</div>
-
-<script>
-    function shareTo(sns) {
-        const url = encodeURIComponent(window.location.href);
-        const title = encodeURIComponent(document.title);
-        let link = "";
-
-        if (sns === 'twitter') {
-            link = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
-        } else if (sns === 'facebook') {
-            link = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        }
-        
-        if(link) window.open(link, '_blank', 'width=600,height=400');
-    }
-
-    function copyLink() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            const toast = document.getElementById("copy-toast");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
-        }).catch(err => {
-            alert("Copy failed: " + err);
-        });
-    }
-</script>
-
-<style>
-    #game-desc-box {
-        position: fixed; top: 50%; left: 30px; transform: translateY(-50%);
-        width: 300px; background: rgba(20, 20, 30, 0.7); backdrop-filter: blur(8px);
-        padding: 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #ecf0f1; text-align: left; line-height: 1.5; z-index: 999;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: opacity 0.3s ease;
-    }
-    .desc-title { color: #fab1a0; margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; display: flex; justify-content: space-between; }
-    .close-desc-btn { background: none; border: none; color: #dfe6e9; font-size: 1.2rem; cursor: pointer; padding: 0; }
-    .desc-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #dfe6e9; }
-    .desc-list li { margin-bottom: 8px; }
-    .desc-tip { margin-top: 15px; font-size: 0.85rem; color: #74b9ff; background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 8px; }
-    @media (max-width: 1100px) {
-        #game-desc-box { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; padding: 20px; }
-    }
-</style>
-
-<div id="game-desc-box">
-    <h3 class="desc-title">💡 How to Play <button class="close-desc-btn" onclick="hideGameDesc()">×</button></h3>
-    <p style="font-size: 0.9rem; margin-bottom: 15px;">Eat lights and become the longest worm.</p>
-    <ul class="desc-list">
-        <li><strong>Move:</strong> Follows mouse</li>
-    </ul>
-    <div class="desc-tip">✨ <strong>Tip:</strong> Coil around enemies to trap them in a circle.</div>
-</div>
-
-<script>
-    function hideGameDesc() { const box = document.getElementById('game-desc-box'); if(box) box.style.display = 'none'; }
-    document.addEventListener('click', function(e) {
-        if ((e.target.tagName === 'BUTTON' || e.target.closest('button')) && !e.target.classList.contains('close-desc-btn')) hideGameDesc();
-        if (e.target.tagName === 'CANVAS') hideGameDesc();
-    });
-</script>
-    
 </body>
 </html>
