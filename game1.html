@@ -152,7 +152,7 @@
         @media (max-width: 800px) {
             #game-container-box {
                 width: 100%;
-                height: 90vh; /* 모바일: 높이 더 확보 (80% -> 90%) */
+                height: 90vh; /* 모바일: 더 높게 설정 */
                 border-radius: 0;
             }
             #ui-layer h2 { font-size: 2.2rem; }
@@ -433,11 +433,11 @@
             }
         }
 
-        // 스마트 봇 AI (공격/도망/배회 + 벽 피하기 최우선)
+        // 스마트 봇 AI (자연스러운 움직임 개선)
         function updateBotAI(b) {
             b.changeDirTimer--;
 
-            // 1. 상태 결정 (추격, 도망, 배회)
+            // 주변 탐색
             let closestThreat = null;
             let closestPrey = null;
             let minDistThreat = Infinity;
@@ -461,30 +461,45 @@
             if (gameRunning) checkTarget(player);
             for (let i = 0; i < bots.length; i++) { checkTarget(bots[i]); }
 
+            // 1. 타겟에 따른 목표 각도 설정
+            let targetAngle = b.angle;
+
             if (closestThreat) {
                 b.state = 'flee';
-                b.angle = Math.atan2(b.y - closestThreat.y, b.x - closestThreat.x);
+                targetAngle = Math.atan2(b.y - closestThreat.y, b.x - closestThreat.x);
                 b.changeDirTimer = 10;
             } else if (closestPrey) {
                 b.state = 'chase';
-                b.angle = Math.atan2(closestPrey.y - b.y, closestPrey.x - b.x);
+                targetAngle = Math.atan2(closestPrey.y - b.y, closestPrey.x - b.x);
                 b.changeDirTimer = 20;
             } else {
                 b.state = 'wander';
+                // 배회: 한 방향으로 쭉 가다가 가끔 튼다
                 if (b.changeDirTimer <= 0) {
-                    b.changeDirTimer = Math.random() * 60 + 30;
-                    b.angle += (Math.random() - 0.5) * 1.5;
+                    b.changeDirTimer = Math.random() * 100 + 50; // 좀 더 오래 유지
+                    b.angle += (Math.random() - 0.5) * 1.0; // 랜덤 방향 전환
                 }
+                // 목표 각도는 현재 각도 유지 (아래 벽 회피에서 수정됨)
+                targetAngle = b.angle;
             }
 
-            // 2. [수정됨] 벽 회피 로직 (최우선 순위 - 덮어쓰기)
-            // 맵 가장자리 300px 이내에 들어오면 강제로 중앙 쪽을 보게 함
+            // 2. 부드러운 벽 회피 (Soft Steering)
+            // 벽 300px 이내면 중앙 쪽 각도로 '부드럽게' 섞임
             const margin = 300;
             if (b.x < margin || b.x > MAP_SIZE - margin || b.y < margin || b.y > MAP_SIZE - margin) {
-                // 맵 중앙 방향 각도 계산
+                // 맵 중앙을 향하는 각도
                 let centerAngle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
-                // 약간의 랜덤성을 더해 로봇처럼 보이지 않게 함
-                b.angle = centerAngle + (Math.random() - 0.5) * 1.0;
+                
+                // 현재 각도와 중앙 각도의 차이를 구함 (-PI ~ PI 보정)
+                let diff = centerAngle - b.angle;
+                while (diff <= -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+
+                // 중앙 쪽으로 5%씩 부드럽게 회전 (이것이 자연스러운 유턴의 핵심)
+                b.angle += diff * 0.05; 
+            } else {
+                // 벽이 아니면 타겟 각도로 설정 (즉시 적용)
+                b.angle = targetAngle;
             }
         }
 
